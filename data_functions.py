@@ -275,7 +275,7 @@ def load_pres_data(load_dir):
     # make labels
     #filename = 'small_z500.nc'
     filename = 'tropic_200_precip.nc'
-    pres     = (xr.open_dataset(load_dir+filename)['pr'].values * 86400)[:,:,:,np.newaxis]#[:,96:,80:241,np.newaxis]
+    pres     = np.float64(xr.open_dataset(load_dir+filename)['pr'].values * 86400)[:,:,:,np.newaxis]#[:,96:,80:241,np.newaxis]
     time     = xr.open_dataset(load_dir+filename)['time'].values#[:train_years*365]
     lats  = xr.open_dataset(load_dir+filename)['lat'].values#[96:]
     lons   = xr.open_dataset(load_dir+filename)['lon'].values#[80:241]
@@ -346,7 +346,7 @@ def load_pres_data(load_dir):
 
     loc_pres = []
     for i in range(var_c.shape[0]):
-        loc_pres.append(var_c[i,46,136,0])
+        loc_pres.append(var_c[i,50,40,0])
 
     loc_pres = np.asarray(loc_pres)
 
@@ -357,6 +357,13 @@ def load_pres_data(load_dir):
     plt.ylabel("Precip Anamoly", fontsize=30)
     plt.plot(np.arange(0, len(loc_pres),1)/365, loc_pres)
     # plt.savefig(('/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/figures/' + 'zeroday_test' + '/vizualization/' + 'zeroday_test' + 'data_examine.png'), bbox_inches='tight', dpi=400)
+    loc_pres = []
+
+    print(int(var_c.shape[0]/365))
+    for i in range(int(var_c.shape[0]/365)):
+        loc_pres.append(var_c[(i*365)+100,50,40,0])
+
+    loc_pres = np.asarray(loc_pres)
     print("Mean: " + str(np.mean(loc_pres)))
     plt.show()
 
@@ -496,7 +503,7 @@ def get_raw_temp_data(load_dir):
     #     temp_day /= train_years
     #     avgtemp_day.append(temp_day)
 
-    avgtemp_day = xr.open_dataset("/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/200year_temp_cycle.nc")['200tempcycle'].values
+    avgtemp_day = xr.open_dataset("/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/tropic_200year_temp_cycle.nc")['200tempcycle'].values
 
     full_loc_temp = []
     #Loop by day first.
@@ -531,7 +538,7 @@ def get_raw_temp_data(load_dir):
     #     #Add up the sea level pressure for that particular day from every year.
     #     temp_loc.append(temp[int(i+(days*j)),46,136])
 
-        full_loc_temp.append(temp[i, 46,136] - avgtemp_day[i%365, 46,136])
+        full_loc_temp.append(temp[i, 52,110] - avgtemp_day[i%365, 52,110])
 
     return (full_loc_temp, avgtemp_day, temp)
 

@@ -66,7 +66,7 @@ for i in np.arange(0,(train_years*365)+50,1):
     full_loc_temp.append(temp[i, 52,110] - avgtemp_day[i%365, 52,110])
 
 print("Mean: " + str(np.mean(full_loc_temp)))
-full_loc_temp = running_mean(full_loc_temp, 14)
+full_loc_temp = running_mean(full_loc_temp, 7)
 
     
 # full_loc_temp = np.asarray(full_loc_temp).flatten()

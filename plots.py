@@ -38,8 +38,8 @@ def plot_sample(ax,image,globe=False, lat=None, lon=None, mapProj=None):
                                 lon, 
                                 cbarBool=False, 
                                 fastBool=True,
-                                # cmap='cmr.fusion_r',
-                                cmap='cmr.copper',
+                                cmap='cmr.fusion_r',
+                                #cmap='cmr.copper',
                                 vmin=-5,
                                 vmax=5,
                                )
@@ -55,8 +55,8 @@ def plot_sample(ax,image,globe=False, lat=None, lon=None, mapProj=None):
         p = ax.contourf(image,
 #                       levels = np.arange(-10., 10.5, .5), 
                       levels = np.arange(-10., 10.25, .25),                         
-                    #   cmap='cmr.fusion_r',
-                      cmap='cmr.copper',
+                      cmap='cmr.fusion_r',
+                      #cmap='cmr.copper',
                      )
         p.set_clim(-10,10)
 #         p.set_clim(-8,8)
