@@ -7,7 +7,8 @@ from icecream import ic
 import scipy.io as sio
 import pandas as pd
 
-load_dir = "/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/"
+#load_dir = "/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/"
+load_dir = "/ourdisk/hpc/ai2es/nicojg/"
 
 filename = 'tropic_200_precip.nc'#small_2mtemp.nc'#tropic_200_z500.nc'
 # filename = 'small_slp.nc'
