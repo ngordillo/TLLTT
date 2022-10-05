@@ -9,9 +9,9 @@ import pandas as pd
 
 load_dir = "/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/"
 
-filename = 'tropic_200_precip.nc'#small_2mtemp.nc'#tropic_200_z500.nc'
+filename = 'mjo_200_precip.nc'#small_2mtemp.nc'#tropic_200_z500.nc'
 # filename = 'small_slp.nc'
-var     = np.float64(xr.open_dataset(load_dir+filename)['pr'].values)* 86400#[:,96:,80:241]
+var     = np.float64(xr.open_dataset(load_dir+filename)['pr'].values*86400)#[:,96:,80:241]
 lat  = xr.open_dataset(load_dir+filename)['lat'].values#[96:]
 lon   = xr.open_dataset(load_dir+filename)['lon'].values#[80:241]
 time = xr.open_dataset(load_dir+filename)['time'].values
@@ -78,7 +78,7 @@ szn_cycle = np.asarray(szn_cycle)
 
 df = xr.DataArray(szn_cycle, coords=[('day', np.arange(0, szn_cycle.shape[0], 1)), ('lat', lat), ('lon', lon)], name='200precipcycle')
 
-df.to_netcdf('/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/tropic_200year_precip_cycle.nc')
+df.to_netcdf('/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/mjo_200year_precip_cycle.nc')
 
 
 feb = np.where(all_months == 2)

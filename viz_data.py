@@ -100,19 +100,20 @@ plt.clf()
 train_years = 200
 load_dir = '/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/'
 # make labels
-filename = 'small_precip.nc'
+filename = 'small_2mtemp.nc'
 # pres     = xr.open_dataset(load_dir+filename)['pr'].values[:,96:,80:241,np.newaxis] * 86400
 # time     = xr.open_dataset(load_dir+filename)['time'].values[:train_years*365]
 lats  = xr.open_dataset(load_dir+filename)['lat'].values[96:]
 lons   = xr.open_dataset(load_dir+filename)['lon'].values[80:241]
-print(lats[52])
-print(lons[110])
+print(lats[64])
+print(180-(lons[88]-180))
 
 
 
-exit()
+
 print(lats)
 print(lons)
+exit()
 
 # #number of days
 # days = 365

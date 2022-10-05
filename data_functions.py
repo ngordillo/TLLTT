@@ -274,17 +274,17 @@ def load_pres_data(load_dir):
 
     # make labels
     #filename = 'small_z500.nc'
-    filename = 'tropic_200_precip.nc'
+    filename = 'mjo_200_precip.nc'
     pres     = np.float64(xr.open_dataset(load_dir+filename)['pr'].values * 86400)[:,:,:,np.newaxis]#[:,96:,80:241,np.newaxis]
     time     = xr.open_dataset(load_dir+filename)['time'].values#[:train_years*365]
     lats  = xr.open_dataset(load_dir+filename)['lat'].values#[96:]
     lons   = xr.open_dataset(load_dir+filename)['lon'].values#[80:241]
 
-    temp_label = np.loadtxt("/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/vanc_tempclass_200years_fourteendays.txt")
+    temp_label = np.loadtxt("/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/alas_tempclass_200years_fourteendays.txt")
 
     #avgpres_day = xr.open_dataset("/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/200year_z500_cycle.nc")['200z500cycle'].values[:,:,:,np.newaxis]
 
-    avgvar_day = xr.open_dataset("/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/tropic_200year_precip_cycle.nc")['200precipcycle'].values[:,:,:,np.newaxis]
+    avgvar_day = xr.open_dataset("/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/mjo_200year_precip_cycle.nc")['200precipcycle'].values[:,:,:,np.newaxis]
 
 
     var_c = []
@@ -332,7 +332,7 @@ def load_pres_data(load_dir):
     sub1.set_xticks(np.arange(-180,181,30))
     sub1.set_xticklabels(np.concatenate((np.arange(0,181,30),np.arange(-160,1,30))))
     sub1.set_yticks(np.arange(-90,91,15))
-    sub1.set_xlim(-80,120)
+    sub1.set_xlim(-140,120)
     sub1.set_ylim(-30,30)
     sub1.set_xlabel("Longitude (degrees)",fontsize=25)
     sub1.set_ylabel("Latitude (degrees)",fontsize=25)
@@ -475,7 +475,7 @@ def get_raw_temp_data(load_dir):
 
     # make labels
     filename = 'small_2mtemp.nc'
-    temp     = xr.open_dataset(load_dir+filename)['tas'].values[:,96:,80:241,np.newaxis]
+    temp     = xr.open_dataset(load_dir+filename)['tas'].values#[:,96:,80:241,np.newaxis]
     # time     = xr.open_dataset(load_dir+filename)['time'].values[:train_years*365]
     # lat  = xr.open_dataset(load_dir+filename)['lat'].values[96:]
     # lon   = xr.open_dataset(load_dir+filename)['lon'].values[80:241]
