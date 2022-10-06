@@ -47,7 +47,7 @@ years = 200
 #     temp_day /= years
     # avgtemp_day.append(temp_day)
 
-avgtemp_day = xr.open_dataset("/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/tropic_200year_temp_cycle.nc")['200tempcycle'].values
+avgtemp_day = xr.open_dataset("/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/mjo_200year_temp_cycle.nc")['200tempcycle'].values
 
 train_years = 200
 
@@ -62,10 +62,10 @@ for i in np.arange(0,(train_years*365)+50,1):
     #     #Add up the sea level pressure for that particular day from every year.
     #     temp_loc.append(temp[int(i+(days*j)),46,136])
 
-    #full_loc_temp.append(temp[i, 46,136] - avgtemp_day[i%365, 46,136])
+    #full_loc_temp.append(temp[i, 46,136] - avgtemp_day[i%365, 46,136]) #N
     #full_loc_temp.append(temp[i, 52,110] - avgtemp_day[i%365, 52,110])
-    full_loc_temp.append(temp[i, 39,111] - avgtemp_day[i%365, 39,111])
-    #full_loc_temp.append(temp[i, 64,88] - avgtemp_day[i%365, 64,88])
+    #full_loc_temp.append(temp[i, 39,111] - avgtemp_day[i%365, 39,111])
+    full_loc_temp.append(temp[i, 64,88] - avgtemp_day[i%365, 64,88]) 
 
 print("Mean: " + str(np.mean(full_loc_temp)))
 full_loc_temp = running_mean(full_loc_temp, 7)
@@ -140,7 +140,7 @@ print("number of 0: " + str(count_arr[0]))
 print("number of 1: " + str(count_arr[1]))
 print("number of 2: " + str(count_arr[2]))
 
-np.savetxt('/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/cali_tempclass_200years_fourteendays.txt', train_class, fmt='%d')
+np.savetxt('/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/alas_tempclass_200years_fourteendays.txt', train_class, fmt='%d')
 
 # np.savetxt('/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/temp_200years_threedays_test.txt', true_temps)
 
