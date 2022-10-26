@@ -48,3 +48,20 @@ def get_exp_directories(exp_name):
         os.makedirs(model_dir)    
         
     return model_dir, model_diagnostics_dir, vizualization_dir
+
+def get_exp_directories_schooner(exp_name):
+    # make model and figure directories if they do not exist
+    
+    model_diagnostics_dir = '/scratch/nicojg/TLLTT/figures/' + exp_name + '/model_diagnostics/' 
+    if not os.path.exists(model_diagnostics_dir):
+        os.makedirs(model_diagnostics_dir)   
+    
+    vizualization_dir = '/scratch/nicojg/TLLTT/figures/' + exp_name + '/vizualization/' 
+    if not os.path.exists(vizualization_dir):
+        os.makedirs(vizualization_dir)
+    
+    model_dir = '/scratch/nicojg/TLLTT/saved_models/' + exp_name + '/' 
+    if not os.path.exists(model_dir):
+        os.makedirs(model_dir)    
+        
+    return model_dir, model_diagnostics_dir, vizualization_dir
