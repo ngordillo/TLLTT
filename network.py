@@ -208,6 +208,7 @@ def build_model(nlayers,
         
     ACT_FUN                  = 'relu'    
     KERNEL_SIZE              = (3,3)
+    # KERNEL_SIZE              = (6,6)
     STRIDES                  = (1,1)
     POOL_SIZE                = (2,2)
     POOL_STRIDE              = 2
