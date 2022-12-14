@@ -1,3 +1,5 @@
+import py3nvml
+py3nvml.grab_gpus(num_gpus=1, gpu_select=[0])
 
 # # This Looks Like That There
 # 
@@ -14,7 +16,7 @@ from icecream import ic
 
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-import seaborn as sns
+# import seaborn as sns
 
 import tensorflow as tf
 
@@ -24,6 +26,8 @@ import data_functions_schooner
 import push_prototypes
 import plots
 import common_functions
+
+
 
 __author__ = "Elizabeth A. Barnes and Randal J Barnes"
 __version__ = "1 December 2021"
@@ -40,13 +44,13 @@ print(f"tensorflow version = {tf.__version__}")
 
 # ## Define experiment settings and directories
 
-EXP_NAME = 'alas_14day_precip_schooner'#'balanced_test'#initial_test'#'mjo'#'quadrants_testcase'
+EXP_NAME = 'alas_14day_precip_4back_schooner'#'balanced_test'#initial_test'#'mjo'#'quadrants_testcase'
 
 imp.reload(experiment_settings)
 settings = experiment_settings.get_settings(EXP_NAME)
 
 imp.reload(common_functions)
-model_dir, model_diagnostics_dir, vizualization_dir = common_functions.get_exp_directories(EXP_NAME)
+model_dir, model_diagnostics_dir, vizualization_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
 
 # ## Define the network parameters
 
@@ -78,40 +82,33 @@ tf.random.set_seed(RANDOM_SEED)
 imp.reload(data_functions_schooner)
 DATA_NAME = settings['data_name']
 DATA_DIR = settings['data_dir']
-   
-if(EXP_NAME[:9]=='quadrants'):
-    filename = DATA_DIR + DATA_NAME + '.mat'
-    X_train, y_train, X_val, y_val, X_test, y_test, lat, lon = data_functions_schooner.get_and_process_data(filename, 
+      
+# elif((EXP_NAME[:12]=='initial_test') or (EXP_NAME[:12]=='smaller_test') or (EXP_NAME[:13]=='balanced_test') or (EXP_NAME[:13]=='threeday_test') or (EXP_NAME[:12]=='zeroday_test') or (EXP_NAME[:16]=='fourteenday_test') or (EXP_NAME[:18]=='fourteenday_precip')
+#      or (EXP_NAME[:19]=='seventeenday_precip') or (EXP_NAME[:16]=='elevenday_precip') or (EXP_NAME[:30]=='fixed_fourteenday_precip') or (EXP_NAME[:30]=='cold_fourteenday_precip') or (EXP_NAME[:30]=='mjo_fourteenday_precip') or (EXP_NAME[:30]=='shuffle_fourteenday_precip')
+#      or (EXP_NAME[:30]=='cali_fourteenday_precip') or (EXP_NAME[:30]=='alas_fourteenday_precip') or (EXP_NAME[:30]=='alas_fourteenday_5proto') or (EXP_NAME[:30]=='alas_fourteenday_back') or (EXP_NAME[:30]=='alas_fourteenday_large') or (EXP_NAME[:30]=='vanc_fourteenday_precip')
+#      or (EXP_NAME[:30]=='alas_fourteenday_precip_pre') or (EXP_NAME[:30]=='alas_14day_precip_schooner') or (EXP_NAME[:30]=='LA_14day_precip_schooner') or (EXP_NAME[:30]=='cres_14day_precip_schooner') or (EXP_NAME[:30]=='vanc_14day_precip_schooner')
+#      or (EXP_NAME[:30]=='alas_14dayback_precip_schooner') or (EXP_NAME[:50]=='alas_14day_precip_large_schooner') or (EXP_NAME[:70]=='alas_14day_precip_5mean_large_schooner') or (EXP_NAME[:70]=='alas_14day_precip_5mean_schooner') 
+#      or (EXP_NAME[:70]=='alas_14day_precip_5back_schooner') or (EXP_NAME[:70]=='alas_14day_precip_6back_schooner')):
+labels, data, lat, lon, time = data_functions_schooner.load_tropic_data(DATA_DIR)
+X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data(labels,
+                                                                                        data,
+                                                                                        time,
                                                                                         rng, 
                                                                                         colored=settings['colored'],
                                                                                         standardize=settings['standardize'],
                                                                                         shuffle=settings['shuffle'],
-                                                                                        )      
-elif((EXP_NAME[:12]=='initial_test') or (EXP_NAME[:12]=='smaller_test') or (EXP_NAME[:13]=='balanced_test') or (EXP_NAME[:13]=='threeday_test') or (EXP_NAME[:12]=='zeroday_test') or (EXP_NAME[:16]=='fourteenday_test') or (EXP_NAME[:18]=='fourteenday_precip')
-     or (EXP_NAME[:19]=='seventeenday_precip') or (EXP_NAME[:16]=='elevenday_precip') or (EXP_NAME[:30]=='fixed_fourteenday_precip') or (EXP_NAME[:30]=='cold_fourteenday_precip') or (EXP_NAME[:30]=='mjo_fourteenday_precip') or (EXP_NAME[:30]=='shuffle_fourteenday_precip')
-     or (EXP_NAME[:30]=='cali_fourteenday_precip') or (EXP_NAME[:30]=='alas_fourteenday_precip') or (EXP_NAME[:30]=='alas_fourteenday_5proto') or (EXP_NAME[:30]=='alas_fourteenday_back') or (EXP_NAME[:30]=='alas_fourteenday_large') or (EXP_NAME[:30]=='vanc_fourteenday_precip')
-     or (EXP_NAME[:30]=='alas_fourteenday_precip_pre') or (EXP_NAME[:30]=='alas_14day_precip_schooner')):
-    print(settings['shuffle'])
-    labels, data, lat, lon, time = data_functions_schooner.load_tropic_data(DATA_DIR)
-    X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data(labels,
-                                                                                         data,
-                                                                                         time,
-                                                                                         rng, 
-                                                                                         colored=settings['colored'],
-                                                                                         standardize=settings['standardize'],
-                                                                                         shuffle=settings['shuffle'],
-                                                                                        )
-elif((EXP_NAME[:21]=='fourteenday_both_test') or ((EXP_NAME[:18]=='threeday_both_test'))):
-    print("bingo")
-    labels, data, lat, lon, time = data_functions_schooner.load_z500_precip_data(DATA_DIR)
-    X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data(labels,
-                                                                                         data,
-                                                                                         time,
-                                                                                         rng, 
-                                                                                         colored=settings['colored'],
-                                                                                         standardize=settings['standardize'],
-                                                                                         shuffle=settings['shuffle'],
-                                                                                        )
+                                                                                    )
+# elif((EXP_NAME[:21]=='fourteenday_both_test') or ((EXP_NAME[:18]=='threeday_both_test'))):
+#     print("bingo")
+#     labels, data, lat, lon, time = data_functions_schooner.load_z500_precip_data(DATA_DIR)
+#     X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data(labels,
+#                                                                                          data,
+#                                                                                          time,
+#                                                                                          rng, 
+#                                                                                          colored=settings['colored'],
+#                                                                                          standardize=settings['standardize'],
+#                                                                                          shuffle=settings['shuffle'],
+#                                                                                         )
 
 
 proto_class_mask = network.createClassIdentity(PROTOTYPES_PER_CLASS)
@@ -192,7 +189,7 @@ model.summary()
 if(settings['pretrain'] == True):
 
     if(settings['pretrain_exp'] is None):
-        PRETRAINED_MODEL = model_dir + 'pretrained_model_' + EXP_NAME 
+        PRETRAINED_MODEL = model_dir + 'pretrained_model_' + EXP_NAME
     else:
         PRETRAINED_MODEL = './saved_models/' + settings['pretrain_exp'] 
 
@@ -267,7 +264,14 @@ for stage in STAGE_LIST:
         print('Push complete.\n')            
 
         # train weights layer only
-        model = network.set_trainable_layers(model, [False,False,False,True])        
+        model = network.set_trainable_layers(model, [False,False,False,True])
+        # print("Huge Print------------------------------------------------------------------------------------------")
+        print(push_info[0])
+        print(push_info[0].shape)
+        if(stage == 9):
+            print("Writing Final Protos")
+            np.savetxt(vizualization_dir + EXP_NAME + 'final_push_protos.txt', push_info[0], fmt='%d')
+        # print("Huge Print------------------------------------------------------------------------------------------")
 
     #.......................................................
     # compile the model

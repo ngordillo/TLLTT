@@ -1,3 +1,6 @@
+import py3nvml
+py3nvml.grab_gpus(num_gpus=1, gpu_select=[0])
+
 
 # # This Looks Like That There
 # Pretrain CNN Only
@@ -14,9 +17,11 @@ import scipy.io as sio
 
 import matplotlib.pyplot as plt
 import matplotlib as mpl
-import seaborn as sns
+# import seaborn as sns
 
 import tensorflow as tf
+
+from sklearn.metrics import confusion_matrix
 
 import network as network
 import experiment_settings
@@ -39,13 +44,13 @@ print(f"tensorflow version = {tf.__version__}")
 
 # ## Define experiment settings and directories
 
-EXP_NAME = 'vanc_fourteenday_precip'#'smaller_test'#'quadrants_testcase'
+EXP_NAME = 'alas_14day_precip_4back_schooner'#'smaller_test'#'quadrants_testcase'
 
 imp.reload(experiment_settings)
 settings = experiment_settings.get_settings(EXP_NAME)
 
 imp.reload(common_functions)
-model_dir, model_diagnostics_dir, vizualization_dir = common_functions.get_exp_directories(EXP_NAME)
+model_dir, model_diagnostics_dir, vizualization_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
 
 
 # ## Define the network parameters
@@ -83,29 +88,32 @@ DATA_DIR = settings['data_dir']
 print(DATA_DIR)
 
 
-if((EXP_NAME[:12]=='initial_test') or (EXP_NAME[:12]=='smaller_test') or (EXP_NAME[:13]=='balanced_test') or (EXP_NAME[:13]=='threeday_test') or (EXP_NAME[:12]=='zeroday_test') or (EXP_NAME[:16]=='fourteenday_test') or (EXP_NAME[:14]=='thirtyday_test')
-    or (EXP_NAME[:18]=='fourteenday_precip') or (EXP_NAME[:19]=='seventeenday_precip') or (EXP_NAME[:16]=='elevenday_precip') or (EXP_NAME[:30]=='fixed_fourteenday_precip') or (EXP_NAME[:30]=='alas_fourteenday_precip') or (EXP_NAME[:30]=='vanc_fourteenday_precip') ):
+# if((EXP_NAME[:12]=='initial_test') or (EXP_NAME[:12]=='smaller_test') or (EXP_NAME[:13]=='balanced_test') or (EXP_NAME[:13]=='threeday_test') or (EXP_NAME[:12]=='zeroday_test') or (EXP_NAME[:16]=='fourteenday_test') or (EXP_NAME[:14]=='thirtyday_test')
+#     or (EXP_NAME[:18]=='fourteenday_precip') or (EXP_NAME[:19]=='seventeenday_precip') or (EXP_NAME[:16]=='elevenday_precip') or (EXP_NAME[:30]=='fixed_fourteenday_precip') or (EXP_NAME[:30]=='alas_fourteenday_precip')
+#     or (EXP_NAME[:30]=='vanc_fourteenday_precip') or (EXP_NAME[:30]=='alas_14day_precip_schooner') or (EXP_NAME[:30]=='LA_14day_precip_schooner') or (EXP_NAME[:30]=='cres_14day_precip_schooner')
+#     or (EXP_NAME[:30]=='vanc_14day_precip_schooner') or (EXP_NAME[:30]=='alas_14dayback_precip_schooner') or (EXP_NAME[:50]=='alas_14day_precip_large_schooner') or (EXP_NAME[:70]=='alas_14day_precip_5mean_large_schooner')
+#     or (EXP_NAME[:70]=='alas_14day_precip_5mean_schooner') or (EXP_NAME[:70]=='alas_14day_precip_5back_schooner') or (EXP_NAME[:70]=='alas_14day_precip_6back_schooner')):
     # print("correc")
-    labels, data, lat, lon, time = data_functions_schooner.load_tropic_data(DATA_DIR)
-    X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data(labels,
-                                                                                         data,
-                                                                                         time,
-                                                                                         rng, 
-                                                                                         colored=settings['colored'],
-                                                                                         standardize=settings['standardize'],
-                                                                                         shuffle=settings['shuffle'],
-                                                                                        )
-elif((EXP_NAME[:21]=='fourteenday_both_test') or ((EXP_NAME[:18]=='threeday_both_test'))):
-    print("bingo")
-    labels, data, lat, lon, time = data_functions_schooner.load_z500_precip_data(DATA_DIR)
-    X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_pres_data(labels,
-                                                                                         data,
-                                                                                         time,
-                                                                                         rng, 
-                                                                                         colored=settings['colored'],
-                                                                                         standardize=settings['standardize'],
-                                                                                         shuffle=settings['shuffle'],
-                                                                                        )
+labels, data, lat, lon, time = data_functions_schooner.load_tropic_data(DATA_DIR)
+X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data(labels,
+                                                                                        data,
+                                                                                        time,
+                                                                                        rng, 
+                                                                                        colored=settings['colored'],
+                                                                                        standardize=settings['standardize'],
+                                                                                        shuffle=settings['shuffle'],
+                                                                                    )
+# elif((EXP_NAME[:21]=='fourteenday_both_test') or ((EXP_NAME[:18]=='threeday_both_test'))):
+#     print("bingo")
+#     labels, data, lat, lon, time = data_functions_schooner.load_z500_precip_data(DATA_DIR)
+#     X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_pres_data(labels,
+#                                                                                          data,
+#                                                                                          time,
+#                                                                                          rng, 
+#                                                                                          colored=settings['colored'],
+#                                                                                          standardize=settings['standardize'],
+#                                                                                          shuffle=settings['shuffle'],
+#                                                                                         )
 
 
 proto_class_mask = network.createClassIdentity(PROTOTYPES_PER_CLASS)
@@ -158,9 +166,10 @@ imp.reload(experiment_settings)
 settings = experiment_settings.get_settings(EXP_NAME)
 
 imp.reload(common_functions)
-model_dir, model_diagnostics_dir, vizualization_dir = common_functions.get_exp_directories(EXP_NAME)
+model_dir, model_diagnostics_dir, vizualization_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
 
 RANDOM_SEED          = settings['random_seed']
+BATCH_SIZE_PREDICT   = settings['batch_size_predict']
 BATCH_SIZE           = settings['batch_size']
 NLAYERS              = settings['nlayers']
 NFILTERS             = settings['nfilters']   
@@ -285,6 +294,84 @@ plt.savefig(model_diagnostics_dir + 'loss_history_pretrained_model_' + EXP_NAME 
 # plt.plot(np.arange(0, len(test_temp),1), test_temp)
 # plt.show()
 
+# model_filename = model_dir + 'pretrained_model_' + EXP_NAME
+# model = common_functions.load_model(model_filename)
 
+### for white background...
+plt.rc('text',usetex=True)
+plt.rc('font',**{'family':'sans-serif','sans-serif':['Avant Garde']}) 
+plt.rc('savefig',facecolor='white')
+plt.rc('axes',facecolor='white')
+plt.rc('axes',labelcolor='dimgrey')
+plt.rc('axes',labelcolor='dimgrey')
+plt.rc('xtick',color='dimgrey')
+plt.rc('ytick',color='dimgrey')
+################################  
+################################  
+def adjust_spines(ax, spines):
+    for loc, spine in ax.spines.items():
+        if loc in spines:
+            spine.set_position(('outward', 5))
+        else:
+            spine.set_color('none')  
+    if 'left' in spines:
+        ax.yaxis.set_ticks_position('left')
+    else:
+        ax.yaxis.set_ticks([])
+    if 'bottom' in spines:
+        ax.xaxis.set_ticks_position('bottom')
+    else:
+            ax.xaxis.set_ticks([]) 
 
+print('running model.predict()...')
+y_predict_val = model.predict(X_val, batch_size=BATCH_SIZE_PREDICT, verbose=1)
+print('model.predict() complete.')
+
+model.evaluate(X_val,y_val,batch_size=BATCH_SIZE_PREDICT, verbose=1)
+
+print('Accuracies by class: ')
+
+for c in np.arange(0,NCLASSES):
+    i = np.where(y_val==c)[0]
+    j = np.where(y_val[i]==np.argmax(y_predict_val[i],axis=1))[0]
+    acc = np.round(len(j)/len(i),3)
+    print(np.argmax(y_predict_val[i],axis=1))
+    
+    print('   phase ' + str(c) + ' = ' + str(acc))
+    
+
+#-------------
+y_predict  = y_predict_val
+y_true     = y_val
+# time       = time_val
+# input_data = input_val
+#-------------
+
+y_predict_class = np.argmax(y_predict,axis=1)
+
+cf_matrix = confusion_matrix(y_val, y_predict_class)
+cf_matrix_pred = confusion_matrix(y_val, y_predict_class, normalize='pred')
+cf_matrix_true = confusion_matrix(y_val, y_predict_class, normalize='true')
+cf_matrix = np.around(cf_matrix,3)
+cf_matrix_pred = np.around(cf_matrix_pred,3)
+cf_matrix_true = np.around(cf_matrix_true,3)
+fig, ax = plt.subplots(figsize=(7.5, 7.5))
+ax.matshow(cf_matrix, cmap=plt.cm.Blues, alpha=0.3)
+
+correct_preds = 0
+for i in range(cf_matrix.shape[0]):
+    for j in range(cf_matrix.shape[1]):
+        ax.text(x=j, y=i,s=cf_matrix[i, j], va='center', ha='center', size='xx-large')
+        ax.text(x=j, y=i+.3,s=(str(np.around(cf_matrix_pred[i, j]*100,4))+'\%'), va='center', ha='center', size='xx-large', color = 'green')
+        ax.text(x=j, y=i-.3,s=(str(np.around(cf_matrix_true[i, j]*100,4))+'\%'), va='center', ha='center', size='xx-large', color = 'red')
+
+        if (i == j):
+            correct_preds += cf_matrix[i, j]
+
+correct_preds /= np.sum(cf_matrix)
+
+plt.xlabel('Prediction', fontsize=18, color = 'green')
+plt.ylabel('Actual', fontsize=18, color = 'red')
+plt.title('Confusion Matrix (Overall Accuracy - ' + str(np.around(correct_preds*100,2)) + '\%)', fontsize=18)
+plt.savefig((vizualization_dir + EXP_NAME + 'BaseCNN_confmatrix.png'), bbox_inches='tight', dpi=dpiFig)
 

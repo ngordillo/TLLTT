@@ -1,3 +1,5 @@
+import py3nvml
+py3nvml.grab_gpus(num_gpus=1, gpu_select=[0])
 
 # # This Looks Like That There
 # 
@@ -13,11 +15,12 @@ from tqdm import trange
 from icecream import ic          # pip install icecream
 import scipy.io as sio
 
+import pandas as pd
 
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import matplotlib as mpl
-import seaborn as sns
+# import seaborn as sns
 import cmasher as cmr            # pip install cmasher
 
 import cartopy as ct
@@ -55,13 +58,13 @@ print(f"tensorflow version = {tf.__version__}")
 
 # ## Define experiment settings and directories
 
-EXP_NAME = 'alas_14day_precip_schooner'#balanced_test'#initial_test'#'mjo_seed28'#'mjo'#'quadrants'
+EXP_NAME = 'alas_14day_precip_4back_schooner'#balanced_test'#initial_test'#'mjo_seed28'#'mjo'#'quadrants'
 
 imp.reload(experiment_settings)
 settings = experiment_settings.get_settings(EXP_NAME)
 
 imp.reload(common_functions)
-model_dir, model_diagnostics_dir, vizualization_dir = common_functions.get_exp_directories(EXP_NAME)
+model_dir, model_diagnostics_dir, vizualization_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
 
 # ## Define the network parameters
 
@@ -96,30 +99,33 @@ imp.reload(data_functions_schooner)
 DATA_NAME = settings['data_name']
 DATA_DIR = settings['data_dir']                                                                                
 
-if((EXP_NAME[:12]=='initial_test') or (EXP_NAME[:12]=='smaller_test') or (EXP_NAME[:13]=='balanced_test') or (EXP_NAME[:13]=='threeday_test') or (EXP_NAME[:12]=='zeroday_test') or (EXP_NAME[:16]=='fourteenday_test') or (EXP_NAME[:30]=='fixed_fourteenday_precip')
-     or (EXP_NAME[:30]=='cold_fourteenday_precip') or (EXP_NAME[:30]=='mjo_fourteenday_precip') or (EXP_NAME[:30]=='shuffle_fourteenday_precip') or (EXP_NAME[:30]=='alas_fourteenday_precip') or (EXP_NAME[:30]=='alas_fourteenday_5proto') or (EXP_NAME[:30]=='alas_fourteenday_back')
-     or (EXP_NAME[:30]=='alas_fourteenday_large') or (EXP_NAME[:30]=='vanc_fourteenday_precip') or (EXP_NAME[:30]=='cali_fourteenday_precip') or (EXP_NAME[:30]=='alas_fourteenday_precip_pre') or (EXP_NAME[:30]=='alas_14day_precip_schooner')):
+# if((EXP_NAME[:12]=='initial_test') or (EXP_NAME[:12]=='smaller_test') or (EXP_NAME[:13]=='balanced_test') or (EXP_NAME[:13]=='threeday_test') or (EXP_NAME[:12]=='zeroday_test') or (EXP_NAME[:16]=='fourteenday_test')
+# or (EXP_NAME[:30]=='fixed_fourteenday_precip')or (EXP_NAME[:30]=='cold_fourteenday_precip') or (EXP_NAME[:30]=='mjo_fourteenday_precip') or (EXP_NAME[:30]=='shuffle_fourteenday_precip') or (EXP_NAME[:30]=='alas_fourteenday_precip') or (EXP_NAME[:30]=='alas_fourteenday_5proto')
+# or (EXP_NAME[:30]=='alas_fourteenday_back') or (EXP_NAME[:30]=='alas_fourteenday_large') or (EXP_NAME[:30]=='vanc_fourteenday_precip') or (EXP_NAME[:30]=='cali_fourteenday_precip') or (EXP_NAME[:30]=='alas_fourteenday_precip_pre')
+# or (EXP_NAME[:30]=='alas_14day_precip_schooner') or (EXP_NAME[:30]=='LA_14day_precip_schooner') or (EXP_NAME[:30]=='cres_14day_precip_schooner') or (EXP_NAME[:30]=='vanc_14day_precip_schooner')
+# or (EXP_NAME[:30]=='alas_14dayback_precip_schooner') or (EXP_NAME[:50]=='alas_14day_precip_large_schooner') or (EXP_NAME[:70]=='alas_14day_precip_5mean_large_schooner') or (EXP_NAME[:70]=='alas_14day_precip_5mean_schooner')
+# or (EXP_NAME[:70]=='alas_14day_precip_5back_schooner') or (EXP_NAME[:70]=='alas_14day_precip_6back_schooner')):
 
-    labels, data, lat, lon, time = data_functions_schooner.load_pres_data(DATA_DIR)
-    X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_pres_data(labels,
-                                                                                         data,
-                                                                                         time,
-                                                                                         rng, 
-                                                                                         colored=settings['colored'],
-                                                                                         standardize=settings['standardize'],
-                                                                                         shuffle=settings['shuffle'],
-                                                                                        )    
-elif((EXP_NAME[:21]=='fourteenday_both_test') or ((EXP_NAME[:18]=='threeday_both_test'))):
-    print("bingo")
-    labels, data, lat, lon, time = data_functions_schooner.load_z500_precip_data(DATA_DIR)
-    X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_pres_data(labels,
-                                                                                         data,
-                                                                                         time,
-                                                                                         rng, 
-                                                                                         colored=settings['colored'],
-                                                                                         standardize=settings['standardize'],
-                                                                                         shuffle=settings['shuffle'],
-                                                                                        )
+labels, data, lat, lon, time = data_functions_schooner.load_tropic_data(DATA_DIR)
+X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data(labels,
+                                                                                        data,
+                                                                                        time,
+                                                                                        rng, 
+                                                                                        colored=settings['colored'],
+                                                                                        standardize=settings['standardize'],
+                                                                                        shuffle=settings['shuffle'],
+                                                                                    )    
+# elif((EXP_NAME[:21]=='fourteenday_both_test') or ((EXP_NAME[:18]=='threeday_both_test'))):
+#     print("bingo")
+#     labels, data, lat, lon, time = data_functions_schooner.load_z500_precip_data(DATA_DIR)
+#     X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_pres_data(labels,
+#                                                                                          data,
+#                                                                                          time,
+#                                                                                          rng, 
+#                                                                                          colored=settings['colored'],
+#                                                                                          standardize=settings['standardize'],
+#                                                                                          shuffle=settings['shuffle'],
+#                                                                                         )
 
 
 proto_class_mask = network.createClassIdentity(PROTOTYPES_PER_CLASS)
@@ -184,6 +190,9 @@ model, push_info = push_prototypes.push(model,
 prototype_sample  = push_info[0]
 prototype_indices = push_info[-1]
 similarity_scores = push_info[-2]
+
+np.savetxt(vizualization_dir + EXP_NAME + 'viz_push_protos.txt', prototype_sample, fmt='%d')
+
 # prototype_date = time_train.dt.strftime("%b %d %Y").values[prototype_sample]    
 
 model.summary()
@@ -562,13 +571,13 @@ def examine_proto():
 
 # All prototypes for each phase
 def show_all_protos():
-    
+    print("HELOOOOOOOOOOOOOOOOOOOOO????")
     from scipy import stats
     imp.reload(plots)
     mapProj = ccrs.PlateCarree(central_longitude = np.mean(lon))
     FS = 5
 
-    for phase in np.arange(0,3):
+    for phase in np.arange(0,2):
         fig, axs = plt.subplots(10,
                             2, 
                             figsize=(12,22),
@@ -651,7 +660,10 @@ def show_all_protos():
                 # PLOT THE MASKS
                 if var_index==0:
                     iwin = np.where(winning_prototype==prototype_index)[0]
-                    win_frac = np.round(len(iwin)/len(winning_prototype)*100, 2)
+                    if(len(winning_prototype>1)):
+                        win_frac = np.round(len(iwin)/len(winning_prototype)*100, 2)
+                    else:
+                        win_frac = 0
                     
                     ax = axs[iprototype,1]
                     ax.set_aspect("auto")
@@ -745,7 +757,156 @@ def make_confuse_matrix():
 # plt.xlim(0,50)
 # plt.show()
 
+##################################################################################################################################################################################################################
 
+def mjo_lookup():
+
+    f = DATA_DIR + 'Index_EOFS/MJO_CESM2-piControl_intialTEST.pkl' # use this one for historical and SSP simulations with CESM2-WACCM
+
+    MJO_info = pd.read_pickle(f)
+
+    # the indexing from [:180*2] is so that we only grab the winds and not precip for the correlation
+    for phase in [0,1,2]:
+
+        phases = MJO_info['Phase']
+        print(phases.shape)
+        rmm1 = MJO_info['RMM1']
+        rmm2 = MJO_info['RMM2']
+
+        mjo_amp = np.sqrt(np.square(rmm1) + np.square(rmm2))
+
+        less_than_one = np.where(mjo_amp < 1)[0]
+
+        phases[less_than_one] = 0
+
+        # print(less_than_one)
+
+        isamples = np.where((np.argmax(y_predict,axis=1)==phase) & (np.argmax(y_predict,axis=1)==y_true))[0]
+
+        corr_phases = phases[isamples]
+
+        name_phases = ["Phase 0", "Phase 1", "Phase 2", "Phase 3", "Phase 4", "Phase 5", "Phase 6", "Phase 7", "Phase 8"]
+
+        num_phases= []
+        for i in np.arange(0,9,1):
+            num_phases.append( np.count_nonzero(corr_phases == i))
+        num_phases = np.asarray(num_phases)
+        fig, axs = plt.subplots(1,
+                                1, 
+                                figsize=(21/2.5,12/2.5)
+                            )
+
+        plt.title("Class " + str(phase) +" by phase (n=" +str(np.sum(num_phases)) + ")")
+        plt.bar(name_phases, num_phases)
+        plt.savefig((vizualization_dir + EXP_NAME + 'phase' + str(phase)+ '_mjo.png'), bbox_inches='tight', dpi=dpiFig)
+
+        # plt.show()
+
+        samp_proto_match = [0,0,0,0,0,0,0,0,0,0]
+
+        num_proto = [0.,0.,0.,0.,0.,0.,0.,0.,0.,0.]
+
+        for sample in isamples:
+
+            y_predict_class = int(np.argmax(y_predict[sample]))
+            points = max_similarity_score[sample,:]*w[:,y_predict_class]
+            # print(np.max(points))
+            all_points = w*np.squeeze(max_similarity_score[sample,:])[:,np.newaxis]
+            total_points = np.sum(all_points,axis=0)        
+
+
+            #----------------------   
+
+            prototype_points = np.sort(points)[-1]
+            # for golf in np.arange(1,30):
+            #     print(np.sort(points)[-golf])
+
+            prototype_index = np.where(points == prototype_points)[0][0]
+            # print(prototype_index)
+            prototype_class = np.argmax(proto_class_mask[prototype_index])
+            if(y_predict_class != prototype_class):
+                print_warning = '\n- prototype not associated with predicted class -'
+            else:
+                print_warning = ''
+            # print(prototype_class)
+
+
+
+            phase_proto = phases[prototype_sample[prototype_index]]
+
+            if(phase != 0):
+                num_proto[prototype_index%(phase*10)] += 1
+            else:
+                num_proto[prototype_index] += 1
+
+            phase_samp = phases[sample]
+
+            if(phase_proto == phase_samp and (phase_proto != 0.0 and phase_samp != 0.0)):
+                if(phase != 0):
+                    samp_proto_match[prototype_index%(phase*10)] += 1
+                else:
+                    samp_proto_match[prototype_index] += 1
+            
+            if(prototype_index ==13):
+                print("WOWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWWW")
+
+        # print(samp_proto_match)
+
+        print("num_proto: " + str(num_proto))
+
+        num_proto = np.asarray(num_proto)
+
+        name_proto = ["Proto" +str(phase)+ "0", "Proto" +str(phase)+ "1", "Proto" +str(phase)+ "2", "Proto" +str(phase)+ "3", "Proto" +str(phase)+ "4", "Proto" +str(phase)+ "5", "Proto" +str(phase)+ "6", "Proto" +str(phase)+ "7", "Proto" +str(phase)+ "8", "Proto" +str(phase)+ "9"]
+
+        name_proto = np.asarray(name_proto)
+
+        percent_corr = samp_proto_match/num_proto
+        percent_corr[np.isnan(percent_corr)] = 0
+        fig, axs = plt.subplots(1,
+                                1, 
+                                figsize=(21/2.5,12/2.5)
+                            )
+            
+        plt.title("Number of samples associated with prototype (class " + str(phase)+ ")")
+        plt.bar(name_proto, num_proto)
+        print(phases[prototype_sample])
+        weak_protos = []
+        for i in np.arange(phase*10, (phase*10)+10, 1):
+            phase_proto = phases[prototype_sample[i]]
+
+            if phase_proto == 0:
+                weak_protos.append(i)
+
+        print(weak_protos)
+        for i in weak_protos:
+            print((i*2)%(phase*10))
+            print((i%(phase*10))*2)
+            if(phase != 0):
+                axs.xaxis.get_ticklines()[(i%(phase*10))*2].set_markeredgecolor("red")
+            else:
+                axs.xaxis.get_ticklines()[(i*2)].set_markeredgecolor("red")
+            
+        plt.savefig((vizualization_dir + EXP_NAME + 'protos_phase'+str(phase)+'_mjo.png'), bbox_inches='tight', dpi=dpiFig)
+        # plt.show()
+
+        fig, axs = plt.subplots(1,
+                                1, 
+                                figsize=(21/2.5,12/2.5)
+                            )
+            
+        plt.title("Percentage of time prototype and sample mjo match (class " + str(phase)+ ")")
+        plt.bar(name_proto, percent_corr)
+
+
+        for i in weak_protos:
+            print((i*2)%(phase*10))
+            if(phase != 0):
+                axs.xaxis.get_ticklines()[(i%(phase*10))*2].set_markeredgecolor("red")
+            else:
+                axs.xaxis.get_ticklines()[(i*2)].set_markeredgecolor("red")
+
+        plt.savefig((vizualization_dir + EXP_NAME + 'match_phase'+str(phase)+'_mjo.png'), bbox_inches='tight', dpi=dpiFig)
+        # plt.show()
 ##################################################################################################################################################################################################################
 
 def top_scoring_protos():
@@ -785,5 +946,6 @@ def top_scoring_protos():
 
 show_all_protos()
 make_confuse_matrix()
+mjo_lookup()
 
 

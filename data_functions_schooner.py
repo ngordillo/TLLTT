@@ -10,6 +10,10 @@ import cmasher as cmr
 __author__ = "Randal J Barnes and Elizabeth A. Barnes"
 __version__ = "23 November 2021"
 
+def running_mean(x, N):
+    cumsum = np.cumsum(np.insert(x, 0, np.zeros(x.shape[2]), axis = 0), axis =0)
+    return (cumsum[N:] - cumsum[:-N]) / float(N)
+
 def makeRasterArray(fig, ax, fig_shape=(4,3)):
 
     fig.add_axes(ax)
@@ -268,39 +272,48 @@ def subsample_extremes(random_seed, X_train, y_train, X_val, y_val, X_test, y_te
     return X_train, y_train, X_val, y_val, X_test, y_test
 
 
-def load_tropic_data(load_dir):
+def load_tropic_data(load_dir, loc_lon = 0, loc_lat = 0, coast=False):
 
     train_years = 200
 
     # make labels
-    filename = 'mjo_200_precip.nc'
-    var     = np.float64(xr.open_dataset(load_dir+filename)['pr'].values * 86400)[:,:,:,np.newaxis]#[:,96:,80:241,np.newaxis]
+    filename = 'mjo_4back_200_precip.nc'
+    var     = np.float64(xr.open_dataset(load_dir+filename)['pr'].values * 86400)#[:,:,:,np.newaxis]#[:,96:,80:241,np.newaxis]
     time     = xr.open_dataset(load_dir+filename)['time'].values#[:train_years*365]
     lats  = xr.open_dataset(load_dir+filename)['lat'].values#[96:]
     lons   = xr.open_dataset(load_dir+filename)['lon'].values#[80:241]
 
-    temp_label = np.loadtxt("/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/vanc_tempclass_200years_fourteendays.txt")
+    if(coast):
+        temp_label = np.loadtxt(load_dir+"loc_"+str(loc_lon)+"_"+str(loc_lat)+"_5mean_14days.txt")
+    else:
+        temp_label = np.loadtxt(load_dir+"alas_tempclass_200years_5mean_14days.txt")
 
-    avgvar_day = xr.open_dataset("/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/mjo_200year_precip_cycle.nc")['200precipcycle'].values[:,:,:,np.newaxis]
+    avgvar_day = xr.open_dataset(load_dir+"mjo_200year_precip_cycle.nc")['200precipcycle'].values#[:,:,:,np.newaxis]
 
 
     var_c = []
 
     full_years = 200
 
-    for i in np.arange(0,full_years*365,1):
-        var_c.append(var[i,:,:,:] - avgvar_day[i%365,:,:,:])
+    for i in np.arange(0,full_years*365+9,1):
+        #   REMOVE -4 AS NEEDED
+        #var_c.append(var[i,:,:,:] - avgvar_day[(i-4)%365,:,:,:])
+        var_c.append(var[i,:,:] - avgvar_day[(i-9)%365,:,:])
 
     var_c = np.asarray(var_c)
 
-    area_lats = []
-    for lat in lats:
-        area_lats.append(np.sqrt(np.cos(np.deg2rad(lat))))
+    var_c = running_mean(var_c, 10)[:,:,:,np.newaxis]
 
-    area_lats = np.asarray(area_lats)
+    print("RUNNING MEAN ARRAY SIZE: "  + str(var_c.shape))
+
+    # area_lats = []
+    # for lat in lats:
+    #     area_lats.append(np.sqrt(np.cos(np.deg2rad(lat))))
+
+    # area_lats = np.asarray(area_lats)
     
-    for i in range(len(area_lats)):
-        var_c[:,i,:,:] = var_c[:,i,:,:] * area_lats[i]
+    # for i in range(len(area_lats)):
+    #     var_c[:,i,:,:] = var_c[:,i,:,:] * area_lats[i]
 
 
     fig = plt.figure(figsize=(20, 16))
