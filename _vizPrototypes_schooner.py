@@ -1,5 +1,5 @@
-import py3nvml
-py3nvml.grab_gpus(num_gpus=1, gpu_select=[0])
+# import py3nvml
+# py3nvml.grab_gpus(num_gpus=1, gpu_select=[0])
 
 # # This Looks Like That There
 # 
@@ -64,7 +64,8 @@ imp.reload(experiment_settings)
 settings = experiment_settings.get_settings(EXP_NAME)
 
 imp.reload(common_functions)
-model_dir, model_diagnostics_dir, vizualization_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
+# model_dir, model_diagnostics_dir, vizualization_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
+model_dir, model_diagnostics_dir, vizualization_dir = common_functions.get_exp_directories(EXP_NAME)
 
 # ## Define the network parameters
 
@@ -577,7 +578,7 @@ def show_all_protos():
     mapProj = ccrs.PlateCarree(central_longitude = np.mean(lon))
     FS = 5
 
-    for phase in np.arange(0,2):
+    for phase in np.arange(0,3):
         fig, axs = plt.subplots(10,
                             2, 
                             figsize=(12,22),
@@ -693,7 +694,7 @@ def show_all_protos():
 
     
         plt.savefig((vizualization_dir + EXP_NAME + '_allPrototypes_phase' + str(phase) + '.png'), bbox_inches='tight', dpi=dpiFig)
-        plt.show()   
+        # plt.show()   
 #         raise ValueError('here')
         plt.close()
 
@@ -729,7 +730,9 @@ def make_confuse_matrix():
     plt.ylabel('Actual', fontsize=18, color = 'red')
     plt.title('Confusion Matrix (Overall Accuracy - ' + str(np.around(correct_preds*100,2)) + '\%)', fontsize=18)
     plt.savefig((vizualization_dir + EXP_NAME + 'update_confmatrix.png'), bbox_inches='tight', dpi=dpiFig)
-    plt.show()
+
+
+    # plt.show()
 
 
 # y_predict_class_plot = np.argmax(y_predict,axis=1)
@@ -761,7 +764,10 @@ def make_confuse_matrix():
 
 def mjo_lookup():
 
-    f = DATA_DIR + 'Index_EOFS/MJO_CESM2-piControl_intialTEST.pkl' # use this one for historical and SSP simulations with CESM2-WACCM
+    # f = DATA_DIR + 'Index_EOFS/MJO_CESM2-piControl_intialTEST.pkl' # use this one for historical and SSP simulations with CESM2-WACCM
+
+
+    f = '/Users/nicojg/Documents/Work/2021_Fall_IAI/Data/Index_EOFS/MJO_CESM2-piControl_intialTEST.pkl'
 
     MJO_info = pd.read_pickle(f)
 
@@ -946,6 +952,6 @@ def top_scoring_protos():
 
 show_all_protos()
 make_confuse_matrix()
-mjo_lookup()
+# mjo_lookup()
 
 

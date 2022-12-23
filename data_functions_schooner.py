@@ -295,16 +295,35 @@ def load_tropic_data(load_dir, loc_lon = 0, loc_lat = 0, coast=False):
 
     full_years = 200
 
-    for i in np.arange(0,full_years*365+9,1):
+    for i in np.arange(0,(full_years*365)+4,1):
         #   REMOVE -4 AS NEEDED
         #var_c.append(var[i,:,:,:] - avgvar_day[(i-4)%365,:,:,:])
-        var_c.append(var[i,:,:] - avgvar_day[(i-9)%365,:,:])
+        var_c.append(var[i,:,:] - avgvar_day[(i-4)%365,:,:])
 
     var_c = np.asarray(var_c)
 
-    var_c = running_mean(var_c, 10)[:,:,:,np.newaxis]
+    var_c_fw = running_mean(var_c, 5)[:,:,:,np.newaxis]
 
-    print("RUNNING MEAN ARRAY SIZE: "  + str(var_c.shape))
+    print("RUNNING MEAN ARRAY SIZE: "  + str(var_c_fw.shape))
+
+    var_200years = var_c[4:, :, :]
+
+    var_checkcycle = []
+
+    var_checkloc = []
+
+    for i in np.arange(0,full_years,1):
+        var_checkcycle.append(var_200years[150+(365*i),:,:])
+        var_checkloc.append(var_200years[150+(365*i),40,40])
+
+    var_checkcycle = np.asarray(var_checkcycle)
+
+    var_checkcycle = np.mean(var_checkcycle, axis=0)
+
+    var_checkloc = np.asarray(var_checkloc)
+
+    var_checkloc = np.mean(var_checkloc)
+
 
     # area_lats = []
     # for lat in lats:
@@ -326,7 +345,7 @@ def load_tropic_data(load_dir, loc_lon = 0, loc_lat = 0, coast=False):
     sub1 = fig.add_subplot(111, projection = ccrs.PlateCarree(central_longitude=180))
 
     plt.set_cmap('cmr.copper')
-    img = sub1.contourf(np.asarray(lons), np.asarray(lats), np.asarray(var_c[175,:,:,0]), np.linspace(-100, 100, 41), transform=ccrs.PlateCarree())
+    img = sub1.contourf(np.asarray(lons), np.asarray(lats), np.asarray(var_checkcycle), np.linspace(-100, 100, 41), transform=ccrs.PlateCarree())
     # plt.xticks(np.arange(-180,181,30), np.concatenate((np.arange(0,181,30),np.arange(-160,1,30)), axis = None))
     # sub1.set_xticks(np.arange(-180,181,30), np.arange(-180,181,30))
     sub1.set_xticks(np.arange(-180,181,30))
@@ -340,13 +359,13 @@ def load_tropic_data(load_dir, loc_lon = 0, loc_lat = 0, coast=False):
     cbar.set_label("mm/day", fontsize=25)
 
     sub1.coastlines()
-    # plt.savefig(('/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/figures/' + 'zeroday_test' + '/vizualization/' + 'zeroday_test' + 'example_anom.png'), bbox_inches='tight', dpi=400)
+    plt.savefig(('/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/figures/senscycle_test.png'), bbox_inches='tight', dpi=400)
 
     # plt.show()
 
     loc_pres = []
-    for i in range(var_c.shape[0]):
-        loc_pres.append(var_c[i,50,40,0])
+    for i in range(var_c_fw.shape[0]):
+        loc_pres.append(var_c_fw[i,50,40,0])
 
     loc_pres = np.asarray(loc_pres)
 
@@ -359,16 +378,16 @@ def load_tropic_data(load_dir, loc_lon = 0, loc_lat = 0, coast=False):
     # plt.savefig(('/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/figures/' + 'zeroday_test' + '/vizualization/' + 'zeroday_test' + 'data_examine.png'), bbox_inches='tight', dpi=400)
     loc_pres = []
 
-    print(int(var_c.shape[0]/365))
-    for i in range(int(var_c.shape[0]/365)):
-        loc_pres.append(var_c[(i*365)+100,50,40,0])
+    print(int(var_c_fw.shape[0]/365))
+    for i in range(int(var_c_fw.shape[0]/365)):
+        loc_pres.append(var_c_fw[(i*365)+100,50,40,0])
 
     loc_pres = np.asarray(loc_pres)
-    print("Mean: " + str(np.mean(loc_pres)))
+    print("Mean: " + str(np.mean(var_checkloc)))
     # plt.show()
 
 
-    return np.asarray(temp_label), np.asarray(var_c), lats, lons, time
+    return np.asarray(temp_label), np.asarray(var_c_fw), lats, lons, time
 
 def get_and_process_tropic_data(raw_labels, raw_data, raw_time, rng, colored=False, standardize=False, shuffle=False):
     
