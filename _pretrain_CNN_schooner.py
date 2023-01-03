@@ -1,5 +1,5 @@
 import py3nvml
-py3nvml.grab_gpus(num_gpus=1, gpu_select=[0])
+py3nvml.grab_gpus(num_gpus=1, gpu_select=[2])
 
 
 # # This Looks Like That There
@@ -20,6 +20,8 @@ import matplotlib as mpl
 # import seaborn as sns
 
 import tensorflow as tf
+
+import random
 
 from sklearn.metrics import confusion_matrix
 
@@ -50,8 +52,7 @@ imp.reload(experiment_settings)
 settings = experiment_settings.get_settings(EXP_NAME)
 
 imp.reload(common_functions)
-model_dir, model_diagnostics_dir, vizualization_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
-
+model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
 
 # ## Define the network parameters
 
@@ -75,8 +76,10 @@ PATIENCE             = 100
 
 # ## Initialize
 
+tf.keras.backend.clear_session()
 np.random.seed(RANDOM_SEED)
 rng = np.random.default_rng(RANDOM_SEED)
+random.seed(RANDOM_SEED)
 tf.random.set_seed(RANDOM_SEED)
 
 
@@ -114,7 +117,10 @@ X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test 
 #                                                                                          standardize=settings['standardize'],
 #                                                                                          shuffle=settings['shuffle'],
 #                                                                                         )
-
+print("#####################################################################################################################################################################################")
+print(X_train)
+print(X_train.shape)
+print("#####################################################################################################################################################################################")
 
 proto_class_mask = network.createClassIdentity(PROTOTYPES_PER_CLASS)
 
@@ -166,7 +172,7 @@ imp.reload(experiment_settings)
 settings = experiment_settings.get_settings(EXP_NAME)
 
 imp.reload(common_functions)
-model_dir, model_diagnostics_dir, vizualization_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
+model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
 
 RANDOM_SEED          = settings['random_seed']
 BATCH_SIZE_PREDICT   = settings['batch_size_predict']
@@ -229,6 +235,9 @@ model.compile(
 
 # train the model
 tf.random.set_seed(RANDOM_SEED)
+random.seed(RANDOM_SEED)
+np.random.seed(RANDOM_SEED)
+
 history = model.fit(
     X_train,
     y_train,
@@ -297,6 +306,9 @@ plt.savefig(model_diagnostics_dir + 'loss_history_pretrained_model_' + EXP_NAME 
 # model_filename = model_dir + 'pretrained_model_' + EXP_NAME
 # model = common_functions.load_model(model_filename)
 
+
+
+########################################################################################################################
 ### for white background...
 plt.rc('text',usetex=True)
 plt.rc('font',**{'family':'sans-serif','sans-serif':['Avant Garde']}) 
@@ -322,6 +334,11 @@ def adjust_spines(ax, spines):
         ax.xaxis.set_ticks_position('bottom')
     else:
             ax.xaxis.set_ticks([]) 
+
+for layer in range(1,len(model.layers)):
+    if(model.layers[layer].name[:4]=='conv'):
+        print('   loading pretrained weights for --> ' + model.layers[layer].name)
+        print(model.layers[layer].get_weights())
 
 print('running model.predict()...')
 y_predict_val = model.predict(X_val, batch_size=BATCH_SIZE_PREDICT, verbose=1)
@@ -373,5 +390,5 @@ correct_preds /= np.sum(cf_matrix)
 plt.xlabel('Prediction', fontsize=18, color = 'green')
 plt.ylabel('Actual', fontsize=18, color = 'red')
 plt.title('Confusion Matrix (Overall Accuracy - ' + str(np.around(correct_preds*100,2)) + '\%)', fontsize=18)
-plt.savefig((vizualization_dir + EXP_NAME + 'BaseCNN_confmatrix.png'), bbox_inches='tight', dpi=dpiFig)
+plt.savefig((vizualization_dir + "8_" + EXP_NAME + 'BaseCNN_confmatrix.png'), bbox_inches='tight', dpi=dpiFig)
 

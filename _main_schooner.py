@@ -1,5 +1,5 @@
 import py3nvml
-py3nvml.grab_gpus(num_gpus=1, gpu_select=[0])
+py3nvml.grab_gpus(num_gpus=1, gpu_select=[2])
 
 # # This Looks Like That There
 # 
@@ -19,6 +19,7 @@ import matplotlib as mpl
 # import seaborn as sns
 
 import tensorflow as tf
+import random
 
 import network
 import experiment_settings 
@@ -50,7 +51,7 @@ imp.reload(experiment_settings)
 settings = experiment_settings.get_settings(EXP_NAME)
 
 imp.reload(common_functions)
-model_dir, model_diagnostics_dir, vizualization_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
+model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
 
 # ## Define the network parameters
 
@@ -73,8 +74,10 @@ PATIENCE             = 100
 
 # ## Initialize
 
+tf.keras.backend.clear_session()
 np.random.seed(RANDOM_SEED)
 rng = np.random.default_rng(RANDOM_SEED)
+random.seed(RANDOM_SEED)
 tf.random.set_seed(RANDOM_SEED)
 
 # ## Get and process the data
@@ -270,7 +273,12 @@ for stage in STAGE_LIST:
         print(push_info[0].shape)
         if(stage == 9):
             print("Writing Final Protos")
-            np.savetxt(vizualization_dir + EXP_NAME + 'final_push_protos.txt', push_info[0], fmt='%d')
+            print(push_info[-2])
+            print(push_info[-2].shape)
+            np.savetxt(exp_data_dir + EXP_NAME + 'final_push_protos.txt', push_info[0], fmt='%d')
+            np.savetxt(exp_data_dir + EXP_NAME + 'final_protos_loc.txt', push_info[-1], fmt='%d')
+            np.save(exp_data_dir + EXP_NAME + 'similarity_scores.npy', push_info[-2])
+            
         # print("Huge Print------------------------------------------------------------------------------------------")
 
     #.......................................................

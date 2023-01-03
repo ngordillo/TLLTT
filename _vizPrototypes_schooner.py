@@ -1,5 +1,5 @@
-# import py3nvml
-# py3nvml.grab_gpus(num_gpus=1, gpu_select=[0])
+import py3nvml
+py3nvml.grab_gpus(num_gpus=1, gpu_select=[2])
 
 # # This Looks Like That There
 # 
@@ -27,6 +27,8 @@ import cartopy as ct
 import cartopy.crs as ccrs
 
 import tensorflow as tf
+
+import random
 
 from sklearn.metrics import confusion_matrix
 
@@ -65,7 +67,7 @@ settings = experiment_settings.get_settings(EXP_NAME)
 
 imp.reload(common_functions)
 # model_dir, model_diagnostics_dir, vizualization_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
-model_dir, model_diagnostics_dir, vizualization_dir = common_functions.get_exp_directories(EXP_NAME)
+model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
 
 # ## Define the network parameters
 
@@ -90,8 +92,10 @@ STAGE                = settings['analyze_stage']
 
 # ## Initialize
 
+tf.keras.backend.clear_session()
 np.random.seed(RANDOM_SEED)
 rng = np.random.default_rng(RANDOM_SEED)
+random.seed(RANDOM_SEED)
 tf.random.set_seed(RANDOM_SEED)
 
 # ## Get and process the data
@@ -192,7 +196,25 @@ prototype_sample  = push_info[0]
 prototype_indices = push_info[-1]
 similarity_scores = push_info[-2]
 
-np.savetxt(vizualization_dir + EXP_NAME + 'viz_push_protos.txt', prototype_sample, fmt='%d')
+print("Push Info:")
+
+print(prototype_sample.shape)
+print(type(prototype_sample))
+print(similarity_scores.shape)
+print(type(similarity_scores))
+
+np.savetxt(exp_data_dir + EXP_NAME + 'viz_push_protos.txt', prototype_sample, fmt='%d')
+
+prototype_sample = np.loadtxt(exp_data_dir + EXP_NAME + 'final_push_protos.txt').astype(int)
+prototype_indices = np.loadtxt(exp_data_dir + EXP_NAME + 'final_protos_loc.txt').astype(int)
+similarity_scores = np.load(exp_data_dir + EXP_NAME + 'similarity_scores.npy')
+
+print("Load Info:")
+print(prototype_sample.shape)
+print(type(prototype_sample))
+print(similarity_scores.shape)
+print(type(similarity_scores))
+
 
 # prototype_date = time_train.dt.strftime("%b %d %Y").values[prototype_sample]    
 
@@ -563,7 +585,7 @@ def examine_proto():
     # plt.close()   
 #     plt.tight_layout()
     plt.savefig((vizualization_dir + EXP_NAME + '_' + str(SAMPLES[0]) + '_' + 'class' + str(y_predict_class) +'_3samples_prototypes_new.png'), bbox_inches='tight', dpi=dpiFig)
-    plt.show()
+    #plt.show()
 
 
     # print(full)
@@ -693,7 +715,7 @@ def show_all_protos():
                            )            
 
     
-        plt.savefig((vizualization_dir + EXP_NAME + '_allPrototypes_phase' + str(phase) + '.png'), bbox_inches='tight', dpi=dpiFig)
+        plt.savefig((vizualization_dir +  "_" + EXP_NAME + '_allPrototypes_phase' + str(phase) + '.png'), bbox_inches='tight', dpi=dpiFig)
         # plt.show()   
 #         raise ValueError('here')
         plt.close()
@@ -729,7 +751,7 @@ def make_confuse_matrix():
     plt.xlabel('Prediction', fontsize=18, color = 'green')
     plt.ylabel('Actual', fontsize=18, color = 'red')
     plt.title('Confusion Matrix (Overall Accuracy - ' + str(np.around(correct_preds*100,2)) + '\%)', fontsize=18)
-    plt.savefig((vizualization_dir + EXP_NAME + 'update_confmatrix.png'), bbox_inches='tight', dpi=dpiFig)
+    plt.savefig((vizualization_dir +  "_" + EXP_NAME + 'update_confmatrix.png'), bbox_inches='tight', dpi=dpiFig)
 
 
     # plt.show()
@@ -764,10 +786,10 @@ def make_confuse_matrix():
 
 def mjo_lookup():
 
-    # f = DATA_DIR + 'Index_EOFS/MJO_CESM2-piControl_intialTEST.pkl' # use this one for historical and SSP simulations with CESM2-WACCM
+    f = DATA_DIR + 'Index_EOFS/MJO_CESM2-piControl_intialTEST.pkl' # use this one for historical and SSP simulations with CESM2-WACCM
 
 
-    f = '/Users/nicojg/Documents/Work/2021_Fall_IAI/Data/Index_EOFS/MJO_CESM2-piControl_intialTEST.pkl'
+    #f = '/Users/nicojg/Documents/Work/2021_Fall_IAI/Data/Index_EOFS/MJO_CESM2-piControl_intialTEST.pkl'
 
     MJO_info = pd.read_pickle(f)
 
@@ -892,7 +914,7 @@ def mjo_lookup():
             else:
                 axs.xaxis.get_ticklines()[(i*2)].set_markeredgecolor("red")
             
-        plt.savefig((vizualization_dir + EXP_NAME + 'protos_phase'+str(phase)+'_mjo.png'), bbox_inches='tight', dpi=dpiFig)
+        plt.savefig((vizualization_dir +  "_" + EXP_NAME + 'protos_phase'+str(phase)+'_mjo.png'), bbox_inches='tight', dpi=dpiFig)
         # plt.show()
 
         fig, axs = plt.subplots(1,
@@ -911,7 +933,7 @@ def mjo_lookup():
             else:
                 axs.xaxis.get_ticklines()[(i*2)].set_markeredgecolor("red")
 
-        plt.savefig((vizualization_dir + EXP_NAME + 'match_phase'+str(phase)+'_mjo.png'), bbox_inches='tight', dpi=dpiFig)
+        plt.savefig((vizualization_dir + "_" + EXP_NAME + 'match_phase'+str(phase)+'_mjo.png'), bbox_inches='tight', dpi=dpiFig)
         # plt.show()
 ##################################################################################################################################################################################################################
 
@@ -952,6 +974,6 @@ def top_scoring_protos():
 
 show_all_protos()
 make_confuse_matrix()
-# mjo_lookup()
+mjo_lookup()
 
 
