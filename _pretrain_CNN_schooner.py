@@ -1,5 +1,5 @@
-import py3nvml
-py3nvml.grab_gpus(num_gpus=1, gpu_select=[2])
+# import py3nvml
+# py3nvml.grab_gpus(num_gpus=1, gpu_select=[2])
 
 
 # # This Looks Like That There
@@ -46,13 +46,14 @@ print(f"tensorflow version = {tf.__version__}")
 
 # ## Define experiment settings and directories
 
-EXP_NAME = 'alas_14day_precip_4back_schooner'#'smaller_test'#'quadrants_testcase'
+EXP_NAME = 'alas_15year_copy_local'#'smaller_test'#'quadrants_testcase'
 
 imp.reload(experiment_settings)
 settings = experiment_settings.get_settings(EXP_NAME)
 
 imp.reload(common_functions)
-model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
+#model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
+model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories(EXP_NAME)
 
 # ## Define the network parameters
 
@@ -172,7 +173,8 @@ imp.reload(experiment_settings)
 settings = experiment_settings.get_settings(EXP_NAME)
 
 imp.reload(common_functions)
-model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
+#model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
+model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories(EXP_NAME)
 
 RANDOM_SEED          = settings['random_seed']
 BATCH_SIZE_PREDICT   = settings['batch_size_predict']
@@ -390,5 +392,5 @@ correct_preds /= np.sum(cf_matrix)
 plt.xlabel('Prediction', fontsize=18, color = 'green')
 plt.ylabel('Actual', fontsize=18, color = 'red')
 plt.title('Confusion Matrix (Overall Accuracy - ' + str(np.around(correct_preds*100,2)) + '\%)', fontsize=18)
-plt.savefig((vizualization_dir + "8_" + EXP_NAME + 'BaseCNN_confmatrix.png'), bbox_inches='tight', dpi=dpiFig)
+plt.savefig((vizualization_dir + "10_" + EXP_NAME + 'BaseCNN_confmatrix.png'), bbox_inches='tight', dpi=dpiFig)
 

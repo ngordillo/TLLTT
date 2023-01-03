@@ -1,5 +1,5 @@
-import py3nvml
-py3nvml.grab_gpus(num_gpus=1, gpu_select=[2])
+# import py3nvml
+# py3nvml.grab_gpus(num_gpus=1, gpu_select=[2])
 
 # # This Looks Like That There
 # 
@@ -60,14 +60,15 @@ print(f"tensorflow version = {tf.__version__}")
 
 # ## Define experiment settings and directories
 
-EXP_NAME = 'alas_14day_precip_4back_schooner'#balanced_test'#initial_test'#'mjo_seed28'#'mjo'#'quadrants'
+EXP_NAME = 'alas_15year_copy_local'#'alas_14day_precip_4back_schooner'#balanced_test'#initial_test'#'mjo_seed28'#'mjo'#'quadrants'
 
 imp.reload(experiment_settings)
 settings = experiment_settings.get_settings(EXP_NAME)
 
 imp.reload(common_functions)
 # model_dir, model_diagnostics_dir, vizualization_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
-model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
+# model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
+model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories(EXP_NAME)
 
 # ## Define the network parameters
 
@@ -203,7 +204,7 @@ print(type(prototype_sample))
 print(similarity_scores.shape)
 print(type(similarity_scores))
 
-np.savetxt(exp_data_dir + EXP_NAME + 'viz_push_protos.txt', prototype_sample, fmt='%d')
+np.savetxt(exp_data_dir + "_1_"+ EXP_NAME + 'viz_push_protos.txt', prototype_sample, fmt='%d')
 
 prototype_sample = np.loadtxt(exp_data_dir + EXP_NAME + 'final_push_protos.txt').astype(int)
 prototype_indices = np.loadtxt(exp_data_dir + EXP_NAME + 'final_protos_loc.txt').astype(int)
@@ -584,7 +585,7 @@ def examine_proto():
 
     # plt.close()   
 #     plt.tight_layout()
-    plt.savefig((vizualization_dir + EXP_NAME + '_' + str(SAMPLES[0]) + '_' + 'class' + str(y_predict_class) +'_3samples_prototypes_new.png'), bbox_inches='tight', dpi=dpiFig)
+    plt.savefig((vizualization_dir + "1_" + EXP_NAME + '_' + str(SAMPLES[0]) + '_' + 'class' + str(y_predict_class) +'_3samples_prototypes_new.png'), bbox_inches='tight', dpi=dpiFig)
     #plt.show()
 
 
@@ -715,7 +716,7 @@ def show_all_protos():
                            )            
 
     
-        plt.savefig((vizualization_dir +  "_" + EXP_NAME + '_allPrototypes_phase' + str(phase) + '.png'), bbox_inches='tight', dpi=dpiFig)
+        plt.savefig((vizualization_dir + "1_" + "_" + EXP_NAME + '_allPrototypes_phase' + str(phase) + '.png'), bbox_inches='tight', dpi=dpiFig)
         # plt.show()   
 #         raise ValueError('here')
         plt.close()
@@ -933,7 +934,7 @@ def mjo_lookup():
             else:
                 axs.xaxis.get_ticklines()[(i*2)].set_markeredgecolor("red")
 
-        plt.savefig((vizualization_dir + "_" + EXP_NAME + 'match_phase'+str(phase)+'_mjo.png'), bbox_inches='tight', dpi=dpiFig)
+        plt.savefig((vizualization_dir + "1_" + "_" + EXP_NAME + 'match_phase'+str(phase)+'_mjo.png'), bbox_inches='tight', dpi=dpiFig)
         # plt.show()
 ##################################################################################################################################################################################################################
 

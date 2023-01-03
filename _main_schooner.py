@@ -1,5 +1,5 @@
-import py3nvml
-py3nvml.grab_gpus(num_gpus=1, gpu_select=[2])
+# import py3nvml
+# py3nvml.grab_gpus(num_gpus=1, gpu_select=[2])
 
 # # This Looks Like That There
 # 
@@ -45,13 +45,14 @@ print(f"tensorflow version = {tf.__version__}")
 
 # ## Define experiment settings and directories
 
-EXP_NAME = 'alas_14day_precip_4back_schooner'#'balanced_test'#initial_test'#'mjo'#'quadrants_testcase'
+EXP_NAME = 'alas_15year_copy_local'#balanced_test'#initial_test'#'mjo'#'quadrants_testcase'
 
 imp.reload(experiment_settings)
 settings = experiment_settings.get_settings(EXP_NAME)
 
 imp.reload(common_functions)
-model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
+# model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
+model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories(EXP_NAME)
 
 # ## Define the network parameters
 

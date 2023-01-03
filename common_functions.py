@@ -45,9 +45,13 @@ def get_exp_directories(exp_name):
     
     model_dir = './saved_models/' + exp_name + '/' 
     if not os.path.exists(model_dir):
-        os.makedirs(model_dir)    
+        os.makedirs(model_dir)
+
+    exp_data_dir = './data/' + exp_name + '/' 
+    if not os.path.exists(exp_data_dir):
+        os.makedirs(exp_data_dir)    
         
-    return model_dir, model_diagnostics_dir, vizualization_dir
+    return model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir
 
 def get_exp_directories_schooner(exp_name):
     # make model and figure directories if they do not exist
