@@ -46,7 +46,7 @@ print(f"tensorflow version = {tf.__version__}")
 
 # ## Define experiment settings and directories
 
-EXP_NAME = 'alas_15year_copy_local'#'smaller_test'#'quadrants_testcase'
+EXP_NAME = 'alas_200year_winter_ternary_large'#'smaller_test'#'quadrants_testcase'
 
 imp.reload(experiment_settings)
 settings = experiment_settings.get_settings(EXP_NAME)
@@ -83,6 +83,8 @@ rng = np.random.default_rng(RANDOM_SEED)
 random.seed(RANDOM_SEED)
 tf.random.set_seed(RANDOM_SEED)
 
+tf.config.experimental.enable_op_determinism()
+
 
 # ## Get and process the data
 
@@ -98,8 +100,8 @@ print(DATA_DIR)
 #     or (EXP_NAME[:30]=='vanc_14day_precip_schooner') or (EXP_NAME[:30]=='alas_14dayback_precip_schooner') or (EXP_NAME[:50]=='alas_14day_precip_large_schooner') or (EXP_NAME[:70]=='alas_14day_precip_5mean_large_schooner')
 #     or (EXP_NAME[:70]=='alas_14day_precip_5mean_schooner') or (EXP_NAME[:70]=='alas_14day_precip_5back_schooner') or (EXP_NAME[:70]=='alas_14day_precip_6back_schooner')):
     # print("correc")
-labels, data, lat, lon, time = data_functions_schooner.load_tropic_data(DATA_DIR)
-X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data(labels,
+labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter(DATA_DIR)
+X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter(labels,
                                                                                         data,
                                                                                         time,
                                                                                         rng, 
@@ -343,34 +345,34 @@ for layer in range(1,len(model.layers)):
         print(model.layers[layer].get_weights())
 
 print('running model.predict()...')
-y_predict_val = model.predict(X_val, batch_size=BATCH_SIZE_PREDICT, verbose=1)
+y_predict_test = model.predict(X_test, batch_size=BATCH_SIZE_PREDICT, verbose=1)
 print('model.predict() complete.')
 
-model.evaluate(X_val,y_val,batch_size=BATCH_SIZE_PREDICT, verbose=1)
+model.evaluate(X_test,y_test,batch_size=BATCH_SIZE_PREDICT, verbose=1)
 
 print('Accuracies by class: ')
 
 for c in np.arange(0,NCLASSES):
-    i = np.where(y_val==c)[0]
-    j = np.where(y_val[i]==np.argmax(y_predict_val[i],axis=1))[0]
+    i = np.where(y_test==c)[0]
+    j = np.where(y_test[i]==np.argmax(y_predict_test[i],axis=1))[0]
     acc = np.round(len(j)/len(i),3)
-    print(np.argmax(y_predict_val[i],axis=1))
+    print(np.argmax(y_predict_test[i],axis=1))
     
     print('   phase ' + str(c) + ' = ' + str(acc))
     
 
 #-------------
-y_predict  = y_predict_val
-y_true     = y_val
+y_predict  = y_predict_test
+y_true     = y_test
 # time       = time_val
 # input_data = input_val
 #-------------
 
 y_predict_class = np.argmax(y_predict,axis=1)
 
-cf_matrix = confusion_matrix(y_val, y_predict_class)
-cf_matrix_pred = confusion_matrix(y_val, y_predict_class, normalize='pred')
-cf_matrix_true = confusion_matrix(y_val, y_predict_class, normalize='true')
+cf_matrix = confusion_matrix(y_test, y_predict_class)
+cf_matrix_pred = confusion_matrix(y_test, y_predict_class, normalize='pred')
+cf_matrix_true = confusion_matrix(y_test, y_predict_class, normalize='true')
 cf_matrix = np.around(cf_matrix,3)
 cf_matrix_pred = np.around(cf_matrix_pred,3)
 cf_matrix_true = np.around(cf_matrix_true,3)
@@ -391,6 +393,6 @@ correct_preds /= np.sum(cf_matrix)
 
 plt.xlabel('Prediction', fontsize=18, color = 'green')
 plt.ylabel('Actual', fontsize=18, color = 'red')
-plt.title('Confusion Matrix (Overall Accuracy - ' + str(np.around(correct_preds*100,2)) + '\%)', fontsize=18)
+plt.title('TLLTT Confusion Matrix (Accuracy - ' + str(np.around(correct_preds*100,2)) + '\%)', fontsize=18)
 plt.savefig((vizualization_dir + "10_" + EXP_NAME + 'BaseCNN_confmatrix.png'), bbox_inches='tight', dpi=dpiFig)
 

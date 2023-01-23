@@ -1,5 +1,5 @@
-import py3nvml
-py3nvml.grab_gpus(num_gpus=1, gpu_select=[2])
+# import py3nvml
+# py3nvml.grab_gpus(num_gpus=1, gpu_select=[2])
 
 
 from cgi import test
@@ -17,10 +17,10 @@ def running_mean(x, N):
     return (cumsum[N:] - cumsum[:-N]) / float(N)
 
 
-# load_dir = "~/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/"
-load_dir = "/ourdisk/hpc/ai2es/nicojg/TLLTT/data/"
+load_dir = "~/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/"
+#load_dir = "/ourdisk/hpc/ai2es/nicojg/TLLTT/data/"
 
-filename = 'mjo_200_precip.nc'#small_2mtemp.nc'#tropic_200_z500.nc'
+filename =  'mjo_precip_local.nc'#'mjo_200_precip.nc'#small_2mtemp.nc'#tropic_200_z500.nc'
 
 var     = np.float64(xr.open_dataset(load_dir+filename)['pr'].values)*86400#)[:,96:,80:241]
 lat  = xr.open_dataset(load_dir+filename)['lat'].values#[96:]
@@ -33,15 +33,21 @@ time = xr.open_dataset(load_dir+filename)['time'].values
 num_days = 365
 
 #Get the number of years to calculate an average psl per day
-years = 200
+years = 15
 
 #Create fake date and time data in order to use np.where()
-fake_dates = pd.date_range("1800-01-01", freq="D", periods=365 * 200 + 98).astype('datetime64[ns]')
+# fake_dates = pd.date_range("1800-01-01", freq="D", periods=365 * 200 + 98).astype('datetime64[ns]')
 
-fake_time = xr.Dataset({"foo": ("time", np.arange(365 * 200 + 98)), "time": fake_dates})
+# fake_time = xr.Dataset({"foo": ("time", np.arange(365 * 200 + 98)), "time": fake_dates})
+
+fake_dates = pd.date_range("1800-01-01", freq="D", periods=365 * years + 3).astype('datetime64[ns]')
+
+fake_time = xr.Dataset({"foo": ("time", np.arange(365 * years + 3)), "time": fake_dates})
 
 #Take out the leap days!!
 raw_time = fake_time.sel(time=~((fake_time.time.dt.month == 2) & (fake_time.time.dt.day == 29)))
+
+print(raw_time)
 
 #extract year, months, and days.
 all_years = raw_time["time.year"].values
@@ -79,15 +85,15 @@ for month in months:
 szn_cycle = np.asarray(szn_cycle)
 
 #Make a dataarray and then make it a netcdf to save.
-df = xr.DataArray(szn_cycle, coords=[('day', np.arange(0, szn_cycle.shape[0], 1)), ('lat', lat), ('lon', lon)], name='200precipcycle')
+df = xr.DataArray(szn_cycle, coords=[('day', np.arange(0, szn_cycle.shape[0], 1)), ('lat', lat), ('lon', lon)], name='15precipcycle')
 
-#df.to_netcdf('/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/mjo_200year_temp_cycle.nc')
+df.to_netcdf('/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/mjo_15year_precip_cycle.nc')
 
-df.to_netcdf('/ourdisk/hpc/ai2es/nicojg/TLLTT/data/mjo_200year_precip_cycle.nc')
+#df.to_netcdf('/ourdisk/hpc/ai2es/nicojg/TLLTT/data/mjo_15year_precip_cycle.nc')
 
 print("Starting Removal of Seasonal cycle code #######################################################################################################################################################################################################")
 
-filename = 'mjo_4back_200_precip.nc'
+filename = 'mjo_4back_precip_local.nc'
 var_rem     = np.float64(xr.open_dataset(load_dir+filename)['pr'].values * 86400)#[:,:,:,np.newaxis]#[:,96:,80:241,np.newaxis]
 # time     = xr.open_dataset(load_dir+filename)['time'].values#[:train_years*365]
 lat  = xr.open_dataset(load_dir+filename)['lat'].values#[96:]
@@ -95,7 +101,7 @@ lon   = xr.open_dataset(load_dir+filename)['lon'].values#[80:241]
 
 var_c = []
 
-full_years = 200
+full_years = 15
 
 
 #Make a smarter way of doing this eventually
@@ -105,9 +111,11 @@ for i in np.arange(0,(full_years*365)+4,1):
     var_c.append(var_rem[i,:,:] - szn_cycle[(i-4)%365,:,:])
 
 var_c = np.asarray(var_c)
-
+print("WOOOSAVVEEEEE")
+print(var_c.shape)
 var_c_fw = running_mean(var_c, 5)
-
+print("WOOOSAVOKKKKKVEEEEE")
+print(var_c_fw.shape)
 var_c_fw = np.asarray(var_c_fw)
 
 print("RUNNING MEAN ARRAY SIZE: "  + str(var_c_fw.shape))
@@ -154,8 +162,8 @@ cbar = plt.colorbar(img,shrink=.5, aspect=20*0.8)
 cbar.set_label("mm/day", fontsize=25)
 
 sub1.coastlines()
-plt.savefig(('/ourdisk/hpc/ai2es/nicojg/TLLTT/figures/new_senscycle_test.png'), bbox_inches='tight', dpi=400)
-
+#plt.savefig(('/ourdisk/hpc/ai2es/nicojg/TLLTT/figures/new_senscycle_test.png'), bbox_inches='tight', dpi=400)
+plt.savefig(('/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/figures/local_szncycle_examine.png'), bbox_inches='tight', dpi=400)
 # plt.show()
 
 loc_pres = []
@@ -181,9 +189,16 @@ loc_pres = np.asarray(loc_pres)
 print("Mean: " + str(np.mean(var_checkloc)))
 # plt.show()
 
+
+print("another test")
+print(var_c_fw.shape)
 df = xr.DataArray(var_c_fw, coords=[('day', np.arange(0, var_c_fw.shape[0], 1)), ('lat', lat), ('lon', lon)], name='200precip5back')
 
-df.to_netcdf('/ourdisk/hpc/ai2es/nicojg/TLLTT/data/mjo_200year_precip_nocycle_5back.nc')
+df.to_netcdf('/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/mjo_15year_precip_nocycle_5back.nc')
+
+#df.to_netcdf('/ourdisk/hpc/ai2es/nicojg/TLLTT/data/mjo_200year_precip_nocycle_5back.nc')
+
+
 #Debugging code to test. Can be ignored.
 # feb = np.where(all_months == 2)
 

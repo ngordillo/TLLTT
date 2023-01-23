@@ -45,7 +45,7 @@ print(f"tensorflow version = {tf.__version__}")
 
 # ## Define experiment settings and directories
 
-EXP_NAME = 'alas_15year_copy_local'#balanced_test'#initial_test'#'mjo'#'quadrants_testcase'
+EXP_NAME = 'alas_200year_winter_ternary_large'#balanced_test'#initial_test'#'mjo'#'quadrants_testcase'
 
 imp.reload(experiment_settings)
 settings = experiment_settings.get_settings(EXP_NAME)
@@ -81,6 +81,8 @@ rng = np.random.default_rng(RANDOM_SEED)
 random.seed(RANDOM_SEED)
 tf.random.set_seed(RANDOM_SEED)
 
+tf.config.experimental.enable_op_determinism()
+
 # ## Get and process the data
 
 imp.reload(data_functions_schooner)
@@ -93,8 +95,8 @@ DATA_DIR = settings['data_dir']
 #      or (EXP_NAME[:30]=='alas_fourteenday_precip_pre') or (EXP_NAME[:30]=='alas_14day_precip_schooner') or (EXP_NAME[:30]=='LA_14day_precip_schooner') or (EXP_NAME[:30]=='cres_14day_precip_schooner') or (EXP_NAME[:30]=='vanc_14day_precip_schooner')
 #      or (EXP_NAME[:30]=='alas_14dayback_precip_schooner') or (EXP_NAME[:50]=='alas_14day_precip_large_schooner') or (EXP_NAME[:70]=='alas_14day_precip_5mean_large_schooner') or (EXP_NAME[:70]=='alas_14day_precip_5mean_schooner') 
 #      or (EXP_NAME[:70]=='alas_14day_precip_5back_schooner') or (EXP_NAME[:70]=='alas_14day_precip_6back_schooner')):
-labels, data, lat, lon, time = data_functions_schooner.load_tropic_data(DATA_DIR)
-X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data(labels,
+labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter(DATA_DIR)
+X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter(labels,
                                                                                         data,
                                                                                         time,
                                                                                         rng, 
