@@ -38,7 +38,7 @@ def plot_sample(ax,image,globe=False, lat=None, lon=None, mapProj=None):
                                 lon, 
                                 cbarBool=False, 
                                 fastBool=True,
-                                cmap='cmr.fusion_r',
+                                cmap='cmr.fusion',
                                 #cmap='cmr.copper',
                                 vmin=-5,
                                 vmax=5,
