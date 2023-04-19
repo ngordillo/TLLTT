@@ -1,12 +1,9 @@
-# import py3nvml
-# py3nvml.grab_gpus(num_gpus=1, gpu_select=[2])
-
-
 from cgi import test
 import numpy as np
 import matplotlib.pyplot as plt
 import xarray as xr
 from icecream import ic
+from sklearn.linear_model import LinearRegression
 import scipy.io as sio
 import pandas as pd
 import cartopy.crs as ccrs
@@ -34,15 +31,15 @@ def running_mean(x, N):
     return (cumsum[N:] - cumsum[:-N]) / float(N)
 
 
-load_dir = "~/Documents/Work/2021_Fall_IAI/Data/ERA5_Data/Precip/"
-#load_dir = "/ourdisk/hpc/ai2es/nicojg/TLLTT/data/"
+#load_dir = "~/Documents/Work/2021_Fall_IAI/Data/ERA5_Data/Precip/"
+load_dir = "/ourdisk/hpc/ai2es/nicojg/TLLTT/data/"
 
-filename =  'era5_daily_2mtemp.nc'#mjo_precip_local.nc'#'mjo_200_precip.nc'#small_2mtemp.nc'#tropic_200_z500.nc'
+filename =  '4back_era5_daily_mjo_noleap_precip.nc'#4back_era5_daily_noleap_precip.nc'#era5_daily_2mtemp.nc'#mjo_precip_local.nc'#'mjo_200_precip.nc'#small_2mtemp.nc'#tropic_200_z500.nc'
 
-var     = xr.open_dataset(load_dir+filename)['t2m']#*86400#)[:,96:,80:241]
-lat  = xr.open_dataset(load_dir+filename)['latitude'].values#[96:]
-lon   = xr.open_dataset(load_dir+filename)['longitude'].values#[80:241]
-time = xr.open_dataset(load_dir+filename)['time'].values
+var     = xr.open_dataset(load_dir+filename)['tp']#*86400#)[:,96:,80:241] #t2m  #pr #tp
+lats  = xr.open_dataset(load_dir+filename)['latitude'].values#[96:]
+lons   = xr.open_dataset(load_dir+filename)['longitude'].values#[80:241]
+time = xr.open_dataset(load_dir+filename)['time'].values[4:(365*60)+4]#[4:(365*60)+4]#[0:(365*60)+50+0]
 
 print('taking tropical mean...')
 print(var)
@@ -61,26 +58,44 @@ print(var)
 # print(lat_avg_var.shape)
 
 var_byday = var.groupby('time.dayofyear')
+#var_byday = var.groupby('time.dayofyear').map(subtract_trend)
 
 var_anom = var_byday - var_byday.mean(dim='time')
 
 print(var_anom)
 print(var_anom.shape)
 
-var_c_anom = running_mean(var_anom, 5)
-var_c_anom = var_c_anom[0:(120*60)][:][:]
+for lat in np.arange(0, lats.shape[0], 1):
+    print("next lat: " + str(lat))
+    for lon in np.arange(0, lons.shape[0], 1):
+        single_day = np.zeros(time.shape[0])
+        for day in np.arange(0,time.shape[0],1):
+            # print(day)
+            single_day[day] = var_anom[day][lat][lon]
+        print(single_day)
+        X = np.arange(0, single_day.shape[0], 1)
+        X = np.reshape(X, (X.shape[0], 1))
+        model = LinearRegression()
+        model.fit(X, single_day)
+        trend = model.predict(X)
+        for day in np.arange(0,time.shape[0],1):
+            # print(day)
+            var_anom[day][lat][lon] -= trend[day]
+
+var_c_anom = running_mean(var_anom.values, 5)
+var_c_anom = var_c_anom[0:(365*60)][:][:]#[0:(365*60)+50][:][:]
 print(var_c_anom)
 print(var_c_anom.shape)
 
 #Make a dataarray and then make it a netcdf to save.
-df = xr.DataArray(var_anom, coords=[('time', time), ('lat', lat), ('lon', lon)], name='era5precipanom')
+df = xr.DataArray(var_c_anom, coords=[('time', time), ('lat', lat), ('lon', lon)], name='era5precipanom')
 
-df.to_netcdf('/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/era5_2mtemp_precip.nc')
+#df.to_netcdf('/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/era5_2mtemp_precip.nc')
+
+
+df.to_netcdf('/ourdisk/hpc/ai2es/nicojg/TLLTT/data/era5_precip_mjo_notrend_anoms.nc')
 
 exit()
-
-exit()
-#df.to_netcdf('/ourdisk/hpc/ai2es/nicojg/TLLTT/data/mjo_15year_precip_cycle.nc')
 
 print("Starting Removal of Seasonal cycle code #######################################################################################################################################################################################################")
 

@@ -1,4 +1,5 @@
-
+import py3nvml
+py3nvml.grab_gpus(num_gpus=1, gpu_select=[3])
 import numpy as np
 import matplotlib.pyplot as plt
 import xarray as xr
@@ -14,16 +15,16 @@ def find_nearest_index(array, value):
     idx = (np.abs(array - value)).argmin()
     return idx
 
-load_dir = "/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/"
+load_dir = "/ourdisk/hpc/ai2es/nicojg/TLLTT/data/"
 
 # filename = '500_2mtemp.nc'
 # temp_500     = xr.open_dataset(load_dir+filename)['tas'].values[:,96:,80:241]
 #filename = 'NA_2mtemp.nc'
-filename = 'era5_2mtemp_noleap_anom.nc'#era5_daily_2mtemp.nc'
-temp     = xr.open_dataset(load_dir+filename)['2mtempanom'].values#[:,96:,80:241]
-time     = xr.open_dataset(load_dir+filename)['time']
-lat  = xr.open_dataset(load_dir+filename)['latitude'].values
-lon   = xr.open_dataset(load_dir+filename)['longitude'].values
+filename = 'era5_2mtemp_anoms.nc'#era5_daily_2mtemp.nc'
+temp     = xr.open_dataset(load_dir+filename)['era5tempanom'].values#[:,96:,80:241]
+time     = xr.open_dataset(load_dir+filename)['time'][0:(60*365)+14]
+lat  = xr.open_dataset(load_dir+filename)['lat'].values
+lon   = xr.open_dataset(load_dir+filename)['lon'].values
 print(time)
 print(lat)
 print(lon)
@@ -39,7 +40,7 @@ years = 60
 
 full_loc_temp = []
 
-for i in np.arange(0,(years*365)+50,1):
+for i in np.arange(0,(years*365)+14,1):
     # temp_loc = []
     
     # #Then loop through the number of specified years. 
@@ -59,7 +60,10 @@ for i in np.arange(0,(years*365)+50,1):
     # full_loc_temp[-1] = full_loc_temp[-1] - temp_200_years[i, 64, 88] #Remove past two year mean
 
 print("Mean: " + str(np.mean(full_loc_temp)))
-full_loc_temp = running_mean(full_loc_temp, 5)
+print(len(full_loc_temp))
+
+#Only if wasnt done before!!!!
+# full_loc_temp = running_mean(full_loc_temp, 5)
 
 
 # df = xr.DataArray(full_loc_temp, coords=[('day', np.arange(0, full_loc_temp.shape[0], 1)), ('lat', lat), ('lon', lon)], name='200years_2mtemp_nocycle_5back')
@@ -98,7 +102,7 @@ full_loc_temp_winter = np.asarray(full_loc_temp_winter)
 
 print(full_loc_temp_winter.shape)
 
-full_loc_temp_useful_days = np.asarray(full_loc_temp_useful_days[14:len(full_loc_temp_useful_days) - 32])
+full_loc_temp_useful_days = np.asarray(full_loc_temp_useful_days[14:len(full_loc_temp_useful_days)])
 
 print("useful days: " + str(full_loc_temp_useful_days.shape))
 
@@ -116,7 +120,7 @@ new_years = time["time.year"].values
 
 years = np.unique(new_years)
 
-years_train = years[:70]
+years_train = years[:45]
 
 years_train = np.isin(new_years, years_train)
 
@@ -126,8 +130,8 @@ num_of_train_days = iyears_train.shape[0]
 
 # full_loc_temp = np.asarray(full_loc_temp).flatten()
 
-train_years = 70
-test_years = 200
+train_years = 45
+test_years = 60
 
 train_class = [] 
 
@@ -148,7 +152,7 @@ mid = np.percentile(full_loc_temp_useful_days, 50.)
 print(full_loc_temp_winter.shape[0] - 46)
 
 print(new_months.shape)
-for i in np.arange(0, 4200, 1):
+for i in np.arange(0, 5400, 1):
 
     #CHANGE
 
@@ -156,21 +160,19 @@ for i in np.arange(0, 4200, 1):
     # true_slp = temp[i+lead,46,136] - avgtemp_day[correct_day,46,136]
 
     # true_temps.append(true_slp)
-    curr_month = new_months[i]
-    if (curr_month == 1 or curr_month == 2 or curr_month == 11 or curr_month == 12):
-        true_slp = full_loc_temp_winter[i+lead]
+    true_slp = full_loc_temp_useful_days[i]
 
-        # print("true_slp: " + str(true_slp))
-        if((true_slp < lower)):
-            train_class.append(0)
-        elif((true_slp > upper)):
-            train_class.append(2)
-        else:
-            train_class.append(1)
+    # print("true_slp: " + str(true_slp))
+    if((true_slp < lower)):
+        train_class.append(0)
+    elif((true_slp > upper)):
+        train_class.append(2)
+    else:
+        train_class.append(1)
 
-        # if((true_slp < mid)):
-        #     train_class.append(0)
-        # else:
+    # if((true_slp < mid)):
+    #     train_class.append(0)
+    # else:
         #     train_class.append(1)
 
 count_arr = np.bincount(train_class)
@@ -179,7 +181,7 @@ print("number of 0: " + str(count_arr[0]))
 print("number of 1: " + str(count_arr[1]))
 print("number of 2: " + str(count_arr[2]))
 
-for i in np.arange(4200, full_loc_temp_winter.shape[0] - 46, 1):
+for i in np.arange(5400, full_loc_temp_useful_days.shape[0], 1):
 
     #CHANGE
 
@@ -187,22 +189,23 @@ for i in np.arange(4200, full_loc_temp_winter.shape[0] - 46, 1):
     # true_slp = temp[i+lead,46,136] - avgtemp_day[correct_day,46,136]
 
     # true_temps.append(true_slp)
-    curr_month = new_months[i]
-    if (curr_month == 1 or curr_month == 2 or curr_month == 11 or curr_month == 12):
-        true_slp = full_loc_temp_winter[i+lead]
+    true_slp = full_loc_temp_useful_days[i]
 
-        # print("true_slp: " + str(true_slp))
-        if((true_slp < lower)):
-            train_class.append(0)
-        elif((true_slp > upper)):
-            train_class.append(2)
-        else:
-            train_class.append(1)
+    # print(true_slp)
+    # print(full_loc_temp_useful_days[i])
 
-        # if((true_slp < mid)):
-        #     train_class.append(0)
-        # else:
-        #     train_class.append(1)
+    # print("true_slp: " + str(true_slp))
+    if((true_slp < lower)):
+        train_class.append(0)
+    elif((true_slp > upper)):
+        train_class.append(2)
+    else:
+        train_class.append(1)
+
+    # if((true_slp < mid)):
+    #     train_class.append(0)
+    # else:
+    #     train_class.append(1)
 
 count_arr = np.bincount(train_class)
 
@@ -215,35 +218,35 @@ print("number of 2: " + str(count_arr[2]))
 # np.savetxt('/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/temp_200years_threedays_test.txt', true_temps)
 
 
-np.savetxt('/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/ERA5_winter_ternary_alaska_points.txt', train_class, fmt='%d')
+np.savetxt('/ourdisk/hpc/ai2es/nicojg/TLLTT/data/ERA5_winter_ternary_alaska_points.txt', train_class, fmt='%d')
 
-y_predict_class_plot = np.asarray(train_class)
+# y_predict_class_plot = np.asarray(train_class)
 
-y_predict_class_plot_low = y_predict_class_plot.astype('float64')
-y_predict_class_plot_avg = y_predict_class_plot.astype('float64')
-y_predict_class_plot_high = y_predict_class_plot.astype('float64')
+# y_predict_class_plot_low = y_predict_class_plot.astype('float64')
+# y_predict_class_plot_avg = y_predict_class_plot.astype('float64')
+# y_predict_class_plot_high = y_predict_class_plot.astype('float64')
 
-y_predict_class_plot_low[np.where(y_predict_class_plot_low==2)[0]] = np.nan
-y_predict_class_plot_low[np.where(y_predict_class_plot_low==1)[0]] = np.nan
+# y_predict_class_plot_low[np.where(y_predict_class_plot_low==2)[0]] = np.nan
+# y_predict_class_plot_low[np.where(y_predict_class_plot_low==1)[0]] = np.nan
 
-y_predict_class_plot_avg[np.where(y_predict_class_plot_avg==2)[0]] = np.nan
-y_predict_class_plot_avg[np.where(y_predict_class_plot_avg==0)[0]] = np.nan
+# y_predict_class_plot_avg[np.where(y_predict_class_plot_avg==2)[0]] = np.nan
+# y_predict_class_plot_avg[np.where(y_predict_class_plot_avg==0)[0]] = np.nan
 
-y_predict_class_plot_high[np.where(y_predict_class_plot_high==1)[0]] = np.nan
-y_predict_class_plot_high[np.where(y_predict_class_plot_high==0)[0]] = np.nan
+# y_predict_class_plot_high[np.where(y_predict_class_plot_high==1)[0]] = np.nan
+# y_predict_class_plot_high[np.where(y_predict_class_plot_high==0)[0]] = np.nan
 
-for half_decade in np.arange(5,30,5):
-    plt.figure(figsize=(20,6))
-    plt.scatter(np.arange(1,len(y_predict_class_plot_low)+1,1)/120,y_predict_class_plot_low, s=1 )
-    plt.scatter(np.arange(1,len(y_predict_class_plot_avg)+1,1)/120,y_predict_class_plot_avg, s=1 )
-    plt.scatter(np.arange(1,len(y_predict_class_plot_high)+1,1)/120,y_predict_class_plot_high, s=1 )
-    plt.yticks([0,1,2])
-    plt.title("Model Class by Year"  + str(5), fontsize=20)
-    plt.xlabel("Year", fontsize=15)
-    plt.ylabel("Class", fontsize=15)
-    plt.xlim(half_decade-5,half_decade)
-    plt.savefig(("./figures" + "/timeseries/" + 'ERA5_WINTER_decade_timeseries_' + str(half_decade)+ '_mjo.png'), bbox_inches='tight')
-    # plt.show()
+# for half_decade in np.arange(5,30,5):
+#     plt.figure(figsize=(20,6))
+#     plt.scatter(np.arange(1,len(y_predict_class_plot_low)+1,1)/120,y_predict_class_plot_low, s=1 )
+#     plt.scatter(np.arange(1,len(y_predict_class_plot_avg)+1,1)/120,y_predict_class_plot_avg, s=1 )
+#     plt.scatter(np.arange(1,len(y_predict_class_plot_high)+1,1)/120,y_predict_class_plot_high, s=1 )
+#     plt.yticks([0,1,2])
+#     plt.title("Model Class by Year"  + str(5), fontsize=20)
+#     plt.xlabel("Year", fontsize=15)
+#     plt.ylabel("Class", fontsize=15)
+#     plt.xlim(half_decade-5,half_decade)
+#     plt.savefig(("./figures" + "/timeseries/" + 'ERA5_WINTER_decade_timeseries_' + str(half_decade)+ '_mjo.png'), bbox_inches='tight')
+#     # plt.show()
 
 
 

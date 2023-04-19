@@ -1,3 +1,5 @@
+import py3nvml
+py3nvml.grab_gpus(num_gpus=1, gpu_select=[3])
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -9,7 +11,10 @@ def running_mean(x, N):
     cumsum = np.cumsum(np.insert(x, 0, 0)) 
     return (cumsum[N:] - cumsum[:-N]) / float(N)
 
-load_dir = "/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/"
+# load_dir = "/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/"
+
+load_dir = "/ourdisk/hpc/ai2es/nicojg/TLLTT/data/"
+
 
 # filename = '500_2mtemp.nc'
 # temp_500     = xr.open_dataset(load_dir+filename)['tas'].values[:,96:,80:241]
@@ -48,7 +53,8 @@ years = 200
 #     temp_day /= years
     # avgtemp_day.append(temp_day)
 
-avgtemp_day = xr.open_dataset("/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/mjo_200year_temp_cycle.nc")['200tempcycle'].values[:,96:,80:241]
+# avgtemp_day = xr.open_dataset("/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/mjo_200year_temp_cycle.nc")['200tempcycle'].values[:,96:,80:241]
+avgtemp_day = xr.open_dataset("/ourdisk/hpc/ai2es/nicojg/TLLTT/data/mjo_200year_temp_cycle.nc")['200tempcycle'].values[:,96:,80:241]
 
 # temp_200_years = xr.open_dataset("/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/200_years_back_temp_mean.nc")['past200mean'].values[:,96:,80:241]
 
@@ -64,6 +70,9 @@ print((lon[88]+180)%360-180)
 
 full_loc_temp = []
 
+loc_lat = 61
+loc_lon = 104
+
 for i in np.arange(0,(years*365)+50,1):
     # temp_loc = []
     
@@ -76,8 +85,8 @@ for i in np.arange(0,(years*365)+50,1):
     #full_loc_temp.append(temp[i, 46,136] - avgtemp_day[i%365, 46,136]) #Madison
     # full_loc_temp.append(temp[i, 52,110] - avgtemp_day[i%365, 52,110]) #Vancouver
     # full_loc_temp.append(temp[i, 36,113] - avgtemp_day[i%365, 36,113]) #Los Angeles
-    # full_loc_temp.append(temp[i, loc_lat,loc_lon] - avgtemp_day[i%365, loc_lat,loc_lon])
-    full_loc_temp.append(temp[i, 64,88] - avgtemp_day[i%365, 64,88])  #Anchorage
+    full_loc_temp.append(temp[i, loc_lat,loc_lon] - avgtemp_day[i%365, loc_lat,loc_lon])
+    # full_loc_temp.append(temp[i, 64,88] - avgtemp_day[i%365, 64,88])  #Anchorage
     # full_loc_temp.append(temp[i, 44,109] - avgtemp_day[i%365, 44,109])  #Crescent City
 
 
@@ -202,7 +211,7 @@ count_arr = np.bincount(train_class)
 
 print("number of 0: " + str(count_arr[0]))
 print("number of 1: " + str(count_arr[1]))
-# print("number of 2: " + str(count_arr[2]))
+print("number of 2: " + str(count_arr[2]))
 
 for i in np.arange(8400, full_loc_temp_winter.shape[0] - 46, 1):
 
@@ -235,40 +244,44 @@ print("number of 0: " + str(count_arr[0]))
 print("number of 1: " + str(count_arr[1]))
 print("number of 2: " + str(count_arr[2]))
 
-    # np.savetxt('/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/loc_'+str(loc_lon)+'_'+str(loc_lat)+'_5mean_14days.txt', train_class, fmt='%d')
+np.savetxt('/ourdisk/hpc/ai2es/nicojg/TLLTT/data/winter_ternary_loc_'+str(loc_lon)+'_'+str(loc_lat)+'.txt', train_class, fmt='%d')
+
+print(loc_lat)
+print(loc_lon)
+
 
 # np.savetxt('/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/temp_200years_threedays_test.txt', true_temps)
 
 
-np.savetxt('/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/winter_ternary_alaska_points.txt', train_class, fmt='%d')
+# np.savetxt('/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/winter_ternary_alaska_points.txt', train_class, fmt='%d')
 
-y_predict_class_plot = np.asarray(train_class)
+# y_predict_class_plot = np.asarray(train_class)
 
-y_predict_class_plot_low = y_predict_class_plot.astype('float64')
-y_predict_class_plot_avg = y_predict_class_plot.astype('float64')
-y_predict_class_plot_high = y_predict_class_plot.astype('float64')
+# y_predict_class_plot_low = y_predict_class_plot.astype('float64')
+# y_predict_class_plot_avg = y_predict_class_plot.astype('float64')
+# y_predict_class_plot_high = y_predict_class_plot.astype('float64')
 
-y_predict_class_plot_low[np.where(y_predict_class_plot_low==2)[0]] = np.nan
-y_predict_class_plot_low[np.where(y_predict_class_plot_low==1)[0]] = np.nan
+# y_predict_class_plot_low[np.where(y_predict_class_plot_low==2)[0]] = np.nan
+# y_predict_class_plot_low[np.where(y_predict_class_plot_low==1)[0]] = np.nan
 
-y_predict_class_plot_avg[np.where(y_predict_class_plot_avg==2)[0]] = np.nan
-y_predict_class_plot_avg[np.where(y_predict_class_plot_avg==0)[0]] = np.nan
+# y_predict_class_plot_avg[np.where(y_predict_class_plot_avg==2)[0]] = np.nan
+# y_predict_class_plot_avg[np.where(y_predict_class_plot_avg==0)[0]] = np.nan
 
-y_predict_class_plot_high[np.where(y_predict_class_plot_high==1)[0]] = np.nan
-y_predict_class_plot_high[np.where(y_predict_class_plot_high==0)[0]] = np.nan
+# y_predict_class_plot_high[np.where(y_predict_class_plot_high==1)[0]] = np.nan
+# y_predict_class_plot_high[np.where(y_predict_class_plot_high==0)[0]] = np.nan
 
-for half_decade in np.arange(5,30,5):
-    plt.figure(figsize=(20,6))
-    plt.scatter(np.arange(1,len(y_predict_class_plot_low)+1,1)/120,y_predict_class_plot_low, s=1 )
-    plt.scatter(np.arange(1,len(y_predict_class_plot_avg)+1,1)/120,y_predict_class_plot_avg, s=1 )
-    plt.scatter(np.arange(1,len(y_predict_class_plot_high)+1,1)/120,y_predict_class_plot_high, s=1 )
-    plt.yticks([0,1,2])
-    plt.title("Model Class by Year"  + str(5), fontsize=20)
-    plt.xlabel("Year", fontsize=15)
-    plt.ylabel("Class", fontsize=15)
-    plt.xlim(half_decade-5,half_decade)
-    plt.savefig(("./figures" + "/timeseries/" + 'WINTER_decade_timeseries_' + str(half_decade)+ '_mjo.png'), bbox_inches='tight')
-    # plt.show()
+# for half_decade in np.arange(5,30,5):
+#     plt.figure(figsize=(20,6))
+#     plt.scatter(np.arange(1,len(y_predict_class_plot_low)+1,1)/120,y_predict_class_plot_low, s=1 )
+#     plt.scatter(np.arange(1,len(y_predict_class_plot_avg)+1,1)/120,y_predict_class_plot_avg, s=1 )
+#     plt.scatter(np.arange(1,len(y_predict_class_plot_high)+1,1)/120,y_predict_class_plot_high, s=1 )
+#     plt.yticks([0,1,2])
+#     plt.title("Model Class by Year"  + str(5), fontsize=20)
+#     plt.xlabel("Year", fontsize=15)
+#     plt.ylabel("Class", fontsize=15)
+#     plt.xlim(half_decade-5,half_decade)
+#     plt.savefig(("./figures" + "/timeseries/" + 'WINTER_decade_timeseries_' + str(half_decade)+ '_mjo.png'), bbox_inches='tight')
+#     # plt.show()
 
 
 

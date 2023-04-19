@@ -5,6 +5,9 @@ py3nvml.grab_gpus(num_gpus=1, gpu_select=[3])
 # 
 # Visualize the prototypes
 
+
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+
 import os
 import sys
 import imp 
@@ -33,7 +36,7 @@ import random
 from sklearn.metrics import confusion_matrix
 
 import network
-import experiment_settings 
+import coast_large_experiment_settings
 import data_functions_schooner
 import push_prototypes
 import plots
@@ -60,12 +63,20 @@ print(f"tensorflow version = {tf.__version__}")
 
 np.set_printoptions(suppress=True)
 
-EXP_NAME = 'alas_200year_winter_ternary_27_large'
+parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
+parser.add_argument("-l", "--latitude", default=31, type=int,help="Latitude")
+parser.add_argument("-g", "--longitude", default=116, type=int, help="Longitude")
+args = vars(parser.parse_args())
+
+file_lat = args['latitude']
+file_lon = args['longitude']
+print("starting lat: " + str(file_lat) + " - starting lon: " + str(file_lon))
+EXP_NAME = 'loc_'+ str(file_lon)+ '_' + str(file_lat) +'_precip_large'
 
 #'smaller_test'#'quadrants_testcase'
 
-imp.reload(experiment_settings)
-settings = experiment_settings.get_settings(EXP_NAME)
+imp.reload(coast_large_experiment_settings)
+settings = coast_large_experiment_settings.get_settings(EXP_NAME)
 
 imp.reload(common_functions)
 # model_dir, model_diagnostics_dir, vizualization_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
@@ -115,7 +126,9 @@ DATA_DIR = settings['data_dir']
 # or (EXP_NAME[:30]=='alas_14dayback_precip_schooner') or (EXP_NAME[:50]=='alas_14day_precip_large_schooner') or (EXP_NAME[:70]=='alas_14day_precip_5mean_large_schooner') or (EXP_NAME[:70]=='alas_14day_precip_5mean_schooner')
 # or (EXP_NAME[:70]=='alas_14day_precip_5back_schooner') or (EXP_NAME[:70]=='alas_14day_precip_6back_schooner')):
 
-labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter(DATA_DIR)
+#labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter(DATA_DIR)
+labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter(DATA_DIR, file_lon, file_lat, True)
+
 X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter(labels,
                                                                                         data,
                                                                                         time,
@@ -583,8 +596,8 @@ def mjo_lookup(best_samps, samps_bool, percent_samps = 100):
             phase_proto = phases[prototype_sample[prototype_index]]
 
 
-            print("proto index")
-            print(prototype_index)
+            # print("proto index")
+            # print(prototype_index)
             if(temp_class != 0):
                 num_proto[prototype_index%(temp_class*10)] += 1
             else:
@@ -1812,8 +1825,8 @@ for i in np.arange(10, 101, 5):
     precip_comps(top_confidence_protos(i/100.), True, i)
     base_accuracies.append(make_confuse_matrix(base_y_predict[top_confidence_protos(i/100.)], y_true[top_confidence_protos(i/100.)], i, True))
     accuracies.append(make_confuse_matrix(y_predict[top_confidence_protos(i/100.)], y_true[top_confidence_protos(i/100.)], i, False))
-    mjo_lookup(top_confidence_protos(i/100.), True, i)
-    proto_rankings(top_confidence_protos(i/100.), True, i)
+    # mjo_lookup(top_confidence_protos(i/100.), True, i)
+    # proto_rankings(top_confidence_protos(i/100.), True, i)
 plt.close()
 
 
@@ -1834,6 +1847,9 @@ if((np.min(accuracies) >= 31) and (np.min(base_accuracies) >= 31)):
 plt.legend()
 plt.savefig((vizualization_dir + EXP_NAME + '_forecast_of_opportunity.png'), bbox_inches='tight', dpi=dpiFig)
 plt.show()
+
+np.savetxt('/ourdisk/hpc/ai2es/nicojg/TLLTT/data/accuracies/accuracies_' + str(file_lon) + '_' + str(file_lat) + '.txt', accuracies, fmt='%1.3f')
+np.savetxt('/ourdisk/hpc/ai2es/nicojg/TLLTT/data/accuracies/base_accuracies_' + str(file_lon) + '_' + str(file_lat) + '.txt', base_accuracies, fmt='%1.3f')
 
 
 

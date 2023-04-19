@@ -50,7 +50,16 @@ def get_exp_directories(exp_name):
     exp_data_dir = './data/' + exp_name + '/' 
     if not os.path.exists(exp_data_dir):
         os.makedirs(exp_data_dir)    
-        
+
+    #Make extra figure directories. 
+    #########################################################################
+    conf_dir = './figures/' + exp_name + '/vizualization/confusion_matrices/'
+    if not os.path.exists(conf_dir):
+        os.makedirs(conf_dir)
+
+    indiv_dir = './figures/' + exp_name + '/vizualization/individual_protos/'
+    if not os.path.exists(indiv_dir):
+        os.makedirs(indiv_dir)
     return model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir
 
 def get_exp_directories_schooner(exp_name):
@@ -71,5 +80,39 @@ def get_exp_directories_schooner(exp_name):
     exp_data_dir = '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/' + exp_name + '/' 
     if not os.path.exists(exp_data_dir):
         os.makedirs(exp_data_dir)
+
+    #Make extra figure directories. 
+    #########################################################################
+    conf_dir = '/ourdisk/hpc/ai2es/nicojg/TLLTT/figures/' + exp_name + '/vizualization/confusion_matrices/'
+    if not os.path.exists(conf_dir):
+        os.makedirs(conf_dir)
+
+    indiv_dir = '/ourdisk/hpc/ai2es/nicojg/TLLTT/figures/' + exp_name + '/vizualization/individual_protos/'
+    if not os.path.exists(indiv_dir):
+        os.makedirs(indiv_dir)
+
+    mjo_dir = '/ourdisk/hpc/ai2es/nicojg/TLLTT/figures/' + exp_name + '/vizualization/mjo_figs/'
+    if not os.path.exists(mjo_dir):
+        os.makedirs(mjo_dir)
+    
+    precip_dir = '/ourdisk/hpc/ai2es/nicojg/TLLTT/figures/' + exp_name + '/vizualization/precip_figs/'
+    if not os.path.exists(precip_dir):
+        os.makedirs(precip_dir)
+
+    timeseries_dir = '/ourdisk/hpc/ai2es/nicojg/TLLTT/figures/' + exp_name + '/vizualization/timeseries/'
+    if not os.path.exists(timeseries_dir):
+        os.makedirs(timeseries_dir)
+
+    examples_dir = '/ourdisk/hpc/ai2es/nicojg/TLLTT/figures/' + exp_name + '/vizualization/example_protos/'
+    if not os.path.exists(examples_dir):
+        os.makedirs(examples_dir)
+
+    enso_dir = '/ourdisk/hpc/ai2es/nicojg/TLLTT/figures/' + exp_name + '/vizualization/enso_figs/'
+    if not os.path.exists(enso_dir):
+        os.makedirs(enso_dir)
+
+    ranks_dir = '/ourdisk/hpc/ai2es/nicojg/TLLTT/figures/' + exp_name + '/vizualization/rank_figs/'
+    if not os.path.exists(ranks_dir):
+        os.makedirs(ranks_dir)
         
     return model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir

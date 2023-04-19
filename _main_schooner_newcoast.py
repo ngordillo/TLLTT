@@ -4,6 +4,8 @@ py3nvml.grab_gpus(num_gpus=1, gpu_select=[3])
 # # This Looks Like That There
 # 
 # Main training notebook.
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+
 
 import os
 import sys
@@ -22,7 +24,7 @@ import tensorflow as tf
 import random
 
 import network
-import experiment_settings 
+import coast_large_experiment_settings 
 import data_functions_schooner
 import push_prototypes
 import plots
@@ -43,12 +45,22 @@ print(f"python version = {sys.version}")
 print(f"numpy version = {np.__version__}")
 print(f"tensorflow version = {tf.__version__}")
 
+parser = ArgumentParser(formatter_class=ArgumentDefaultsHelpFormatter)
+parser.add_argument("-l", "--latitude", default=31, type=int,help="Latitude")
+parser.add_argument("-g", "--longitude", default=116, type=int, help="Longitude")
+args = vars(parser.parse_args())
+
+file_lat = args['latitude']
+file_lon = args['longitude']
+print("starting lat: " + str(file_lat) + " - starting lon: " + str(file_lon))
+EXP_NAME = 'loc_'+ str(file_lon) + '_' + str(file_lat) +'_precip_large'
+
 # ## Define experiment settings and directories
 
-EXP_NAME = 'alas_200year_winter_ternary_27_large_ERA5'#balanced_test'#initial_test'#'mjo'#'quadrants_testcase'
+# EXP_NAME = 'alas_200year_winter_ternary_27_large_ERA5'#balanced_test'#initial_test'#'mjo'#'quadrants_testcase'
 
-imp.reload(experiment_settings)
-settings = experiment_settings.get_settings(EXP_NAME)
+imp.reload(coast_large_experiment_settings)
+settings = coast_large_experiment_settings.get_settings(EXP_NAME)
 
 imp.reload(common_functions)
 model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
@@ -95,19 +107,8 @@ DATA_DIR = settings['data_dir']
 #      or (EXP_NAME[:30]=='alas_fourteenday_precip_pre') or (EXP_NAME[:30]=='alas_14day_precip_schooner') or (EXP_NAME[:30]=='LA_14day_precip_schooner') or (EXP_NAME[:30]=='cres_14day_precip_schooner') or (EXP_NAME[:30]=='vanc_14day_precip_schooner')
 #      or (EXP_NAME[:30]=='alas_14dayback_precip_schooner') or (EXP_NAME[:50]=='alas_14day_precip_large_schooner') or (EXP_NAME[:70]=='alas_14day_precip_5mean_large_schooner') or (EXP_NAME[:70]=='alas_14day_precip_5mean_schooner') 
 #      or (EXP_NAME[:70]=='alas_14day_precip_5back_schooner') or (EXP_NAME[:70]=='alas_14day_precip_6back_schooner')):
-# labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter(DATA_DIR)
-# X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter(labels,
-#                                                                                         data,
-#                                                                                         time,
-#                                                                                         rng, 
-#                                                                                         colored=settings['colored'],
-#                                                                                         standardize=settings['standardize'],
-#                                                                                         shuffle=settings['shuffle'],
-#                                                                                     )
-
-                                                                                
-labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter_ERA5(DATA_DIR)
-X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter_ERA5(labels,
+labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter(DATA_DIR, file_lon, file_lat, True)
+X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter(labels,
                                                                                         data,
                                                                                         time,
                                                                                         rng, 
@@ -115,6 +116,17 @@ X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test 
                                                                                         standardize=settings['standardize'],
                                                                                         shuffle=settings['shuffle'],
                                                                                     )
+
+                                                                                
+# labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter_ERA5(DATA_DIR)
+# X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter_ERA5(labels,
+#                                                                                         data,
+#                                                                                         time,
+#                                                                                         rng, 
+#                                                                                         colored=settings['colored'],
+#                                                                                         standardize=settings['standardize'],
+#                                                                                         shuffle=settings['shuffle'],
+#                                                                                     )
 # elif((EXP_NAME[:21]=='fourteenday_both_test') or ((EXP_NAME[:18]=='threeday_both_test'))):
 #     print("bingo")
 #     labels, data, lat, lon, time = data_functions_schooner.load_z500_precip_data(DATA_DIR)
@@ -230,8 +242,8 @@ else:
 imp.reload(network)
 imp.reload(plots)
 imp.reload(push_prototypes)
-imp.reload(experiment_settings)
-settings = experiment_settings.get_settings(EXP_NAME)
+imp.reload(coast_large_experiment_settings)
+settings = coast_large_experiment_settings.get_settings(EXP_NAME)
 
 ic(np.shape(X_train))
 ic(np.shape(prototypes_of_correct_class_train))

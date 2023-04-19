@@ -9,15 +9,15 @@ def running_mean(x, N):
     cumsum = np.cumsum(np.insert(x, 0, 0)) 
     return (cumsum[N:] - cumsum[:-N]) / float(N)
 
-load_dir = "/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/"
+load_dir = "/ourdisk/hpc/ai2es/nicojg/TLLTT/data/"
 
 # filename = '500_2mtemp.nc'
 # temp_500     = xr.open_dataset(load_dir+filename)['tas'].values[:,96:,80:241]
 #filename = 'NA_2mtemp.nc'
 filename = 'small_2mtemp.nc'
-temp     = xr.open_dataset(load_dir+filename)['tas'].values#[:,96:,80:241]
-lat  = xr.open_dataset(load_dir+filename)['lat'].values#[96:]
-lon   = xr.open_dataset(load_dir+filename)['lon'].values#[80:241]
+temp     = xr.open_dataset(load_dir+filename)['tas'].values[:,96:,80:241]
+lat  = xr.open_dataset(load_dir+filename)['lat'].values[96:]
+lon   = xr.open_dataset(load_dir+filename)['lon'].values[80:241]
 
 test_data = 200
 
@@ -47,7 +47,9 @@ years = 200
 #     temp_day /= years
     # avgtemp_day.append(temp_day)
 
-avgtemp_day = xr.open_dataset("/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/mjo_200year_temp_cycle.nc")['200tempcycle'].values
+# avgtemp_day = xr.open_dataset("/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/mjo_200year_temp_cycle.nc")['200tempcycle'].values
+
+avgtemp_day = xr.open_dataset("/ourdisk/hpc/ai2es/nicojg/TLLTT/data/mjo_200year_temp_cycle.nc")['200tempcycle'].values[:,96:,80:241]
 
 train_years = 200
 
@@ -68,9 +70,11 @@ for i in np.arange(0,(train_years*365)+50,1):
     full_loc_temp.append(temp[i, 64,88] - avgtemp_day[i%365, 64,88]) 
 
 print("Mean: " + str(np.mean(full_loc_temp)))
-full_loc_temp = running_mean(full_loc_temp, 7)
+full_loc_temp = running_mean(full_loc_temp, 5)
 
-    
+print(lat[64])
+print((lon[88]+180)%360-180)
+
 # full_loc_temp = np.asarray(full_loc_temp).flatten()
 
 train_years = 70
@@ -86,6 +90,9 @@ lower = np.percentile(full_loc_temp[:years*365], 33.33)
 
 upper = np.percentile(full_loc_temp[:years*365], 66.66)
 
+mid = np.percentile(full_loc_temp[:years*365], 50.)
+
+
 for i in np.arange(0, train_years*365, 1):
 
     #CHANGE
@@ -98,20 +105,23 @@ for i in np.arange(0, train_years*365, 1):
     true_slp = full_loc_temp[i+lead]
 
     # print("true_slp: " + str(true_slp))
-    if((true_slp <= lower)):
-        # print("33.33: " + str(np.percentile(full_loc_temp, 33.33)))
+    # if((true_slp <= lower)):
+    #     train_class.append(0)
+    # elif((true_slp >= upper)):
+    #     train_class.append(2)
+    # elif(((true_slp < upper) and (true_slp > lower))):
+    #     train_class.append(1)
+
+    if((true_slp <= mid)):
         train_class.append(0)
-    elif((true_slp >= upper)):
-        # print("66.66: " + str(np.percentile(full_loc_temp, 66.66)))
-        train_class.append(2)
-    elif(((true_slp < upper) and (true_slp > lower))):
+    else:
         train_class.append(1)
 
 count_arr = np.bincount(train_class)
 
 print("number of 0: " + str(count_arr[0]))
 print("number of 1: " + str(count_arr[1]))
-print("number of 2: " + str(count_arr[2]))
+# print("number of 2: " + str(count_arr[2]))
 
 for i in np.arange(train_years*365, test_years*365, 1):
 
@@ -125,24 +135,25 @@ for i in np.arange(train_years*365, test_years*365, 1):
     true_slp = full_loc_temp[i+lead]
 
     # print("true_slp: " + str(true_slp))
-    if((true_slp <= lower)):
-        # print("33.33: " + str(np.percentile(full_loc_temp, 33.33)))
+    # if((true_slp <= lower)):
+    #     train_class.append(0)
+    # elif((true_slp >= upper)):
+    #     train_class.append(2)
+    # elif(((true_slp < upper) and (true_slp > lower))):
+    #     train_class.append(1)
+
+    if((true_slp <= mid)):
         train_class.append(0)
-    elif((true_slp >= upper)):
-        # print("66.66: " + str(np.percentile(full_loc_temp, 66.66)))
-        train_class.append(2)
-    elif(((true_slp < upper) and (true_slp > lower))):
+    else:
         train_class.append(1)
 
 count_arr = np.bincount(train_class)
 
 print("number of 0: " + str(count_arr[0]))
 print("number of 1: " + str(count_arr[1]))
-print("number of 2: " + str(count_arr[2]))
+# print("number of 2: " + str(count_arr[2]))
 
-np.savetxt('/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/alas_tempclass_200years_fourteendays.txt', train_class, fmt='%d')
-
-# np.savetxt('/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/temp_200years_threedays_test.txt', true_temps)
+np.savetxt('/ourdisk/hpc/ai2es/nicojg/TLLTT/data/alas_tempclass_200years_5mean_14days_binary.txt', train_class, fmt='%d')
 
 # np.savetxt('/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/tempclass_70years.txt', train_class, fmt='%d')
 
