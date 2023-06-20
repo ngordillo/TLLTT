@@ -10,6 +10,10 @@ import cmasher as cmr
 __author__ = "Randal J Barnes and Elizabeth A. Barnes"
 __version__ = "23 November 2021"
 
+def running_mean(x, N):
+    cumsum = np.cumsum(np.insert(x, 0, np.zeros(x.shape[2]), axis = 0), axis =0)
+    return (cumsum[N:] - cumsum[:-N]) / float(N)
+
 def makeRasterArray(fig, ax, fig_shape=(4,3)):
 
     fig.add_axes(ax)
@@ -273,28 +277,31 @@ def load_pres_data(load_dir):
     train_years = 200
 
     # make labels
-    #filename = 'small_z500.nc'
-    filename = 'mjo_200_precip.nc'
-    pres     = np.float64(xr.open_dataset(load_dir+filename)['pr'].values * 86400)[:,:,:,np.newaxis]#[:,96:,80:241,np.newaxis]
+    filename = 'mjo_4back_200_precip.nc'
+    var     = np.float64(xr.open_dataset(load_dir+filename)['pr'].values * 86400)#[:,:,:,np.newaxis]#[:,96:,80:241,np.newaxis]
     time     = xr.open_dataset(load_dir+filename)['time'].values#[:train_years*365]
     lats  = xr.open_dataset(load_dir+filename)['lat'].values#[96:]
     lons   = xr.open_dataset(load_dir+filename)['lon'].values#[80:241]
 
-    temp_label = np.loadtxt("/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/alas_tempclass_200years_fourteendays.txt")
+    temp_label = np.loadtxt(load_dir+"alas_tempclass_200years_5mean_14days.txt")
 
-    #avgpres_day = xr.open_dataset("/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/200year_z500_cycle.nc")['200z500cycle'].values[:,:,:,np.newaxis]
-
-    avgvar_day = xr.open_dataset("/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/mjo_200year_precip_cycle.nc")['200precipcycle'].values[:,:,:,np.newaxis]
+    avgvar_day = xr.open_dataset(load_dir+"mjo_200year_precip_cycle.nc")['200precipcycle'].values#[:,:,:,np.newaxis]
 
 
     var_c = []
 
     full_years = 200
 
-    for i in np.arange(0,full_years*365,1):
-        var_c.append(pres[i,:,:,:] - avgvar_day[i%365,:,:,:])
+    for i in np.arange(0,full_years*365+9,1):
+        #   REMOVE -4 AS NEEDED
+        #var_c.append(var[i,:,:,:] - avgvar_day[(i-4)%365,:,:,:])
+        var_c.append(var[i,:,:] - avgvar_day[(i-9)%365,:,:])
 
     var_c = np.asarray(var_c)
+
+    var_c = running_mean(var_c, 10)[:,:,:,np.newaxis]
+
+    print("RUNNING MEAN ARRAY SIZE: "  + str(var_c.shape))
 
     # area_lats = []
     # for lat in lats:

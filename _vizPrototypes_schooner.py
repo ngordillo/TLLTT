@@ -1,6 +1,3 @@
-import py3nvml
-py3nvml.grab_gpus(num_gpus=1, gpu_select=[3])
-
 # # This Looks Like That There
 # 
 # Visualize the prototypes
@@ -60,7 +57,7 @@ print(f"tensorflow version = {tf.__version__}")
 
 np.set_printoptions(suppress=True)
 
-EXP_NAME = 'alas_200year_winter_ternary_27_large'
+EXP_NAME = 'alas_200year_winter_ternary_28_large_prebase'
 
 #'smaller_test'#'quadrants_testcase'
 
@@ -68,9 +65,9 @@ imp.reload(experiment_settings)
 settings = experiment_settings.get_settings(EXP_NAME)
 
 imp.reload(common_functions)
-# model_dir, model_diagnostics_dir, vizualization_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
-model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
-# model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories(EXP_NAME)
+
+# model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
+model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories(EXP_NAME)
 
 # ## Define the network parameters
 
@@ -115,15 +112,18 @@ DATA_DIR = settings['data_dir']
 # or (EXP_NAME[:30]=='alas_14dayback_precip_schooner') or (EXP_NAME[:50]=='alas_14day_precip_large_schooner') or (EXP_NAME[:70]=='alas_14day_precip_5mean_large_schooner') or (EXP_NAME[:70]=='alas_14day_precip_5mean_schooner')
 # or (EXP_NAME[:70]=='alas_14day_precip_5back_schooner') or (EXP_NAME[:70]=='alas_14day_precip_6back_schooner')):
 
-labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter(DATA_DIR)
-X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter(labels,
+labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter_ERA5(DATA_DIR)
+print("dum")
+
+X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter_ERA5(labels,
                                                                                         data,
                                                                                         time,
                                                                                         rng, 
                                                                                         colored=settings['colored'],
                                                                                         standardize=settings['standardize'],
                                                                                         shuffle=settings['shuffle'],
-                                                                                    )    
+                                                                                        r_seed = RANDOM_SEED,
+                                                                                    )  
 
 # labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter_ERA5(DATA_DIR)
 # X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter_ERA5(labels,
@@ -224,9 +224,13 @@ print("Push Info:")
 
 np.savetxt(exp_data_dir + "_1_"+ EXP_NAME + 'viz_push_protos.txt', prototype_sample, fmt='%d')
 
-prototype_sample = np.loadtxt(exp_data_dir + EXP_NAME + 'final_push_protos.txt').astype(int)
-prototype_indices = np.loadtxt(exp_data_dir + EXP_NAME + 'final_protos_loc.txt').astype(int)
-similarity_scores = np.load(exp_data_dir + EXP_NAME + 'similarity_scores.npy')
+
+###################################################################################################################
+# prototype_sample = np.loadtxt(exp_data_dir + EXP_NAME + 'final_push_protos.txt').astype(int)
+# prototype_indices = np.loadtxt(exp_data_dir + EXP_NAME + 'final_protos_loc.txt').astype(int)
+# similarity_scores = np.load(exp_data_dir + EXP_NAME + 'similarity_scores.npy')
+###################################################################################################################
+
 
 # print("Load Info:")
 # print(prototype_sample.shape)
@@ -583,8 +587,8 @@ def mjo_lookup(best_samps, samps_bool, percent_samps = 100):
             phase_proto = phases[prototype_sample[prototype_index]]
 
 
-            print("proto index")
-            print(prototype_index)
+            # print("proto index")
+            # print(prototype_index)
             if(temp_class != 0):
                 num_proto[prototype_index%(temp_class*10)] += 1
             else:
@@ -677,7 +681,7 @@ def mjo_lookup(best_samps, samps_bool, percent_samps = 100):
 
 
         for i in weak_protos:
-            print((i*2)%(temp_class*10))
+            # print((i*2)%(temp_class*10))
             if(temp_class != 0):
                 axs.xaxis.get_ticklines()[(i%(temp_class*10))*2].set_markeredgecolor("red")
             else:
@@ -900,7 +904,7 @@ def precip_comps(best_samps, samps_bool, percent_samps = 100):
                 img += np.squeeze(input_data[0][0][isamples[i],:,:,0])
             img = img / isamples.shape[0]
             # img = np.squeeze(input_data[0][0][isamples[40],:,:,0])
-            print(img.shape)
+            # print(img.shape)
 
             fig = plt.figure(figsize=(20, 16))
             fig.tight_layout()
@@ -1015,7 +1019,7 @@ def top_points_protos():
     # print(isamples[toplocs[argstest][::-1]])
 
     bestsamps = isamples[toplocs[argstest][::-1]]
-    print("best samps:"  + str(bestsamps))
+    # print("best samps:"  + str(bestsamps))
     return bestsamps
 ##################################################################################################################################################################################################################
 
@@ -1154,7 +1158,7 @@ def examine_proto(good_samp):
 
     less_than_one = np.where(mjo_amp < 1)[0]
     print("test")
-    print(less_than_one)
+    # print(less_than_one)
     phases[less_than_one] = 0
     print("help us")
     y_predict_class = np.argmax(y_predict,axis=1)
@@ -1508,7 +1512,7 @@ def show_all_protos():
 
     less_than_one = np.where(mjo_amp < 1)[0]
 
-    phases[less_than_one] = 0
+    # phases[less_than_one] = 0
 
 
     for phase in np.arange(0,3):
@@ -1586,14 +1590,14 @@ def show_all_protos():
                     transform = ax.transAxes,
                 )
 
-                ax.text(0.49, 1.0, 
-                    'Phase: ' + str(phases[prototype_sample[prototype_index]]),
-                    fontfamily='monospace', 
-                    fontsize=FS, 
-                    va='bottom',
-                    ha='right',
-                    transform = ax.transAxes,
-                )   
+                # ax.text(0.49, 1.0, 
+                #     'Phase: ' + str(phases[prototype_sample[prototype_index]]),
+                #     fontfamily='monospace', 
+                #     fontsize=FS, 
+                #     va='bottom',
+                #     ha='right',
+                #     transform = ax.transAxes,
+                # )   
 
                 ax.text(0.99, 1.0, 
                     str(prototype_date[prototype_index]),
@@ -1812,9 +1816,9 @@ for i in np.arange(10, 101, 5):
     precip_comps(top_confidence_protos(i/100.), True, i)
     base_accuracies.append(make_confuse_matrix(base_y_predict[top_confidence_protos(i/100.)], y_true[top_confidence_protos(i/100.)], i, True))
     accuracies.append(make_confuse_matrix(y_predict[top_confidence_protos(i/100.)], y_true[top_confidence_protos(i/100.)], i, False))
-    mjo_lookup(top_confidence_protos(i/100.), True, i)
-    proto_rankings(top_confidence_protos(i/100.), True, i)
-plt.close()
+    # mjo_lookup(top_confidence_protos(i/100.), True, i)
+    # proto_rankings(top_confidence_protos(i/100.), True, i)
+# plt.close()
 
 
 plt.figure(figsize=(10,6))
@@ -1831,9 +1835,11 @@ print(np.min(base_accuracies) >= 31)
 if((np.min(accuracies) >= 31) and (np.min(base_accuracies) >= 31)):
     print("srtting ylim")
     plt.ylim(bottom=30)
+else:
+    plt.ylim(bottom=20)
 plt.legend()
 plt.savefig((vizualization_dir + EXP_NAME + '_forecast_of_opportunity.png'), bbox_inches='tight', dpi=dpiFig)
-plt.show()
+# plt.show()
 
 
 

@@ -1,5 +1,4 @@
-import py3nvml
-py3nvml.grab_gpus(num_gpus=1, gpu_select=[3])
+
 
 # # This Looks Like That There
 # 
@@ -29,7 +28,7 @@ import plots
 import common_functions
 
 
-
+7
 __author__ = "Elizabeth A. Barnes and Randal J Barnes"
 __version__ = "1 December 2021"
 
@@ -45,14 +44,14 @@ print(f"tensorflow version = {tf.__version__}")
 
 # ## Define experiment settings and directories
 
-EXP_NAME = 'alas_200year_winter_ternary_27_large_ERA5'#balanced_test'#initial_test'#'mjo'#'quadrants_testcase'
+EXP_NAME = 'alas_200year_winter_ternary_28_large_prebase'#balanced_test'#initial_test'#'mjo'#'quadrants_testcase'
 
 imp.reload(experiment_settings)
 settings = experiment_settings.get_settings(EXP_NAME)
 
 imp.reload(common_functions)
-model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
-# model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories(EXP_NAME)
+# model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
+model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories(EXP_NAME)
 
 # ## Define the network parameters
 
@@ -114,7 +113,9 @@ X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test 
                                                                                         colored=settings['colored'],
                                                                                         standardize=settings['standardize'],
                                                                                         shuffle=settings['shuffle'],
+                                                                                        r_seed = RANDOM_SEED,
                                                                                     )
+
 # elif((EXP_NAME[:21]=='fourteenday_both_test') or ((EXP_NAME[:18]=='threeday_both_test'))):
 #     print("bingo")
 #     labels, data, lat, lon, time = data_functions_schooner.load_z500_precip_data(DATA_DIR)
@@ -239,7 +240,7 @@ ic(np.shape(prototypes_of_correct_class_train))
 
 imp.reload(push_prototypes)
 NEPOCHS    = settings['nepochs']
-STAGE_LIST = (0,1,2,3,4,5,6,7,8,9)#range(len(NEPOCHS))#(1,2,3,4,5)#range(len(NEPOCHS))
+STAGE_LIST = (0,1,2,3,4,5,6,7,8,9)#(0,1,2,3,4,5,6,7,8,9)#range(len(NEPOCHS))#(1,2,3,4,5)#range(len(NEPOCHS))
 
 for stage in STAGE_LIST:
     
@@ -250,7 +251,7 @@ for stage in STAGE_LIST:
     # load previously trained stage, unless it is the 0th stage
     if(stage != 0):
         tf.keras.backend.clear_session()
-        model_filename = model_dir + 'model_' + EXP_NAME + '_stage' + str(stage-1)
+        model_filename = model_dir + 'model_' + EXP_NAME + '_stage' + str(stage-1)+ ".h5"
 #         model = common_functions.load_model(model_filename)
         model.load_weights(model_filename)
         

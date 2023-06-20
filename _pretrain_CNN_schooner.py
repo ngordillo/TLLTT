@@ -46,7 +46,7 @@ print(f"tensorflow version = {tf.__version__}")
 
 # ## Define experiment settings and directories
 
-EXP_NAME = 'alas_200year_winter_ternary_large'#'smaller_test'#'quadrants_testcase'
+EXP_NAME = 'alas_200year_winter_ternary_ERA5_shuffle_val'#'smaller_test'#'quadrants_testcase'
 
 imp.reload(experiment_settings)
 settings = experiment_settings.get_settings(EXP_NAME)
@@ -100,14 +100,15 @@ print(DATA_DIR)
 #     or (EXP_NAME[:30]=='vanc_14day_precip_schooner') or (EXP_NAME[:30]=='alas_14dayback_precip_schooner') or (EXP_NAME[:50]=='alas_14day_precip_large_schooner') or (EXP_NAME[:70]=='alas_14day_precip_5mean_large_schooner')
 #     or (EXP_NAME[:70]=='alas_14day_precip_5mean_schooner') or (EXP_NAME[:70]=='alas_14day_precip_5back_schooner') or (EXP_NAME[:70]=='alas_14day_precip_6back_schooner')):
     # print("correc")
-labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter(DATA_DIR)
-X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter(labels,
+labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter_ERA5(DATA_DIR)
+X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter_ERA5(labels,
                                                                                         data,
                                                                                         time,
                                                                                         rng, 
                                                                                         colored=settings['colored'],
                                                                                         standardize=settings['standardize'],
                                                                                         shuffle=settings['shuffle'],
+                                                                                        r_seed = RANDOM_SEED,
                                                                                     )
 # elif((EXP_NAME[:21]=='fourteenday_both_test') or ((EXP_NAME[:18]=='threeday_both_test'))):
 #     print("bingo")
@@ -199,6 +200,9 @@ PATIENCE             = 100
 
 __ = imp.reload(network)
 tf.keras.backend.clear_session()
+
+print("BLAHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH")
+print(X_train.shape)
 
 model = network.build_model(
     cnn_only=True,    
@@ -348,6 +352,11 @@ print('running model.predict()...')
 y_predict_test = model.predict(X_test, batch_size=BATCH_SIZE_PREDICT, verbose=1)
 print('model.predict() complete.')
 
+
+print('running model.predict()...')
+y_predict_train = model.predict(X_train, batch_size=BATCH_SIZE_PREDICT, verbose=1)
+print('model.predict() complete.')
+
 model.evaluate(X_test,y_test,batch_size=BATCH_SIZE_PREDICT, verbose=1)
 
 print('Accuracies by class: ')
@@ -359,11 +368,24 @@ for c in np.arange(0,NCLASSES):
     print(np.argmax(y_predict_test[i],axis=1))
     
     print('   phase ' + str(c) + ' = ' + str(acc))
+
+
+for c in np.arange(0,NCLASSES):
+    i = np.where(y_train==c)[0]
+    j = np.where(y_train[i]==np.argmax(y_predict_train[i],axis=1))[0]
+    acc = np.round(len(j)/len(i),3)
+    print(np.argmax(y_predict_train[i],axis=1))
+    
+    print('   phase ' + str(c) + ' = ' + str(acc))
     
 
 #-------------
 y_predict  = y_predict_test
 y_true     = y_test
+
+# y_predict  = y_predict_train
+y_true_train    = y_train
+
 # time       = time_val
 # input_data = input_val
 #-------------
