@@ -11,11 +11,9 @@ from imblearn.under_sampling import RandomUnderSampler
 
 __author__ = "Randal J Barnes and Elizabeth A. Barnes"
 __version__ = "23 November 2021"
-
 def running_mean(x, N):
     cumsum = np.cumsum(np.insert(x, 0, np.zeros(x.shape[2]), axis = 0), axis =0)
     return (cumsum[N:] - cumsum[:-N]) / float(N)
-
 
 
 # def get_and_process_mjo_data(raw_labels, raw_data, raw_time, rng, colored=False, standardize=False, shuffle=False):
@@ -377,55 +375,39 @@ def load_tropic_data_winter(load_dir, loc_lon = 0, loc_lat = 0, coast=False):
     # train_years = 200
 
     # make labels
-    filename = 'mjo_4back_200_precip.nc'#'mjo_4back_precip_local.nc'
-    var     = np.float64(xr.open_dataset(load_dir+filename)['pr'].values * 86400)#[:,:,:,np.newaxis]#[:,96:,80:241,np.newaxis]
+    filename = 'rolled_mjo_4back_200_precip.nc'#'mjo_4back_precip_local.nc'
+    print(load_dir+filename)
+    var_raw     = xr.open_dataset(load_dir+filename)['pr']#[:,:,:,np.newaxis]#[:,96:,80:241,np.newaxis]
     time     = xr.open_dataset(load_dir+filename)['time'][4:]#[:train_years*365]
     lats  = xr.open_dataset(load_dir+filename)['lat'].values#[96:]
     lons   = xr.open_dataset(load_dir+filename)['lon'].values#[80:241]
+
+    
+    var_rolled = var_raw.rolling(time = 5).mean().dropna("time", how='all')
+    print(var_rolled)
+    # dates = xr.cftime_range(start="1700", periods=73050, freq="D", calendar="noleap").to_datetimeindex()
+    # var_rolled['time'] = dates
+
+    var_rolled_sliced = var_rolled.sel(time=slice("1700-01-01", "1899-12-31"))
+
+    var = var_rolled_sliced.sel(time=var_rolled_sliced.time.dt.month.isin([1, 2, 11, 12]))
+
+
+    print(var)
+
 
     if(coast):
         temp_label = np.loadtxt(load_dir+"winter_ternary_loc_"+str(loc_lon)+"_"+str(loc_lat)+".txt")
     else:
         # temp_label = np.loadtxt(load_dir+"local_alaska_points.txt")
-        temp_label = np.loadtxt(load_dir+"winter_ternary_alaska_points.txt")
+        temp_label = np.loadtxt(load_dir+"GCM_winter_ternary_alaska_points_5days.txt")
 
 
-
-    # var_c_fw = xr.open_dataset(load_dir+"mjo_15year_precip_nocycle_5back.nc")['200precip5back'].values
-    var_c_fw = xr.open_dataset(load_dir+"mjo_200year_precip_nocycle_5back.nc")['200precip5back'].values
-
-    # all_years = time["time.year"].values
-
-    all_months = time["time.month"].values[:73000]
-
-    # all_days = time["time.day"].values
-
-    # months = np.unique(all_months)
-
-    # days = np.unique(all_days)
-
-    winter_months = []
-
-    # print(var_c_fw.shape)
-    # print(len(all_months))
-    for i in np.arange(len(all_months)):
-        month = all_months[i]
-        if (month == 1 or month == 2 or month == 11 or month == 12):
-            winter_months.append(var_c_fw[i,:,:])
-    
-    winter_months = np.asarray(winter_months)[:,:,:,np.newaxis]
-
-
-    print("winter_months shape: " + str(winter_months.shape))
-
-    print(time)
-    print(type(time))
-
-    filename = 'small_2mtemp_200_nomarch_winter.nc'
-    time     = xr.open_dataset(load_dir+filename)['time']
-    time = time[:time.shape[0]- 50]
-    
-    return np.asarray(temp_label), winter_months, lats, lons, time
+    print(var)
+    print(var.time)
+    print(len(temp_label))
+   
+    return np.asarray(temp_label), var.values[:,:,:,np.newaxis], lats, lons, var.time
 
 def load_tropic_data_winter_ERA5(load_dir, loc_lon = 0, loc_lat = 0, coast=False):
 
@@ -638,6 +620,7 @@ def get_and_process_tropic_data_winter(raw_labels, raw_data, raw_time, rng, colo
     else:
         print(f"X_mean.shape    = {X_mean.shape}")
         print(f"X_std.shape     = {X_std.shape}")    
+        
         
     
     return (X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test)

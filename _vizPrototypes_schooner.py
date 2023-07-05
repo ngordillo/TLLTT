@@ -3,9 +3,12 @@
 # Visualize the prototypes
 
 import os
+os.environ["XLA_FLAGS"]="--xla_gpu_cuda_data_dir=/usr/lib/cuda"
 import sys
 import imp 
 
+import numpy, warnings
+numpy.warnings = warnings
 import numpy as np
 from tqdm import tqdm
 from tqdm import trange
@@ -57,7 +60,7 @@ print(f"tensorflow version = {tf.__version__}")
 
 np.set_printoptions(suppress=True)
 
-EXP_NAME = 'alas_200year_winter_ternary_28_large_prebase'
+EXP_NAME = 'alas_200year_winter_ternary_GCM_Falco'
 
 #'smaller_test'#'quadrants_testcase'
 
@@ -67,7 +70,8 @@ settings = experiment_settings.get_settings(EXP_NAME)
 imp.reload(common_functions)
 
 # model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
-model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories(EXP_NAME)
+# model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories(EXP_NAME)
+model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories_falco(EXP_NAME)
 
 # ## Define the network parameters
 
@@ -91,6 +95,13 @@ PATIENCE             = 100
 STAGE                = settings['analyze_stage']
 
 # ## Initialize
+gpus = tf.config.list_physical_devices('GPU')
+
+# the next line will restrict tensorflow to the first GPU 
+# you can select other gpus from the list instead
+tf.config.set_visible_devices(gpus[0], 'GPU')
+
+tf.config.list_logical_devices('GPU')
 
 tf.keras.backend.clear_session()
 np.random.seed(RANDOM_SEED)
@@ -112,19 +123,6 @@ DATA_DIR = settings['data_dir']
 # or (EXP_NAME[:30]=='alas_14dayback_precip_schooner') or (EXP_NAME[:50]=='alas_14day_precip_large_schooner') or (EXP_NAME[:70]=='alas_14day_precip_5mean_large_schooner') or (EXP_NAME[:70]=='alas_14day_precip_5mean_schooner')
 # or (EXP_NAME[:70]=='alas_14day_precip_5back_schooner') or (EXP_NAME[:70]=='alas_14day_precip_6back_schooner')):
 
-labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter_ERA5(DATA_DIR)
-print("dum")
-
-X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter_ERA5(labels,
-                                                                                        data,
-                                                                                        time,
-                                                                                        rng, 
-                                                                                        colored=settings['colored'],
-                                                                                        standardize=settings['standardize'],
-                                                                                        shuffle=settings['shuffle'],
-                                                                                        r_seed = RANDOM_SEED,
-                                                                                    )  
-
 # labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter_ERA5(DATA_DIR)
 # X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter_ERA5(labels,
 #                                                                                         data,
@@ -133,7 +131,18 @@ X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test 
 #                                                                                         colored=settings['colored'],
 #                                                                                         standardize=settings['standardize'],
 #                                                                                         shuffle=settings['shuffle'],
-#                                                                                     )
+#                                                                                         r_seed = RANDOM_SEED,
+#                                                                                     )  
+
+labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter(DATA_DIR)
+X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter(labels,
+                                                                                        data,
+                                                                                        time,
+                                                                                        rng, 
+                                                                                        colored=settings['colored'],
+                                                                                        standardize=settings['standardize'],
+                                                                                        shuffle=settings['shuffle'],
+                                                                                    )
 # elif((EXP_NAME[:21]=='fourteenday_both_test') or ((EXP_NAME[:18]=='threeday_both_test'))):
 #     print("bingo")
 #     labels, data, lat, lon, time = data_functions_schooner.load_z500_precip_data(DATA_DIR)
@@ -343,8 +352,8 @@ w = np.round(model.layers[-2].get_weights()[0],3)
 # # Plot Prototypes and Samples
 
 ### for white background...
-plt.rc('text',usetex=True)
-plt.rc('font',**{'family':'sans-serif','sans-serif':['Avant Garde']}) 
+plt.rc('text',usetex=False)
+# plt.rc('font',**{'family':'sans-serif','sans-serif':['Avant Garde']}) 
 plt.rc('savefig',facecolor='white')
 plt.rc('axes',facecolor='white')
 plt.rc('axes',labelcolor='dimgrey')

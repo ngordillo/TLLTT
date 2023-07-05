@@ -5,19 +5,24 @@
 # # This Looks Like That There
 # Pretrain CNN Only
 
+import os
+os.environ["XLA_FLAGS"]="--xla_gpu_cuda_data_dir=/usr/lib/cuda"
 
 import sys
 import time
 import imp #imp.reload(module)
+import numpy, warnings
+numpy.warnings = warnings
 
 import numpy as np
-from tqdm import trange
+# from tqdm import trange
 from icecream import ic
 import scipy.io as sio
 
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 # import seaborn as sns
+
 
 import tensorflow as tf
 
@@ -46,14 +51,15 @@ print(f"tensorflow version = {tf.__version__}")
 
 # ## Define experiment settings and directories
 
-EXP_NAME = 'alas_200year_winter_ternary_ERA5_shuffle_val'#'smaller_test'#'quadrants_testcase'
+EXP_NAME = 'alas_200year_winter_ternary_ERA_Falco'#'smaller_test'#'quadrants_testcase'
 
 imp.reload(experiment_settings)
 settings = experiment_settings.get_settings(EXP_NAME)
 
 imp.reload(common_functions)
 #model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
-model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories(EXP_NAME)
+# model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories(EXP_NAME)
+model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories_falco(EXP_NAME)
 
 # ## Define the network parameters
 
@@ -76,6 +82,13 @@ PATIENCE             = 100
 
 
 # ## Initialize
+gpus = tf.config.list_physical_devices('GPU')
+
+# the next line will restrict tensorflow to the first GPU 
+# you can select other gpus from the list instead
+tf.config.set_visible_devices(gpus[0], 'GPU')
+
+tf.config.list_logical_devices('GPU')
 
 tf.keras.backend.clear_session()
 np.random.seed(RANDOM_SEED)
@@ -110,6 +123,18 @@ X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test 
                                                                                         shuffle=settings['shuffle'],
                                                                                         r_seed = RANDOM_SEED,
                                                                                     )
+
+# labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter(DATA_DIR)
+# X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter(labels,
+#                                                                                         data,
+#                                                                                         time,
+#                                                                                         rng, 
+#                                                                                         colored=settings['colored'],
+#                                                                                         standardize=settings['standardize'],
+#                                                                                         shuffle=settings['shuffle'],
+#                                                                                     )
+# print(y_train)
+# quit()
 # elif((EXP_NAME[:21]=='fourteenday_both_test') or ((EXP_NAME[:18]=='threeday_both_test'))):
 #     print("bingo")
 #     labels, data, lat, lon, time = data_functions_schooner.load_z500_precip_data(DATA_DIR)
@@ -177,7 +202,8 @@ settings = experiment_settings.get_settings(EXP_NAME)
 
 imp.reload(common_functions)
 #model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
-model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories(EXP_NAME)
+# model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories(EXP_NAME)
+model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories_falco(EXP_NAME)
 
 RANDOM_SEED          = settings['random_seed']
 BATCH_SIZE_PREDICT   = settings['batch_size_predict']
@@ -318,8 +344,8 @@ plt.savefig(model_diagnostics_dir + 'loss_history_pretrained_model_' + EXP_NAME 
 
 ########################################################################################################################
 ### for white background...
-plt.rc('text',usetex=True)
-plt.rc('font',**{'family':'sans-serif','sans-serif':['Avant Garde']}) 
+plt.rc('text',usetex=False)
+# plt.rc('font',**{'family':'sans-serif','sans-serif':['Avant Garde']}) 
 plt.rc('savefig',facecolor='white')
 plt.rc('axes',facecolor='white')
 plt.rc('axes',labelcolor='dimgrey')
