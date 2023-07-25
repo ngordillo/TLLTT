@@ -60,7 +60,7 @@ print(f"tensorflow version = {tf.__version__}")
 
 np.set_printoptions(suppress=True)
 
-EXP_NAME = 'alas_200year_winter_ternary_GCM_Falco'
+EXP_NAME = 'alas_200year_winter_ternary_GCM_100train_yearshuf'
 
 #'smaller_test'#'quadrants_testcase'
 
@@ -216,6 +216,7 @@ model, push_info = push_prototypes.push(model,
                                         input_train[0], 
                                         prototypes_of_correct_class_train,
                                         perform_push=False,
+                                        # perform_push=True,
                                         batch_size=BATCH_SIZE_PREDICT,
                                         verbose=0,
                                     )
@@ -1032,7 +1033,7 @@ def top_points_protos():
     return bestsamps
 ##################################################################################################################################################################################################################
 
-def top_confidence_protos(percentage):
+def top_confidence_protos(percentage, predictions):
     #temp_classes = [0,1]
     temp_classes = [0,1,2]
 
@@ -1040,11 +1041,11 @@ def top_confidence_protos(percentage):
     all_isamples = []
     for temp_class in temp_classes:
 
-        isamples = np.where((np.argmax(y_predict,axis=1)==temp_class))[0]
+        isamples = np.where((np.argmax(predictions,axis=1)==temp_class))[0]
         # print(isamples)
         # print(max_similarity_score[isamples,:].shape)
         
-        high_scores = y_predict[isamples,temp_class]
+        high_scores = predictions[isamples,temp_class]
         # print(points.shape)
         
         # print(points.shape)
@@ -1090,6 +1091,7 @@ def top_confidence_protos(percentage):
 
 
 ##################################################################################################################################################################################################################
+
 def top_30per_scoring_protos_softmax():
     temp_classes = [0,1]
 
@@ -1166,10 +1168,10 @@ def examine_proto(good_samp):
     mjo_amp = np.sqrt(np.square(rmm1) + np.square(rmm2))
 
     less_than_one = np.where(mjo_amp < 1)[0]
-    print("test")
+    # print("test")
     # print(less_than_one)
     phases[less_than_one] = 0
-    print("help us")
+    # print("help us")
     y_predict_class = np.argmax(y_predict,axis=1)
     igrab_samples = np.where(y_predict_class==1)[0]    
 
@@ -1354,6 +1356,333 @@ def examine_proto(good_samp):
             transform = ax.transAxes,
         )
 
+        # ax.text(0.66, 1.0, 
+        #             'Phase: ' + str(phases[prototype_sample[prototype_index]]),
+        #             fontfamily='monospace', 
+        #             fontsize=FS, 
+        #             va='bottom',
+        #             ha='right',
+        #             transform = ax.transAxes,
+        #     )   
+        # print(prototype_sample[prototype_index])
+        #-------------------------------        
+        # PLOT THE MASKS
+        ax = fig.add_subplot(spec[2,base_col:base_col+grid_per_col], projection=mapProj)
+        img = local_mask[:,:,prototype_index] 
+        # img = np.flipud(img)            
+        p = plots.plot_mask(ax,img)
+        p.set_clim(1.,np.max(img))
+        ax.set_title(letters[1] + ' ' + 'Prototype ' + str(prototype_index) + ' Location Scaling', fontsize=FS)
+
+        #-------------------------------        
+        # PLOT THE POINTS
+        ax = fig.add_subplot(spec[3,base_col+1:base_col+grid_per_col-1])
+        plt.axhline(y=0,color='.75',linewidth=.5)    
+        for phase in np.arange(0,3):
+
+            i = np.where(proto_class_mask[:,phase]==0)[0]
+            plt.plot(np.ones(len(i))*phase,all_points[i,phase],
+                    marker='o',
+                    markeredgecolor='.5',
+                    markerfacecolor='w', 
+                    markersize=3,
+                    markeredgewidth=.25,
+                    )
+
+            i = np.where(proto_class_mask[:,phase]==1)[0]
+            p = plt.plot(np.ones(len(i))*phase,all_points[i,phase],'.')
+
+            clr = p[0].get_color()
+            
+            plt.text(phase,6.1, 
+                    str(np.round(total_points[phase],1)),
+                    verticalalignment='bottom',
+                    horizontalalignment='center',
+                    color=clr,
+                    fontsize=8,
+        #              weight='bold',
+        #              transform=ax.transAxes, 
+                    )
+        plt.yticks((-1,0,1,2,3,4,5,6),('-1','0','1','2','3','4','5','6'))
+        plt.ylim(-1,25)          
+        plt.xlim(-.5, 2.5)
+
+        # plt.xticks(np.arange(0,2),("below","above"))
+        plt.xticks(np.arange(0,3),("below","average", "above"))
+
+        plt.xlabel('Temperature Class')
+        plt.ylabel('points')
+        adjust_spines(ax, ['left', 'bottom'])
+        ax.spines['top'].set_color('none')
+        ax.spines['right'].set_color('none')
+        ax.spines['left'].set_color('dimgrey')
+        ax.spines['bottom'].set_color('dimgrey')
+        ax.spines['left'].set_linewidth(1.5)
+        ax.spines['bottom'].set_linewidth(1.5)  
+        colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
+        [t.set_color(i) for (i,t) in
+        zip(colors,ax.xaxis.get_ticklabels())]    
+        
+        #-------------------------------        
+        # PLOT THE HISTO
+        # bounds = 8
+        # train_years = 70
+        # sub3 = fig.add_subplot(spec[4,base_col+1:base_col+grid_per_col-1])
+
+        # # print(temp.shape)
+
+        # # print(avgtemp_day[SAMPLES[0] % 365, ].shape)
+
+        # full_loc_temp = np.asarray(full_loc_temp)
+
+        # sub3.hist(full_loc_temp, np.arange(np.round(np.median(full_loc_temp))-bounds,np.round(np.median(full_loc_temp))+bounds+1,.25))
+        # sub3.axvline(np.percentile(full_loc_temp, 33.33), color='k', linestyle='dashed', linewidth=1)
+        # sub3.axvline(np.percentile(full_loc_temp, 66.66), color='k', linestyle='dashed', linewidth=1)
+        # # sub3.axvline(temp[(SAMPLES[0] + (365 * 70)+2, 46, 136, 0)] - avgtemp_day[(SAMPLES[0] % 365)+3, 46, 136, 0], color='orange', linestyle='solid', linewidth=1)
+        # sub3.axvline(full_loc_temp[(sample + 14 + (365 * train_years))], color='orange', linestyle='solid', linewidth=1)
+        # # sub3.axvline(full_loc_psl[prototype_sample[24]+3] - avgtemp_day[(prototype_sample[24] % 365)+3], color='red', linestyle='solid', linewidth=1)
+        # # for i in range(len(best_points)):
+        # #     sub3.axvline(best_points[i], color='r', linestyle='solid', linewidth=1)
+
+        # true_val = labels[(train_years*365) + sample]
+        # common_val = y_predict_class
+
+        # print(true_val)
+        # print(common_val)
+
+        # if((true_val == 2) and (true_val == common_val)):
+        #     sub3.axvspan(np.percentile(full_loc_temp, 66.66), bounds, color='thistle', alpha=0.5, lw=0)
+        # elif((true_val == 2) and (true_val != common_val)):
+        #     if(common_val == 0):
+        #         sub3.axvspan(-1 * bounds, np.percentile(full_loc_temp, 33.33), color='gold', alpha=0.5, lw=0)
+        #     elif(common_val == 2):
+        #         sub3.axvspan(np.percentile(full_loc_temp, 66.66), bounds, color='gold', alpha=0.5, lw=0)
+        #     else:
+        #         sub3.axvspan(np.percentile(full_loc_temp, 33.33), np.percentile(full_loc_temp, 66.66), color='gold', alpha=0.5, lw=0)
+        # elif((true_val == 1) and (true_val == common_val)):
+        #     sub3.axvspan(np.percentile(full_loc_temp, 33.33), np.percentile(full_loc_temp, 66.66), color='thistle', alpha=0.5, lw=0)
+        # elif((true_val == 1) and (true_val != common_val)):
+        #     if(common_val == 0):
+        #         sub3.axvspan(-1 * bounds, np.percentile(full_loc_temp, 33.33), color='gold', alpha=0.5, lw=0)
+        #     elif(common_val == 2):
+        #         sub3.axvspan(np.percentile(full_loc_temp, 66.66), bounds, color='gold', alpha=0.5, lw=0)
+        #     else:
+        #         sub3.axvspan(np.percentile(full_loc_temp, 33.33), np.percentile(full_loc_temp, 66.66), color='gold', alpha=0.5, lw=0)
+        # elif((true_val == 0) and (true_val == common_val)):
+        #     sub3.axvspan(-1 * bounds, np.percentile(full_loc_temp, 33.33), color='thistle', alpha=0.5, lw=0)
+        # elif((true_val == 0) and (true_val != common_val)):
+        #     if(common_val == 0):
+        #         sub3.axvspan(-1 * bounds, np.percentile(full_loc_temp, 33.33), color='gold', alpha=0.5, lw=0)
+        #     elif(common_val == 2):
+        #         sub3.axvspan(np.percentile(full_loc_temp, 66.66), bounds, color='gold', alpha=0.5, lw=0)
+        #     else:
+        #         sub3.axvspan(np.percentile(full_loc_temp, 33.33), np.percentile(full_loc_temp, 66.66), color='gold', alpha=0.5, lw=0)
+
+
+        # # # sub3.axvline(np.percentile(avg_slp_diff,5), color='k', linestyle='dashed', linewidth=1)
+        # # # sub3.axvline(np.percentile(avg_slp_diff,95), color='k', linestyle='dashed', linewidth=1)
+        # # sub3.set_title(first_month_str+" "+str(sel_day-total_day+1)+", year," + str(years) + ": Temp anomaly for the best 10 samples", fontsize=12)
+        # sub3.set_ylabel("Number of samples", fontsize=10)
+        # sub3.set_xlabel("Temp anomaly", fontsize=10)
+        # sub3.set_xticks(np.arange(np.round(np.median(full_loc_temp))-bounds,np.round(np.median(full_loc_temp))+bounds,3))
+
+
+    # plt.close()   
+#     plt.tight_layout()
+    plt.savefig((vizualization_dir + "individual_protos/" + EXP_NAME + '_' + str(SAMPLES[0]) + '_' + 'class' + str(y_predict_class) +'_3samples_prototypes_new.png'), bbox_inches='tight', dpi=dpiFig)
+    #plt.show()
+
+
+    # print(full)
+
+##################################################################################################################################################################################################################
+
+def mjo_correlation(good_samp):
+    # print(lon)
+    mapProj = ccrs.PlateCarree(central_longitude = np.mean(lon))
+    imp.reload(plots)
+
+    f = DATA_DIR + 'Index_EOFS/MJO_CESM2-piControl_intialTEST.pkl' # use this one for historical and SSP simulations with CESM2-WACCM
+
+
+    #f = '/Users/nicojg/Documents/Work/2021_Fall_IAI/Data/Index_EOFS/MJO_CESM2-piControl_intialTEST.pkl'
+
+    MJO_info = pd.read_pickle(f)
+
+    # the indexing from [:180*2] is so that we only grab the winds and not precip for the correlation
+
+    phases = MJO_info['Phase']
+    rmm1 = MJO_info['RMM1']
+    rmm2 = MJO_info['RMM2']
+
+    mjo_amp = np.sqrt(np.square(rmm1) + np.square(rmm2))
+
+    less_than_one = np.where(mjo_amp < 1)[0]
+    # print("test")
+    # print(less_than_one)
+    phases[less_than_one] = 0
+    # print("help us")
+    y_predict_class = np.argmax(y_predict,axis=1)
+    igrab_samples = np.where(y_predict_class==1)[0]    
+
+    SAMPLES = [good_samp] #4055 %4570
+
+    
+    # VAR_INDEX = (1,2,0)
+    VAR_INDEX = [0]
+    #SORTED_VALUE = (1,1,1)   #(1,2,1) 
+    SORTED_VALUE = (1,1,1)
+    colors = ('tab:purple','tab:orange')
+    FS = 13
+
+    #------------------------------
+    fig = plt.figure(figsize=(10,12), constrained_layout=True)
+    grid_per_col = 7
+    spec = gridspec.GridSpec(ncols=3*grid_per_col, nrows=5, figure=fig)
+
+    for isample, sample in enumerate(SAMPLES):
+
+        y_predict_class = int(np.argmax(y_predict[sample]))
+        points = max_similarity_score[sample,:]*w[:,y_predict_class]
+        # print(np.max(points))
+        all_points = w*np.squeeze(max_similarity_score[sample,:])[:,np.newaxis]
+        total_points = np.sum(all_points,axis=0)        
+        
+        # if(np.argmax(y_predict[sample]) != y_true[sample]):
+        #     print("oh no")
+        #     print(sample_date[sample])
+        #     print(sample)
+        #     # continue
+        # print("anyway")
+        #-------------------------------    
+        base_col = isample*grid_per_col
+        
+        #var_index = VAR_INDEX[isample]
+        var_index = 0
+        if(var_index==0):
+            # var_name = 'olr'
+            var_name = 'precip'
+            letters = ('(a)','(b)','(c)')
+        elif(var_index==1):
+            var_name = 'u200'
+            letters = ('(a)','(d)','(g)')            
+        elif(var_index==2):
+            var_name = 'u850'
+            letters = ('(b)','(e)','(h)')      
+        
+        #----------------------   
+
+        prototype_points = np.sort(points)[-(SORTED_VALUE[isample])]
+        # for golf in np.arange(1,30):
+        #     print(np.sort(points)[-golf])
+
+        prototype_index = np.where(points == prototype_points)[0][0]
+        # print(prototype_index)
+        prototype_class = np.argmax(proto_class_mask[prototype_index])
+        if(y_predict_class != prototype_class):
+            print_warning = '\n- prototype not associated with predicted class -'
+        else:
+            print_warning = ''
+        # print(y_predict.shape)
+        # print("test" + str(y_predict_class))
+        # print("true : " + str(labels[(70*365) + sample]))
+        # print("isamp: "+ str(isample))
+        #-------------------------------        
+        # PLOT THE SAMPLE
+        ax_samp = fig.add_subplot(spec[0,base_col:base_col+grid_per_col], projection=mapProj)            
+        similarity_map  = similarity_scores[sample,:,:,prototype_index]
+        # print(similarity_map)
+        # print(prototype_index)
+        j,k             = np.unravel_index(np.argmax(similarity_map), shape=similarity_map.shape)
+        rf              = receptive_field.computeMask(j,k)   
+        rf              = np.abs(rf-1.)
+        rf[rf==0] = np.nan
+
+        rf_save = rf
+
+                    
+        img = np.squeeze(input_data[0][0][sample,:,:,var_index])
+        p = plots.plot_sample_shaded(ax_samp, img, globe=True, lat=lat, lon=lon, mapProj=mapProj, rf=rf)
+        #p = plots.plot_sample(ax_samp, img, globe=True, lat=lat, lon=lon, mapProj=mapProj)
+
+        # cbar = plt.colorbar(img,shrink=.5, aspect=20*0.8)
+
+        ax_samp.set_title(letters[0] + ' ' + var_name + ' of Sample ' + str(sample), fontsize=FS)
+        ax_samp.text(0.99, 1.0, 
+            str(sample_date[sample]),
+            fontfamily='monospace', 
+            fontsize=FS, 
+            va='bottom',
+            ha='right',
+            transform = ax_samp.transAxes,
+        )
+
+        class_text = "blah"
+        if(y_true[sample] == 0):
+            class_text = "below temp class"
+        elif(y_true[sample] == 2):
+            class_text = "above temp class"
+        else:
+            class_text = "average temp class"
+
+        ax_samp.text(0.01, 1.0, 
+            class_text,
+            fontfamily='monospace', 
+            fontsize=FS, 
+            va='bottom',
+            ha='left',
+            transform = ax_samp.transAxes,
+        )
+
+        # ax_samp.text(0.66, 1.0, 
+        #             'Phase: ' + str(phases[sample]),
+        #             fontfamily='monospace', 
+        #             fontsize=FS, 
+        #             va='bottom',
+        #             ha='right',
+        #             transform = ax_samp.transAxes,
+        #     )                 
+        # print(sample)
+        #-------------------------------        
+        # PLOT THE PROTOTYPES
+        ax = fig.add_subplot(spec[1,base_col:base_col+grid_per_col], projection=mapProj)
+        rf = receptive_field.computeMask(prototype_indices[prototype_index,0], prototype_indices[prototype_index,1])
+        img = np.squeeze(input_train[0][0][prototype_sample[prototype_index],:,:,var_index])*rf_save
+        #img = np.squeeze(input_train[0][0][prototype_sample[prototype_index],:,:,var_index])
+        #img[img == 0] = np.nan
+        p = plots.plot_sample(ax, img, globe=True, lat=lat, lon=lon, mapProj=mapProj)
+
+        
+
+        #p = plots.plot_sample_shaded(ax, img, globe=True, lat=lat, lon=lon, mapProj=mapProj, rf =rf_save)
+#         ax.set_title(letters[1] + ' ' + var_name + ' of Prototype ' + str(prototype_index) + ' (' + str(np.round(prototype_points,1)) + ' points)', fontsize=FS)
+        ax.set_title(letters[1] + ' ' + var_name + ' of Prototype ' + str(prototype_index), fontsize=FS)
+        ax.text(0.99, 1.0, 
+            str(prototype_date[prototype_index]),
+            fontfamily='monospace', 
+            fontsize=FS, 
+            va='bottom',
+            ha='right',
+            transform = ax.transAxes,
+        ) 
+
+        class_text = "blah"
+        if(y_predict_class == 0):
+            class_text = "below temp class"
+        elif(y_predict_class == 2):
+            class_text = "above temp class"
+        else:
+            class_text = "average temp class"
+
+        ax.text(0.01, 1.0, 
+            str(class_text),
+            fontfamily='monospace', 
+            fontsize=FS, 
+            va='bottom',
+            ha='left',
+            transform = ax.transAxes,
+        )
+
         ax.text(0.66, 1.0, 
                     'Phase: ' + str(phases[prototype_sample[prototype_index]]),
                     fontfamily='monospace', 
@@ -1497,7 +1826,7 @@ def examine_proto(good_samp):
 
 # All prototypes for each phase
 def show_all_protos():
-    print("HELOOOOOOOOOOOOOOOOOOOOO????")
+    # print("HELOOOOOOOOOOOOOOOOOOOOO????")
     from scipy import stats
     imp.reload(plots)
     mapProj = ccrs.PlateCarree(central_longitude = np.mean(lon))
@@ -1818,13 +2147,13 @@ show_all_protos()
 # for i in np.arange(10, 101, 5):
 #     precip_comps(top_confidence_protos(i/100.), True, i)
 
-# timeseries_predictions()
+timeseries_predictions()
 
 
 for i in np.arange(10, 101, 5):
-    precip_comps(top_confidence_protos(i/100.), True, i)
-    base_accuracies.append(make_confuse_matrix(base_y_predict[top_confidence_protos(i/100.)], y_true[top_confidence_protos(i/100.)], i, True))
-    accuracies.append(make_confuse_matrix(y_predict[top_confidence_protos(i/100.)], y_true[top_confidence_protos(i/100.)], i, False))
+    precip_comps(top_confidence_protos(i/100., y_predict), True, i)
+    base_accuracies.append(make_confuse_matrix(base_y_predict[top_confidence_protos(i/100., base_y_predict_test)], y_true[top_confidence_protos(i/100., base_y_predict_test)], i, True))
+    accuracies.append(make_confuse_matrix(y_predict[top_confidence_protos(i/100., y_predict)], y_true[top_confidence_protos(i/100., y_predict)], i, False))
     # mjo_lookup(top_confidence_protos(i/100.), True, i)
     # proto_rankings(top_confidence_protos(i/100.), True, i)
 # plt.close()
@@ -1853,5 +2182,6 @@ plt.savefig((vizualization_dir + EXP_NAME + '_forecast_of_opportunity.png'), bbo
 
 
     
-# for decent_samp in top_confidence_protos(.0005):
-#     examine_proto(decent_samp)
+for decent_samp in top_confidence_protos(.0005, y_predict):
+    # mjo_correlation(decent_samp)
+    examine_proto(decent_samp)

@@ -51,7 +51,7 @@ print(f"tensorflow version = {tf.__version__}")
 
 # ## Define experiment settings and directories
 
-EXP_NAME = 'alas_200year_winter_ternary_ERA_Falco'#'smaller_test'#'quadrants_testcase'
+EXP_NAME = 'alas_200year_winter_ternary_GCM_100train_yearshuf'#'smaller_test'#'quadrants_testcase'
 
 imp.reload(experiment_settings)
 settings = experiment_settings.get_settings(EXP_NAME)
@@ -113,8 +113,19 @@ print(DATA_DIR)
 #     or (EXP_NAME[:30]=='vanc_14day_precip_schooner') or (EXP_NAME[:30]=='alas_14dayback_precip_schooner') or (EXP_NAME[:50]=='alas_14day_precip_large_schooner') or (EXP_NAME[:70]=='alas_14day_precip_5mean_large_schooner')
 #     or (EXP_NAME[:70]=='alas_14day_precip_5mean_schooner') or (EXP_NAME[:70]=='alas_14day_precip_5back_schooner') or (EXP_NAME[:70]=='alas_14day_precip_6back_schooner')):
     # print("correc")
-labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter_ERA5(DATA_DIR)
-X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter_ERA5(labels,
+# labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter_ERA5(DATA_DIR)
+# X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter_ERA5(labels,
+#                                                                                         data,
+#                                                                                         time,
+#                                                                                         rng, 
+#                                                                                         colored=settings['colored'],
+#                                                                                         standardize=settings['standardize'],
+#                                                                                         shuffle=settings['shuffle'],
+#                                                                                         r_seed = RANDOM_SEED,
+#                                                                                     )
+
+labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter(DATA_DIR)
+X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter(labels,
                                                                                         data,
                                                                                         time,
                                                                                         rng, 
@@ -122,18 +133,10 @@ X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test 
                                                                                         standardize=settings['standardize'],
                                                                                         shuffle=settings['shuffle'],
                                                                                         r_seed = RANDOM_SEED,
-                                                                                    )
+                                                                            )
 
-# labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter(DATA_DIR)
-# X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter(labels,
-#                                                                                         data,
-#                                                                                         time,
-#                                                                                         rng, 
-#                                                                                         colored=settings['colored'],
-#                                                                                         standardize=settings['standardize'],
-#                                                                                         shuffle=settings['shuffle'],
-#                                                                                     )
 # print(y_train)
+print(time_train[:121])
 # quit()
 # elif((EXP_NAME[:21]=='fourteenday_both_test') or ((EXP_NAME[:18]=='threeday_both_test'))):
 #     print("bingo")
@@ -147,8 +150,8 @@ X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test 
 #                                                                                          shuffle=settings['shuffle'],
 #                                                                                         )
 print("#####################################################################################################################################################################################")
-print(X_train)
-print(X_train.shape)
+# print(X_train)
+# print(X_train.shape)
 print("#####################################################################################################################################################################################")
 
 proto_class_mask = network.createClassIdentity(PROTOTYPES_PER_CLASS)
@@ -372,7 +375,7 @@ def adjust_spines(ax, spines):
 for layer in range(1,len(model.layers)):
     if(model.layers[layer].name[:4]=='conv'):
         print('   loading pretrained weights for --> ' + model.layers[layer].name)
-        print(model.layers[layer].get_weights())
+        # print(model.layers[layer].get_weights())
 
 print('running model.predict()...')
 y_predict_test = model.predict(X_test, batch_size=BATCH_SIZE_PREDICT, verbose=1)
@@ -391,7 +394,7 @@ for c in np.arange(0,NCLASSES):
     i = np.where(y_test==c)[0]
     j = np.where(y_test[i]==np.argmax(y_predict_test[i],axis=1))[0]
     acc = np.round(len(j)/len(i),3)
-    print(np.argmax(y_predict_test[i],axis=1))
+    # print(np.argmax(y_predict_test[i],axis=1))
     
     print('   phase ' + str(c) + ' = ' + str(acc))
 
@@ -400,7 +403,7 @@ for c in np.arange(0,NCLASSES):
     i = np.where(y_train==c)[0]
     j = np.where(y_train[i]==np.argmax(y_predict_train[i],axis=1))[0]
     acc = np.round(len(j)/len(i),3)
-    print(np.argmax(y_predict_train[i],axis=1))
+    # print(np.argmax(y_predict_train[i],axis=1))
     
     print('   phase ' + str(c) + ' = ' + str(acc))
     

@@ -9,23 +9,6 @@ import pandas as pd
 import cartopy.crs as ccrs
 import cmasher as cmr
 
-## Remove the daily trend at every point
-def subtract_trend(x):
-
-    doy = np.unique(x['time.dayofyear'])
-    
-#     if(doy % 100 == 0):
-#         print('detrending day of year = ' + str(doy))
-    
-    detrendOrder = 3
-
-    curve = np.polynomial.polynomial.polyfit(np.arange(0,x.shape[0]),x,detrendOrder)
-    trend = np.polynomial.polynomial.polyval(np.arange(0,x.shape[0]), curve, tensor=True)
-    detrend = x - np.swapaxes(trend,0,1)
-    detrend = detrend.astype('float32')
-
-    return detrend
-
 def running_mean(x, N):
     cumsum = np.cumsum(np.insert(x, 0, np.zeros(x.shape[2]), axis = 0), axis =0)
     return (cumsum[N:] - cumsum[:-N]) / float(N)
@@ -38,28 +21,29 @@ def find_nearest_index(array, value):
 #load_dir = "~/Documents/Work/2021_Fall_IAI/Data/ERA5_Data/Precip/"
 load_dir = "/barnes-scratch/nicojg/"
 
-filename =   '4back_era5_daily_precip_remap.nc' #'era_no1959_2mtemp_remap.nc'#'4back_era5_daily_precip_remap.nc' #'era5_daily_2mtemp_remap.nc' #'era5_daily_precip_remap.nc' #'4back_era5_daily_mjo_noleap_precip.nc'#4back_era5_daily_noleap_precip.nc'#era5_daily_2mtemp.nc'#mjo_precip_local.nc'#'mjo_200_precip.nc'#small_2mtemp.nc'#tropic_200_z500.nc'
+filename =    'mjo_4back_200_precip.nc'  #'precip_full_era5_remap.nc'  #'small_2mtemp.nc'  #'2mtemp_full_era5_remap.nc'  #'mjo_4back_200_precip.nc'  #'small_2mtemp.nc' #'mjo_4back_200_precip.nc'  #'4back_era5_daily_precip_remap.nc' #'era_no1959_2mtemp_remap.nc'#'4back_era5_daily_precip_remap.nc' #'era5_daily_2mtemp_remap.nc' #'era5_daily_precip_remap.nc' #'4back_era5_daily_mjo_noleap_precip.nc'#4back_era5_daily_noleap_precip.nc'#era5_daily_2mtemp.nc'#mjo_precip_local.nc'#'mjo_200_precip.nc'#small_2mtemp.nc'#tropic_200_z500.nc'
 
-var     = xr.open_dataset(load_dir+filename)['tp']#[:,96:,80:241]#*86400#)[:,96:,80:241] #t2m  #pr #tp
+var     = xr.open_dataset(load_dir+filename)['pr']#[:,96:,80:241]#*86400#)[:,96:,80:241] #t2m  #pr #tp
 lats  = xr.open_dataset(load_dir+filename)['lat'].values#[96:]
 lons   = xr.open_dataset(load_dir+filename)['lon'].values#[80:241]
-time = xr.open_dataset(load_dir+filename)['time'].values[0:(365*60)+50+0]#[0:(365*60)+50+0]#[4:(365*60)+4]#[4:(365*60)+4]#[0:(365*60)+50+0]
+# time = xr.open_dataset(load_dir+filename)['time'].values[0:(365*60)+50+0]#[4:(365*60)+4]#[4:(365*60)+4]#[0:(365*60)+50+0]
 
 print('taking tropical mean...')
 print(var)
-# lat_avg_var = var.mean(dim = 'time', skipna = True) # skips the missing values - I think xarray does this by default
 
-# exit()
-# # time = lat_avg_var['time']
+quit()
 
-#     #================================================================ 
-#     # REMOVE THE POLYNOMIAL TREND
-#     #================================================================ 
-# print('removing polynomial trend')FanfalonCoolest766
-# lat_avg_var = lat_avg_var.groupby('time.dayofyear').map(subtract_trend)
+# dates = xr.cftime_range(start="1699-12-28", periods=73054, freq="D", calendar="noleap").to_datetimeindex()
 
-# print(lat_avg_var)
-# print(lat_avg_var.shape)
+# var['time'] = dates
+
+
+
+# print(dates)
+# print("fucked dates")
+# print(dates.to_datetimeindex())
+# var['time'] = dates
+# print(var.time)
 
 var_stacked = var.stack(z=('lat', 'lon'))
 
@@ -111,14 +95,17 @@ print("wtf")
 rolled_trend = anom_xr_trend.rolling(time = 5).mean().dropna("time", how='all')#[0:365*60]
 print("finished")
 print(anom_xr_trend)
-print(rolled_trend)
+# print(anom_xr_trend*86400)
+# print(anom_xr_trend.values*86400)
+# print(rolled_trend.values*86400)
 # var_c_anom = var_c_anom[0:(365*60)+50]#[0:(365*60)+50][:][:]
 
 #Make a dataarray and then make it a netcdf to save.
 # df = xr.DataArray(var_c_anom, coords=[('time', time), ('lat', lats), ('lon', lons)], name='era5precipanom')
 
+# print(rolled_trend.time)
 
-anom_xr_trend.to_netcdf('/barnes-scratch/nicojg/MAIN_era5_precip_mjo_notrend_anoms.nc')
+anom_xr_trend.to_netcdf('/barnes-scratch/nicojg/anom_precip_full_era5_remap.nc')
 
 # alaska_lat = find_nearest_index(lats, 61.2176)
 # alaska_lon = find_nearest_index(lons, 360-149.8997)

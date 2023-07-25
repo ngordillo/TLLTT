@@ -508,10 +508,10 @@ class ReceptiveField:
                 layer.kernel.assign(np.ones(layer.kernel.shape, np.float32))
         
         # Notation: (i,j) indexes the input, (m,n) indexes the output.
-        self.imin = np.full(shape=output_shape[1], fill_value=np.iinfo(int).max, dtype=np.int)
-        self.imax = np.full(shape=output_shape[1], fill_value=-1,                dtype=np.int)
-        self.jmin = np.full(shape=output_shape[2], fill_value=np.iinfo(int).max, dtype=np.int)
-        self.jmax = np.full(shape=output_shape[2], fill_value=-1,                dtype=np.int)
+        self.imin = np.full(shape=output_shape[1], fill_value=np.iinfo(int).max, dtype=int)
+        self.imax = np.full(shape=output_shape[1], fill_value=-1,                dtype=int)
+        self.jmin = np.full(shape=output_shape[2], fill_value=np.iinfo(int).max, dtype=int)
+        self.jmax = np.full(shape=output_shape[2], fill_value=-1,                dtype=int)
 
         n_channels = model.layers[0].get_input_shape_at(0)[-1]
         sample = np.zeros(shape=(1, input_shape[1], input_shape[2], n_channels), dtype=np.float32)

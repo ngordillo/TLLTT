@@ -47,7 +47,7 @@ print(f"tensorflow version = {tf.__version__}")
 
 # ## Define experiment settings and directories
 
-EXP_NAME = 'alas_200year_winter_ternary_GCM_Falco'#balanced_test'#initial_test'#'mjo'#'quadrants_testcase'
+EXP_NAME = 'alas_200year_winter_ternary_GCM_100train_yearshuf'#balanced_test'#initial_test'#'mjo'#'quadrants_testcase'
 
 imp.reload(experiment_settings)
 settings = experiment_settings.get_settings(EXP_NAME)
@@ -105,6 +105,7 @@ DATA_DIR = settings['data_dir']
 #      or (EXP_NAME[:30]=='alas_fourteenday_precip_pre') or (EXP_NAME[:30]=='alas_14day_precip_schooner') or (EXP_NAME[:30]=='LA_14day_precip_schooner') or (EXP_NAME[:30]=='cres_14day_precip_schooner') or (EXP_NAME[:30]=='vanc_14day_precip_schooner')
 #      or (EXP_NAME[:30]=='alas_14dayback_precip_schooner') or (EXP_NAME[:50]=='alas_14day_precip_large_schooner') or (EXP_NAME[:70]=='alas_14day_precip_5mean_large_schooner') or (EXP_NAME[:70]=='alas_14day_precip_5mean_schooner') 
 #      or (EXP_NAME[:70]=='alas_14day_precip_5back_schooner') or (EXP_NAME[:70]=='alas_14day_precip_6back_schooner')):
+
 labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter(DATA_DIR)
 X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter(labels,
                                                                                         data,
@@ -113,8 +114,9 @@ X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test 
                                                                                         colored=settings['colored'],
                                                                                         standardize=settings['standardize'],
                                                                                         shuffle=settings['shuffle'],
+                                                                                        r_seed = RANDOM_SEED,
                                                                                     )
-
+# quit()
                                                                                 
 # labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter_ERA5(DATA_DIR)
 # X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter_ERA5(labels,
@@ -251,7 +253,7 @@ ic(np.shape(prototypes_of_correct_class_train))
 
 imp.reload(push_prototypes)
 NEPOCHS    = settings['nepochs']
-STAGE_LIST = (0,1,2,3,4,5,6,7,8,9)#(0,1,2,3,4,5,6,7,8,9)#range(len(NEPOCHS))#(1,2,3,4,5)#range(len(NEPOCHS))
+STAGE_LIST = (0,1,2,3,4,5,6,7,8,9) #(0,1,2,3,4,5,6,7,8,9)#(0,1,2,3,4,5,6,7,8,9)#range(len(NEPOCHS))#(1,2,3,4,5)#range(len(NEPOCHS))
 
 for stage in STAGE_LIST:
     
