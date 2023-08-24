@@ -5,6 +5,9 @@
 # # This Looks Like That There
 # Pretrain CNN Only
 
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+
+
 import os
 os.environ["XLA_FLAGS"]="--xla_gpu_cuda_data_dir=/usr/lib/cuda"
 
@@ -31,7 +34,7 @@ import random
 from sklearn.metrics import confusion_matrix
 
 import network as network
-import experiment_settings
+import experiment_settings_shuf_bal_seeds
 import data_functions_schooner
 import common_functions
 
@@ -51,10 +54,17 @@ print(f"tensorflow version = {tf.__version__}")
 
 # ## Define experiment settings and directories
 
-EXP_NAME = 'alas_200year_winter_ternary_GCM_100train_yearshuf'#'smaller_test'#'quadrants_testcase'
+if len(sys.argv) < 2:
+    EXP_NAME = 'GCM_alas_wint_583yrs_gold_redo'#'smaller_test'#'quadrants_testcase'
+else:
+    num = int(sys.argv[1])
+    EXP_NAME = 'GCM_alas_wint_500yrs_shuf_bal_seed'+str(num)
 
-imp.reload(experiment_settings)
-settings = experiment_settings.get_settings(EXP_NAME)
+print(EXP_NAME)
+# EXP_NAME = 'GCM_alas_wint_583yrs_gold_redo'#'smaller_test'#'quadrants_testcase'
+
+imp.reload(experiment_settings_shuf_bal_seeds)
+settings = experiment_settings_shuf_bal_seeds.get_settings(EXP_NAME)
 
 imp.reload(common_functions)
 #model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
@@ -73,7 +83,7 @@ assert(len(NFILTERS)==NLAYERS)
 
 NCLASSES             = settings['nclasses']
 PROTOTYPES_PER_CLASS = settings['prototypes_per_class']
-NPROTOTYPES          = np.sum(PROTOTYPES_PER_CLASS)
+NPROTOTYPES          = np.sum(PROTOTYPES_PER_CLASS) 
 
 NEPOCHS              = settings['nepochs_pretrain']
 LR_INIT              = settings['lr_pretrain']
@@ -106,38 +116,52 @@ DATA_NAME = settings['data_name']
 DATA_DIR = settings['data_dir']
 print(DATA_DIR)
 
+train_yrs = settings['train_yrs']
+val_yrs = settings['val_yrs']
+test_years = settings['test_yrs']
 
-# if((EXP_NAME[:12]=='initial_test') or (EXP_NAME[:12]=='smaller_test') or (EXP_NAME[:13]=='balanced_test') or (EXP_NAME[:13]=='threeday_test') or (EXP_NAME[:12]=='zeroday_test') or (EXP_NAME[:16]=='fourteenday_test') or (EXP_NAME[:14]=='thirtyday_test')
-#     or (EXP_NAME[:18]=='fourteenday_precip') or (EXP_NAME[:19]=='seventeenday_precip') or (EXP_NAME[:16]=='elevenday_precip') or (EXP_NAME[:30]=='fixed_fourteenday_precip') or (EXP_NAME[:30]=='alas_fourteenday_precip')
-#     or (EXP_NAME[:30]=='vanc_fourteenday_precip') or (EXP_NAME[:30]=='alas_14day_precip_schooner') or (EXP_NAME[:30]=='LA_14day_precip_schooner') or (EXP_NAME[:30]=='cres_14day_precip_schooner')
-#     or (EXP_NAME[:30]=='vanc_14day_precip_schooner') or (EXP_NAME[:30]=='alas_14dayback_precip_schooner') or (EXP_NAME[:50]=='alas_14day_precip_large_schooner') or (EXP_NAME[:70]=='alas_14day_precip_5mean_large_schooner')
-#     or (EXP_NAME[:70]=='alas_14day_precip_5mean_schooner') or (EXP_NAME[:70]=='alas_14day_precip_5back_schooner') or (EXP_NAME[:70]=='alas_14day_precip_6back_schooner')):
-    # print("correc")
-# labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter_ERA5(DATA_DIR)
-# X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter_ERA5(labels,
-#                                                                                         data,
-#                                                                                         time,
-#                                                                                         rng, 
-#                                                                                         colored=settings['colored'],
-#                                                                                         standardize=settings['standardize'],
-#                                                                                         shuffle=settings['shuffle'],
-#                                                                                         r_seed = RANDOM_SEED,
-#                                                                                     )
-
-labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter(DATA_DIR)
-X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter(labels,
-                                                                                        data,
-                                                                                        time,
-                                                                                        rng, 
-                                                                                        colored=settings['colored'],
-                                                                                        standardize=settings['standardize'],
-                                                                                        shuffle=settings['shuffle'],
-                                                                                        r_seed = RANDOM_SEED,
-                                                                            )
+train_yrs_era5 = settings['train_yrs_era5']
+val_yrs_era5 = settings['val_yrs_era5']
+test_years_era5 = settings['test_yrs_era5']
+if(EXP_NAME[:3]=='ERA'):   
+    labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter_ERA5(DATA_DIR)
+    X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter_ERA5(labels,
+                                                                                            data,
+                                                                                            time,
+                                                                                            rng,
+                                                                                            train_yrs_era5,
+                                                                                            val_yrs_era5,
+                                                                                            test_years_era5,
+                                                                                            colored=settings['colored'],
+                                                                                            standardize=settings['standardize'],
+                                                                                            shuffle=settings['shuffle'],
+                                                                                            bal_data = settings['balance_data'],
+                                                                                            r_seed = RANDOM_SEED,
+                                                                                        )
+    print("survived")
+    quit()
+elif(EXP_NAME[:3] == 'GCM'):
+    labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter(DATA_DIR)
+    X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter(labels,
+                                                                                            data,
+                                                                                            time,
+                                                                                            rng, 
+                                                                                            train_yrs,
+                                                                                            val_yrs,
+                                                                                            test_years,
+                                                                                            colored=settings['colored'],
+                                                                                            standardize=settings['standardize'],
+                                                                                            shuffle=settings['shuffle'],
+                                                                                            bal_data = settings['balance_data'],
+                                                                                            r_seed = RANDOM_SEED,
+                                                                                )
+else:
+    print("Expermient name is bad")
+    quit()
 
 # print(y_train)
 print(time_train[:121])
-# quit()
+
 # elif((EXP_NAME[:21]=='fourteenday_both_test') or ((EXP_NAME[:18]=='threeday_both_test'))):
 #     print("bingo")
 #     labels, data, lat, lon, time = data_functions_schooner.load_z500_precip_data(DATA_DIR)
@@ -200,8 +224,8 @@ metrics_list = [
     tf.keras.metrics.SparseCategoricalAccuracy(),
 ]
 
-imp.reload(experiment_settings)
-settings = experiment_settings.get_settings(EXP_NAME)
+imp.reload(experiment_settings_shuf_bal_seeds)
+settings = experiment_settings_shuf_bal_seeds.get_settings(EXP_NAME)
 
 imp.reload(common_functions)
 #model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories_schooner(EXP_NAME)

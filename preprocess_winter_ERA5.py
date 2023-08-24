@@ -20,8 +20,8 @@ load_dir = "/barnes-scratch/nicojg/"
 # filename = '500_2mtemp.nc'
 # temp_500     = xr.open_dataset(load_dir+filename)['tas'].values[:,96:,80:241]
 #filename = 'NA_2mtemp.nc'
-filename =   'rolled_small_2mtemp.nc' #'anom_2mtemp_full_era5_remap.nc' #'rolled_small_2mtemp.nc' #'MAIN_era5_2mtemp_mjo_notrend_anoms.nc'#era5_daily_2mtemp.nc'
-temp     = xr.open_dataset(load_dir+filename)['tas']#[:,96:,80:241]
+filename =    'anom_2mtemp_full_era5_remap_order3.nc'  #'era_2mtemp_mjo_notrend_anoms.nc'  #'NEWera5_post1980_2mtemp_anoms.nc'  #'anom_2mtemp_full_era5_remap_order3.nc' #'anom_2mtemp_full_era5_remap_order1.nc' #'anom_2mtemp_full_era5_remap.nc' #'rolled_small_2mtemp.nc' #'MAIN_era5_2mtemp_mjo_notrend_anoms.nc'#era5_daily_2mtemp.nc'
+temp     = xr.open_dataset(load_dir+filename)['t2m']#[:,96:,80:241] #era2mtempanom
 # time     = xr.open_dataset(load_dir+filename)['time'][0:(60*365)+14]
 lat  = xr.open_dataset(load_dir+filename)['lat'].values
 lon   = xr.open_dataset(load_dir+filename)['lon'].values
@@ -29,11 +29,19 @@ lon   = xr.open_dataset(load_dir+filename)['lon'].values
 # print(lat)
 # print(lon)
 print(temp)
-# quit()
 
-dates = xr.cftime_range(start="1700", periods=73050, freq="D", calendar="noleap").to_datetimeindex()
 
-temp['time'] = dates
+
+# dates = xr.cftime_range(start="1700", periods=73050, freq="D", calendar="noleap").to_datetimeindex()
+
+# dates = xr.cftime_range(start="1679", periods=211700, freq="D", calendar="noleap").to_datetimeindex()
+# dates = xr.cftime_range(start="1679", periods=201115, freq="D", calendar="noleap").to_datetimeindex()
+
+
+
+# temp = temp[:len(dates)]
+
+# temp['time'] = dates
 
 #Find Alaska point
 
@@ -51,18 +59,32 @@ print(temp[:,alaska_lat, alaska_lon].values)
 rolled_temp = temp.rolling(time = 5).mean()
 rolled_temp = rolled_temp.shift(time=-4).dropna("time", how='all')
 
-print(rolled_temp.time)
-# shift_rolled_temp = rolled_temp.sel(time=slice("1951-01-15", "2021-01-14"))
+# print(rolled_temp.time)
+# shift_rolled_temp = rolled_temp.sel(time=slice("1951-01-15", "2021-03-14"))
+
+# shift_rolled_temp = rolled_temp.sel(time=slice("1981-01-15", "2021-03-14"))
+
+shift_rolled_temp = rolled_temp.sel(time=slice("1960-01-15", "2020-01-14"))
+
+# shift_rolled_temp = rolled_temp.sel(time=slice("1960-01-06", "2021-03-05"))
+
 
 # shift_rolled_temp = rolled_temp.sel(time=slice("1700-01-15", "1900-01-14"))
 
-shift_rolled_temp = rolled_temp.sel(time=slice("1700-11-15", "1899-03-14"))
+# shift_rolled_temp = rolled_temp.sel(time=slice("1700-11-15", "1899-03-14"))
+
+# shift_rolled_temp = rolled_temp.sel(time=slice("1678-11-15", "2258-03-14"))
+
+# shift_rolled_temp = rolled_temp.sel(time=slice("1678-11-15", "2229-03-14"))
 
 # print(shift_rolled_temp)
-
+print()
 
 loc_shift_rolled_temp = shift_rolled_temp[:,alaska_lat, alaska_lon]
 print(loc_shift_rolled_temp['time'].values)
+
+
+
 # for i in np.arange(0,(years*365)+14,1): #18 or 14
 #     # temp_loc = []
     
@@ -95,19 +117,19 @@ print(loc_shift_rolled_temp['time'].values)
 # exit()
 
 #########################################################################################
-# year_range = np.arange(1951, 2021, 1)
+year_range = np.arange(1960, 2020, 1)
 
-# date_range = []
-# for year in year_range:
-#     if year == 1951:
-#         # date_range.append(pd.date_range(start= f'{year}-01-15',end = f'{year}-03-14',freq='d') + pd.offsets.Hour(00))
-#         date_range.append(pd.date_range(start= f'{year}-11-15',end = f'{year+1}-03-14',freq='d') + pd.offsets.Hour(00))
-#     elif year == 2020 :
-#         date_range.append(pd.date_range(start= f'{year}-11-15',end = f'{year+1}-01-14',freq='d')+ pd.offsets.Hour(00))
-#     else: 
-#         date_range.append(pd.date_range(start= f'{year}-11-15',end = f'{year+1}-03-14',freq='d') + pd.offsets.Hour(00))
+date_range = []
+for year in year_range:
+    if year == 1960:
+        date_range.append(pd.date_range(start= f'{year}-01-15',end = f'{year}-03-14',freq='d') + pd.offsets.Hour(00))
+        # date_range.append(pd.date_range(start= f'{year}-11-15',end = f'{year+1}-03-14',freq='d') + pd.offsets.Hour(00))
+    elif year == 2019 :
+        date_range.append(pd.date_range(start= f'{year}-11-15',end = f'{year+1}-01-14',freq='d')+ pd.offsets.Hour(00))
+    else:
+        date_range.append(pd.date_range(start= f'{year}-11-15',end = f'{year+1}-03-14',freq='d') + pd.offsets.Hour(00))
 
-year_range = np.arange(1700, 1899, 1)
+# year_range = np.arange(1679, 2229, 1)
 
 # date_range = []
 # for year in year_range:
@@ -119,9 +141,13 @@ year_range = np.arange(1700, 1899, 1)
 #     else: 
 #         date_range.append(pd.date_range(start= f'{year}-11-15',end = f'{year+1}-03-14',freq='d') + pd.offsets.Hour(00))
 
-date_range = []
-for year in year_range:
-    date_range.append(pd.date_range(start= f'{year}-11-15',end = f'{year+1}-03-14',freq='d') + pd.offsets.Hour(00))
+# date_range = []
+# for year in year_range:
+#     # date_range.append(pd.date_range(start= f'{year}-11-15',end = f'{year+1}-03-14',freq='d') + pd.offsets.Hour(00))
+#     # date_range.append(pd.date_range(start= f'{year}-11-15',end = f'{year+1}-03-14',freq='d') + pd.offsets.Hour(11))
+
+#     date_range.append(pd.date_range(start= f'{year}-11-06',end = f'{year+1}-03-05',freq='d') + pd.offsets.Hour(11))
+
         
 date_range = [item for sublist in date_range for item in sublist]
 # print(date_range)
@@ -136,7 +162,10 @@ for date in date_range:
 # print(len(date_range))
 print('\n')
 print(date_range[0])
-print(loc_shift_rolled_temp.time[0])
+print(loc_shift_rolled_temp.time[-1])
+# loc_shift_rolled_temp = loc_shift_rolled_temp.sel(time=date_range[:40])
+# quit()
+# print(loc_shift_rolled_temp.time[0])
 print('\n')
 # print(temp)
 loc_shift_rolled_temp = loc_shift_rolled_temp.sel(time=date_range)
@@ -151,19 +180,21 @@ upper = np.percentile(loc_shift_rolled_temp, 66.66)
 print("upper: " + str(upper))
 
 
-
-# train_dates = loc_shift_rolled_temp.sel(time=slice("1951-01-15", "2002-01-14"))
+# train_dates = loc_shift_rolled_temp.sel(time=slice("1678-01-15", "2178-01-14"))
 # print("train_dates: " + str(train_dates.shape[0]))
 
 # train_dates = loc_shift_rolled_temp.sel(time=slice("1700-01-15", "1820-01-14"))
 # print("train_dates: " + str(train_dates.shape[0]))
 
-train_dates = loc_shift_rolled_temp.sel(time=slice("1700-11-15", "1820-03-14"))
-print("train_dates: " + str(train_dates.shape[0]))
+# train_dates = loc_shift_rolled_temp.sel(time=slice("1700-11-15", "1820-03-14"))
+# print("train_dates: " + str(train_dates.shape[0]))
+
+
+train_dates = 120*20
 
 train_class = []
 
-for i in np.arange(0, train_dates.shape[0], 1):
+for i in np.arange(0, train_dates, 1):
 
     #CHANGE
 
@@ -192,7 +223,7 @@ print("number of 0: " + str(count_arr[0]))
 print("number of 1: " + str(count_arr[1]))
 print("number of 2: " + str(count_arr[2]))
 
-for i in np.arange(train_dates.shape[0], loc_shift_rolled_temp.shape[0], 1):
+for i in np.arange(train_dates, loc_shift_rolled_temp.shape[0], 1):
 
     #CHANGE
 
@@ -218,16 +249,15 @@ count_arr = np.bincount(train_class)
 print("number of 0: " + str(count_arr[0]))
 print("number of 1: " + str(count_arr[1]))
 print("number of 2: " + str(count_arr[2]))
-
 print(len(train_class))
+# np.savetxt('/barnes-scratch/nicojg/GCM_alas_wint_550yrs_ternary_14day.txt', train_class, fmt='%d')
+# np.savetxt('data/GCM_alas_wint_550yrs_ternary_14days.txt', train_class, fmt='%d')
 
-np.savetxt('/barnes-scratch/nicojg/GCM_winter_season_ternary_alaska_points_5days.txt', train_class, fmt='%d')
-np.savetxt('data/GCM_winter_season_ternary_alaska_points_5days.txt', train_class, fmt='%d')
+np.savetxt('/barnes-scratch/nicojg/_testing_olddata.txt', train_class, fmt='%d')
+np.savetxt('data/_testing_olddata.txt', train_class, fmt='%d')
 
-
-# np.savetxt('/barnes-scratch/nicojg/fixed_ERA5_winter_ternary_alaska_points_5days.txt', train_class, fmt='%d')
-# np.savetxt('data/fixed_ERA5_winter_ternary_alaska_points_5days.txt', train_class, fmt='%d')
-
+# np.savetxt('/barnes-scratch/nicojg/V2_OLDera5_alas_wint_ternary_5day.txt', train_class, fmt='%d')
+# np.savetxt('data/V2_OLDera5_alas_wint_ternary_5day.txt', train_class, fmt='%d')
 quit()
 y_predict_class_plot = np.asarray(train_class)
 
@@ -252,7 +282,7 @@ plt.yticks([0,1,2])
 plt.title("Label Class", fontsize=20)
 plt.xlabel("Year", fontsize=15)
 plt.ylabel("Class", fontsize=15)
-plt.savefig(("figures/misc" + "/timeseries/" + 'fixed_ERA5_WINTER_FULL_timeseries_mjo.png'), bbox_inches='tight')
+plt.savefig(("figures/misc" + "/timeseries/" + 'order3_ERA5_WINTER_FULL_timeseries_mjo.png'), bbox_inches='tight')
 
 for half_decade in np.arange(5,65,5):
     plt.figure(figsize=(20,6))
@@ -264,7 +294,7 @@ for half_decade in np.arange(5,65,5):
     plt.xlabel("Year", fontsize=15)
     plt.ylabel("Class", fontsize=15)
     plt.xlim(half_decade-5,half_decade)
-    plt.savefig(("figures/misc" + "/timeseries/" + 'fixed_ERA5_WINTER_halfdecade_timeseries_' + str(half_decade)+ '_mjo.png'), bbox_inches='tight')
+    plt.savefig(("figures/misc" + "/timeseries/" + 'order3_ERA5_WINTER_halfdecade_timeseries_' + str(half_decade)+ '_mjo.png'), bbox_inches='tight')
     # plt.show()
 
 for decade in np.arange(10,70,10):
@@ -277,7 +307,7 @@ for decade in np.arange(10,70,10):
     plt.xlabel("Year", fontsize=15)
     plt.ylabel("Class", fontsize=15)
     plt.xlim(decade-10,decade)
-    plt.savefig(("figures/misc" + "/timeseries/" + 'fixed_ERA5_WINTER_decade_timeseries_' + str(decade)+ '_mjo.png'), bbox_inches='tight')
+    plt.savefig(("figures/misc" + "/timeseries/" + 'order3_ERA5_WINTER_decade_timeseries_' + str(decade)+ '_mjo.png'), bbox_inches='tight')
     # plt.show()
 
 quit()

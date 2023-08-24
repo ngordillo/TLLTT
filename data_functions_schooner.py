@@ -289,14 +289,17 @@ def load_tropic_data_winter(load_dir, loc_lon = 0, loc_lat = 0, coast=False):
     # train_years = 200
 
     # make labels
-    filename = 'rolled_mjo_4back_200_precip.nc'#'mjo_4back_precip_local.nc'
+    
+    filename = 'anom_mjo_4back_550_precip.nc'#'mjo_4back_precip_local.nc'
     print(load_dir+filename)
     var_raw     = xr.open_dataset(load_dir+filename)['pr']#[:,:,:,np.newaxis]#[:,96:,80:241,np.newaxis]
+
     time     = xr.open_dataset(load_dir+filename)['time'][4:]#[:train_years*365]
     lats  = xr.open_dataset(load_dir+filename)['lat'].values#[96:]
     lons   = xr.open_dataset(load_dir+filename)['lon'].values#[80:241]
 
     print(var_raw)
+
     # quit()
     var_rolled = var_raw.rolling(time = 5).mean().dropna("time", how='all')
     # print(var_rolled)
@@ -308,7 +311,11 @@ def load_tropic_data_winter(load_dir, loc_lon = 0, loc_lat = 0, coast=False):
     # old_time = old_var_rolled_sliced.sel(time=old_var_rolled_sliced.time.dt.month.isin([1, 2, 11, 12]))['time']
 
     
-    var_rolled_sliced = var_rolled.sel(time=slice("1700-11-01", "1899-02-28"))
+    # var_rolled_sliced = var_rolled.sel(time=slice("1700-11-01", "1899-02-28"))
+
+    var_rolled_sliced = var_rolled.sel(time=slice("1679-11-01", "2229-02-28"))
+
+    # var_rolled_sliced = var_rolled.sel(time=slice("1679-11-01", "2257-02-28"))
 
     var = var_rolled_sliced.sel(time=var_rolled_sliced.time.dt.month.isin([1, 2, 11, 12]))
 
@@ -320,7 +327,7 @@ def load_tropic_data_winter(load_dir, loc_lon = 0, loc_lat = 0, coast=False):
         temp_label = np.loadtxt(load_dir+"winter_ternary_loc_"+str(loc_lon)+"_"+str(loc_lat)+".txt")
     else:
         # temp_label = np.loadtxt(load_dir+"local_alaska_points.txt")
-        temp_label = np.loadtxt(load_dir+"GCM_winter_season_ternary_alaska_points_5days.txt")
+        temp_label = np.loadtxt(load_dir+"GCM_alas_wint_550yrs_ternary_14day.txt")
 
 
     # print(var)
@@ -334,7 +341,7 @@ def load_tropic_data_winter_ERA5(load_dir, loc_lon = 0, loc_lat = 0, coast=False
     # train_years = 200s
 
     # make labels
-    filename = 'anom_precip_full_era5_remap.nc'#'mjo_4back_precip_local.nc' MAIN_era5_precip_mjo_notrend_anoms.nc
+    filename =  'anom_precip_full_era5_remap_order3.nc' #'V2_4back_OLDera5_daily_precip_remap.nc' # 'anom_precip_full_era5_remap_order3.nc'#'mjo_4back_precip_local.nc' MAIN_era5_precip_mjo_notrend_anoms.nc
     var_raw     = xr.open_dataset(load_dir+filename)['tp'] #* 86400)#[:,:,:,np.newaxis]#[:,96:,80:241,np.newaxis]
     time     = xr.open_dataset(load_dir+filename)['time']#[:train_years*365]
     lats  = xr.open_dataset(load_dir+filename)['lat'].values#[96:]
@@ -342,9 +349,19 @@ def load_tropic_data_winter_ERA5(load_dir, loc_lon = 0, loc_lat = 0, coast=False
 
     var_rolled = var_raw.rolling(time = 5).mean().dropna("time", how='all')
 
-    var_rolled_sliced = var_rolled.sel(time=slice("1951-01-01", "2020-12-31"))
+    # var_rolled_sliced = var_rolled.sel(time=slice("1951-01-01", "2020-12-31"))
+
+    # var_rolled_sliced = var_rolled.sel(time=slice("1960-01-01", "2020-12-31"))
+    
+    # var_rolled_sliced = var_rolled.sel(time=slice("1960-01-01", "2020-12-31"))
+
+    var_rolled_sliced = var_rolled.sel(time=slice("1951-11-01", "2021-02-28"))
+
+
 
     var = var_rolled_sliced.sel(time=var_rolled_sliced.time.dt.month.isin([1, 2, 11, 12]))
+
+
     # tropics_lats = np.squeeze(np.where((lats>= -30) & (lats <=30)))
     # tropics_lons = np.squeeze(np.where((lons>= -70) & (lons <=70)))
 
@@ -360,7 +377,7 @@ def load_tropic_data_winter_ERA5(load_dir, loc_lon = 0, loc_lat = 0, coast=False
         temp_label = np.loadtxt(load_dir+"loc_"+str(loc_lon)+"_"+str(loc_lat)+"_5mean_14days.txt")
     else:
         # temp_label = np.loadtxt(load_dir+"local_alaska_points.txt")
-        temp_label = np.loadtxt(load_dir+"fixed_ERA5_winter_ternary_alaska_points_5days.txt") # ERA5_winter_ternary_alaska_points_5days.txts
+        temp_label = np.loadtxt(load_dir+"ERA5_alas_wint_200yrs_ternary_14days_order3.txt") # ERA5_alas_wint_200yrs_ternary_14days_order3.txt, ERA5_winter_ternary_alaska_points_5days.txt
 
     # var = var[:,tropics_lats,:]
     # var = var[:,:,tropics_lons]
@@ -370,10 +387,11 @@ def load_tropic_data_winter_ERA5(load_dir, loc_lon = 0, loc_lat = 0, coast=False
 
     all_months = time["time.month"].values#[:60*365]
 
+    print(var)
     
     return np.asarray(temp_label), var.values[:,:,:,np.newaxis], lats, lons, var.time
 
-def get_and_process_tropic_data_winter(raw_labels, raw_data, raw_time, rng, colored=False, standardize=False, shuffle=False, r_seed = 0):
+def get_and_process_tropic_data_winter(raw_labels, raw_data, raw_time, rng, train_yrs, val_yrs, test_yrs, colored=False, standardize=False, shuffle=False, bal_data=False, r_seed = 0):
     print(raw_data.shape)
     
 
@@ -388,16 +406,17 @@ def get_and_process_tropic_data_winter(raw_labels, raw_data, raw_time, rng, colo
     # separate the data into training, validation and testing
 
 
-    year_range = np.arange(1700, 1899, 1)
+    # year_range = np.arange(1700, 1899, 1)
+
+    # year_range = np.arange(1678, 2256, 1)
+
+    year_range = np.arange(1679, 2229, 1)
 
     date_range = []
     for year in year_range:
         date_range.append(pd.date_range(start= f'{year}-03-01',end = f'{year}-06-28',freq='d') + pd.offsets.Hour(00))
             
     date_range = [item for sublist in date_range for item in sublist]
-    # print(date_range)
-    # print(loc_shift_rolled_temp)
-    # print(loc_shift_rolled_temp.sel(time=date_range))
 
     print(len(date_range))
 
@@ -412,7 +431,8 @@ def get_and_process_tropic_data_winter(raw_labels, raw_data, raw_time, rng, colo
 
     
     ##########################
-    # rng.shuffle(years)
+    if(shuffle==True):
+        rng.shuffle(years)
     ##########################
   
     # nyr_val   = int(len(years)*.2)
@@ -422,154 +442,20 @@ def get_and_process_tropic_data_winter(raw_labels, raw_data, raw_time, rng, colo
     # nyr_train = len(years) - nyr_val
     
     # years_train = np.random.choice(years,size=(nyr_train,),replace=False)
-    years_train = years[:70] # 70 and 120
+    years_train = years[:train_yrs] # 70 and 120
     #years_train = years[:7]
 
 #     years_train = rng.choice(years,size=(nyr_train,),replace=False)     #use this syntax next time to keep everything using rng
 
     # years_val   = np.setxor1d(years,years_train)
 
-    years_val = years[70:90] # 70:90 and 120:160
+    years_val = years[train_yrs:val_yrs] # 70:90 and 120:160
     #years_val = years[7:10]
 
     # years_test  = 2010
-    years_test = years[90:200] # 90:200 and 160:200
+    years_test = years[val_yrs:test_yrs] # 90:200 and 160:200
     #years_test = years[10:15]
     ###########################################################################################################
-    # ic(years_train)
-    # ic(years_val)
-    # ic(years_test)    
-    # years_train = np.isin(all_years, years_train)
-    # years_val   = np.isin(all_years, years_val)
-    # years_test  = np.isin(all_years, years_test)
-    
-    # iyears_train = np.where(years_train==True)[0]
-    # iyears_val = np.where(years_val==True)[0]
-    # ic(iyears_val)
-    # iyears_test = np.where(years_test==True)[0]   
-        
-    # rus = RandomUnderSampler(random_state=r_seed)
-    # data_amt = iyears_train.reshape(-1,1)
-    # bal_data_train, bal_labels_train = rus.fit_resample(data_amt, raw_labels[iyears_train])
-    # bal_data_train, bal_labels_train = (np.asarray(t) for t in zip(*sorted(zip(bal_data_train, bal_labels_train))))
-    # bal_data_train = bal_data_train.reshape(-1,1)[:,0]
-
-    # rus = RandomUnderSampler(random_state=r_seed)
-    # data_amt = iyears_val.reshape(-1,1)
-    # bal_data_val, bal_labels_val = rus.fit_resample(data_amt, raw_labels[iyears_val])
-    # bal_data_val, bal_labels_val = (np.asarray(t) for t in zip(*sorted(zip(bal_data_val, bal_labels_val))))
-    # bal_data_val = bal_data_val.reshape(-1,1)[:,0]
-
-    # # print(iyears_val)
-    # # print(bal_data_val)
-
-    # # set_diff = np.setdiff1d(iyears_val, bal_data_val)
-
-    # # print(set_diff)
-
-    # rus = RandomUnderSampler(random_state=r_seed)
-    # data_amt = iyears_test.reshape(-1,1)
-    # bal_data_test, bal_labels_test = rus.fit_resample(data_amt, raw_labels[iyears_test])
-    # bal_data_test, bal_labels_test = (np.asarray(t) for t in zip(*sorted(zip(bal_data_test, bal_labels_test))))
-    # bal_data_test = bal_data_test.reshape(-1,1)[:,0]
-
-
-  
-
-    # ################
-    # # Standardize the input based on training data only
-    # # X_train_raw = raw_data[iyears_train,:,:]
-    # # if( (standardize==True) or (standardize=='all')):
-    # #     X_mean  = np.mean(X_train_raw.flatten())
-    # #     X_std   = np.std(X_train_raw.flatten())
-    # # elif(standardize=='pixel'):
-    # #     X_mean  = np.mean(X_train_raw,axis=(0,))
-    # #     X_std   = np.std(X_train_raw,axis=(0,))
-    # #     X_std[X_std==0] = 1.
-    # # else:
-    # #     X_mean  = 0. 
-    # #     X_std   = 1. 
-
-    # # # Create the target vectors, which includes a second dummy column.
-
-    # # ###########################################################
-    # # X_train = (raw_data[iyears_train,:,:] - X_mean) / X_std
-    # # X_val   = (raw_data[iyears_val,:,:] - X_mean) / X_std
-    # # X_test  = (raw_data[iyears_test,:,:] - X_mean) / X_std
-
-    # # X_train[X_train==0.] = 0.
-    # # X_val[X_val==0.]     = 0.
-    # # X_test[X_test==0.]   = 0.    
-    
-    # # y_train = raw_labels[iyears_train]
-    # # y_val   = raw_labels[iyears_val]
-    # # y_test  = raw_labels[iyears_test]
-
-
-    # # print(raw_time['time'])
-    # # print(iyears_train)
-    # # print(iyears_train.shape)
-    # # time_train = raw_time['time'][iyears_train]
-    # # time_val   = raw_time['time'][iyears_val]
-    # # time_test  = raw_time['time'][iyears_test]
-
-    # ###########################################################
-
-    # X_train_raw = raw_data[bal_data_train,:,:]
-    # if( (standardize==True) or (standardize=='all')):
-    #     X_mean  = np.mean(X_train_raw.flatten())
-    #     X_std   = np.std(X_train_raw.flatten())
-    # elif(standardize=='pixel'):
-    #     X_mean  = np.mean(X_train_raw,axis=(0,))
-    #     X_std   = np.std(X_train_raw,axis=(0,))
-    #     X_std[X_std==0] = 1.
-    # else:
-    #     X_mean  = 0. 
-    #     X_std   = 1. 
-
-
-    # X_train = (raw_data[bal_data_train,:,:] - X_mean) / X_std
-    # X_val   = (raw_data[bal_data_val,:,:] - X_mean) / X_std
-    # X_test  = (raw_data[bal_data_test,:,:] - X_mean) / X_std
-
-    # X_train[X_train==0.] = 0.
-    # X_val[X_val==0.]     = 0.
-    # X_test[X_test==0.]   = 0.     
-    
-    # y_train = raw_labels[bal_data_train]
-    # y_val   = raw_labels[bal_data_val]
-    # y_test  = raw_labels[bal_data_test]
-
-    # # print(bal_labels_val)
-    # # print(y_val)
-    # # quit()
-
-    # count_arr = np.bincount(raw_labels.astype(int)[bal_data_test])
-
-    # print("number of 0: " + str(count_arr[0]))
-    # print("number of 1: " + str(count_arr[1]))
-    # print("number of 2: " + str(count_arr[2]))
-
-    # print(raw_time['time'])
-    # print(bal_data_train)
-    # print(bal_data_train.shape)
-    # time_train = raw_time['time'][bal_data_train]
-    # time_val   = raw_time['time'][bal_data_val]
-    # time_test  = raw_time['time'][bal_data_test]
-    
-    
-    # print(f"raw_data        = {np.shape(raw_data)}")
-    # print(f"training data   = {np.shape(X_train)}, {np.shape(y_train)}")
-    # print(f"validation data = {np.shape(X_val)}, {np.shape(y_val)}")
-    # print(f"test data       = {np.shape(X_test)}, {np.shape(y_test)}")
-    # if(standardize != 'pixel'):
-    #     print(f"X_mean          = {X_mean}")
-    #     print(f"X_std           = {X_std}")    
-    # else:
-    #     print(f"X_mean.shape    = {X_mean.shape}")
-    #     print(f"X_std.shape     = {X_std.shape}")    
-        
-    ##########################################################################################################
     ic(years_train)
     ic(years_val)
     ic(years_test)    
@@ -579,19 +465,39 @@ def get_and_process_tropic_data_winter(raw_labels, raw_data, raw_time, rng, colo
     
     iyears_train = np.where(years_train==True)[0]
     iyears_val = np.where(years_val==True)[0]
+    ic(iyears_val)
     iyears_test = np.where(years_test==True)[0]   
-        
+    
+    if (bal_data):
+        rus = RandomUnderSampler(random_state=r_seed)
+        data_amt = iyears_train.reshape(-1,1)
+        bal_data_train, bal_labels_train = rus.fit_resample(data_amt, raw_labels[iyears_train])
+        bal_data_train, bal_labels_train = (np.asarray(t) for t in zip(*sorted(zip(bal_data_train, bal_labels_train))))
+        bal_data_train = bal_data_train.reshape(-1,1)[:,0]
 
+        rus = RandomUnderSampler(random_state=r_seed)
+        data_amt = iyears_val.reshape(-1,1)
+        bal_data_val, bal_labels_val = rus.fit_resample(data_amt, raw_labels[iyears_val])
+        bal_data_val, bal_labels_val = (np.asarray(t) for t in zip(*sorted(zip(bal_data_val, bal_labels_val))))
+        bal_data_val = bal_data_val.reshape(-1,1)[:,0]
+
+
+        rus = RandomUnderSampler(random_state=r_seed)
+        data_amt = iyears_test.reshape(-1,1)
+        bal_data_test, bal_labels_test = rus.fit_resample(data_amt, raw_labels[iyears_test])
+        bal_data_test, bal_labels_test = (np.asarray(t) for t in zip(*sorted(zip(bal_data_test, bal_labels_test))))
+        bal_data_test = bal_data_test.reshape(-1,1)[:,0]
+
+        iyears_train = bal_data_train
+        iyears_val = bal_data_val
+        iyears_test = bal_data_test
+
+        
+    ##########################################################################################################
     
     ic(iyears_train)
     
     # Standardize the input based on training data only
-    # print(iyears_train)
-    # print(iyears_train.shape)
-    # print(raw_data.shape)
-    # # print(years)
-    # print(years.shape)
-    # print(years_test.shape)
     X_train_raw = raw_data[iyears_train,:,:]
     if( (standardize==True) or (standardize=='all')):
         X_mean  = np.mean(X_train_raw.flatten())
@@ -636,7 +542,7 @@ def get_and_process_tropic_data_winter(raw_labels, raw_data, raw_time, rng, colo
     
     return (X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test)
 
-def get_and_process_tropic_data_winter_ERA5(raw_labels, raw_data, raw_time, rng, colored=False, standardize=False, shuffle=False, r_seed = 0):
+def get_and_process_tropic_data_winter_ERA5(raw_labels, raw_data, raw_time, rng, train_yrs, val_yrs, test_yrs, translation = False, colored=False, standardize=False, shuffle=False, bal_data=False, r_seed = 0):
     print(raw_data.shape)
     ####USER
 
@@ -654,21 +560,40 @@ def get_and_process_tropic_data_winter_ERA5(raw_labels, raw_data, raw_time, rng,
         raw_data = np.asarray(raw_data, dtype='float')
     raw_labels   = np.asarray(raw_labels, dtype='float')
 
-    if(shuffle==True):
-        # shuffle the data
-        print('shuffling the data before train/validation/test split.')
-        index      = np.arange(0,raw_data.shape[0])
-        rng.shuffle(index)  
-        raw_data    = raw_data[index,:,:]
-        raw_labels  = raw_labels[index,]
+    # if(shuffle==True):
+    #     # shuffle the data
+    #     print('shuffling the data before train/validation/test split.')
+    #     index      = np.arange(0,raw_data.shape[0])
+    #     rng.shuffle(index)  
+    #     raw_data    = raw_data[index,:,:]
+    #     raw_labels  = raw_labels[index,]
 
     # separate the data into training, validation and testing
+
+
+    year_range = np.arange(1951, 2021, 1)
+
+    date_range = []
+    for year in year_range:
+        date_range.append(pd.date_range(start= f'{year}-02-28',end = f'{year}-06-27',freq='d') + pd.offsets.Hour(00))
+            
+    date_range = [item for sublist in date_range for item in sublist]
+
+    print(len(date_range))
+
+    raw_time_for_years = raw_time['time.year']
+
+    raw_time_for_years['time'] = date_range
+
+    all_years = raw_time_for_years["time.year"].values
+
     all_years = raw_time["time.year"].values
     years     = np.unique(all_years)
     
 
     ##########################
-    rng.shuffle(years)
+    if(shuffle==True):
+        rng.shuffle(years)
     ##########################
     # nyr_val   = int(len(years)*.2)
 
@@ -678,18 +603,24 @@ def get_and_process_tropic_data_winter_ERA5(raw_labels, raw_data, raw_time, rng,
     
     # years_train = np.random.choice(years,size=(nyr_train,),replace=False)
     # years_train = years[:31]
-    years_train = years[:61] #62 #can go up to 61
+    print(train_yrs)
+    years_train = years[:train_yrs] #62 #can go up to 61
     #years_train = years[:7]
 
-#     years_train = rng.choice(years,size=(nyr_train,),replace=False)     #use this syntax next time to keep everything using rng
+#     years_train = rng.choice(years,size=(nyr_train,),replace=False)     #use this syntax nexƒt time to keep everything using rng
 
     # years_val   = np.setxor1d(years,years_train)
 
-    years_val = years[0:71]
+    years_val = years[train_yrs:val_yrs]
+
+    if(translation):
+        years_val = years[0:test_yrs]
+
+    # years_val = [2014,2005,1981,1996,1988,1965,2002,1982,1963,2008,1999,1991,2015,1972,1971,1983,1994,1970,1964,1962,1998,2018,2004,1986,2001,2016,1977,2010,1980,2009]
     #years_val = years[7:10]
 
     # years_test  = 2010
-    years_test = years[55:61]
+    years_test = years[val_yrs:test_yrs]
     #years_test = years[10:15]
     
     ic(years_train)
@@ -704,40 +635,38 @@ def get_and_process_tropic_data_winter_ERA5(raw_labels, raw_data, raw_time, rng,
     ic(iyears_val)
     iyears_test = np.where(years_test==True)[0]   
 
-
-    print("wdadadadasdada")
-    print(r_seed)
     count_arr = np.bincount(raw_labels.astype(int)[iyears_val])
     
     print("number of 0: " + str(count_arr[0]))
     print("number of 1: " + str(count_arr[1]))
     print("number of 2: " + str(count_arr[2]))
-        # print(iyears_train)
-    # print(iyears_train.shape)
-    # print(raw_data.shape)
-    # # print(years)
-    # print(years.shape)
-    print(iyears_train)
-    ################
-    rus = RandomUnderSampler(random_state=r_seed)
-    data_amt = iyears_train.reshape(-1,1)
-    bal_data_train, bal_labels_train = rus.fit_resample(data_amt, raw_labels[iyears_train])
-    bal_data_train, bal_labels_train = (np.asarray(t) for t in zip(*sorted(zip(bal_data_train, bal_labels_train))))
-    bal_data_train = bal_data_train.reshape(-1,1)[:,0]
+    # quit()
+    if (bal_data):
+        rus = RandomUnderSampler(random_state=r_seed)
+        data_amt = iyears_train.reshape(-1,1)
+        bal_data_train, bal_labels_train = rus.fit_resample(data_amt, raw_labels[iyears_train])
+        bal_data_train, bal_labels_train = (np.asarray(t) for t in zip(*sorted(zip(bal_data_train, bal_labels_train))))
+        bal_data_train = bal_data_train.reshape(-1,1)[:,0]
 
-    rus = RandomUnderSampler(random_state=r_seed)
-    data_amt = iyears_val.reshape(-1,1)
-    bal_data_val, bal_labels_val = rus.fit_resample(data_amt, raw_labels[iyears_val])
-    bal_data_val, bal_labels_val = (np.asarray(t) for t in zip(*sorted(zip(bal_data_val, bal_labels_val))))
-    bal_data_val = bal_data_val.reshape(-1,1)[:,0]
+        rus = RandomUnderSampler(random_state=r_seed)
+        data_amt = iyears_val.reshape(-1,1)
+        bal_data_val, bal_labels_val = rus.fit_resample(data_amt, raw_labels[iyears_val])
+        bal_data_val, bal_labels_val = (np.asarray(t) for t in zip(*sorted(zip(bal_data_val, bal_labels_val))))
+        bal_data_val = bal_data_val.reshape(-1,1)[:,0]
 
-    rus = RandomUnderSampler(random_state=r_seed)
-    data_amt = iyears_test.reshape(-1,1)
-    bal_data_test, bal_labels_test = rus.fit_resample(data_amt, raw_labels[iyears_test])
-    bal_data_test, bal_labels_test = (np.asarray(t) for t in zip(*sorted(zip(bal_data_test, bal_labels_test))))
-    bal_data_test = bal_data_test.reshape(-1,1)[:,0]
 
-    ################
+        # rus = RandomUnderSampler(random_state=r_seed)
+        # data_amt = iyears_test.reshape(-1,1)
+        # bal_data_test, bal_labels_test = rus.fit_resample(data_amt, raw_labels[iyears_test])
+        # bal_data_test, bal_labels_test = (np.asarray(t) for t in zip(*sorted(zip(bal_data_test, bal_labels_test))))
+        # bal_data_test = bal_data_test.reshape(-1,1)[:,0]
+
+        iyears_train = bal_data_train
+        iyears_val = bal_data_val
+        iyears_test = bal_data_val
+
+        
+    ##########################################################################################################
     # Standardize the input based on training data only
     # X_train_raw = raw_data[iyears_train,:,:]
     # if( (standardize==True) or (standardize=='all')):
@@ -776,7 +705,7 @@ def get_and_process_tropic_data_winter_ERA5(raw_labels, raw_data, raw_time, rng,
 
     ###########################################################
 
-    X_train_raw = raw_data[bal_data_train,:,:]
+    X_train_raw = raw_data[iyears_train,:,:]
     if( (standardize==True) or (standardize=='all')):
         X_mean  = np.mean(X_train_raw.flatten())
         X_std   = np.std(X_train_raw.flatten())
@@ -789,30 +718,33 @@ def get_and_process_tropic_data_winter_ERA5(raw_labels, raw_data, raw_time, rng,
         X_std   = 1. 
 
 
-    X_train = (raw_data[bal_data_train,:,:] - X_mean) / X_std
-    X_val   = (raw_data[bal_data_val,:,:] - X_mean) / X_std
-    X_test  = (raw_data[bal_data_test,:,:] - X_mean) / X_std
+    X_train = (raw_data[iyears_train,:,:] - X_mean) / X_std
+    X_val   = (raw_data[iyears_val,:,:] - X_mean) / X_std
+    X_test  = (raw_data[iyears_test,:,:] - X_mean) / X_std
 
     X_train[X_train==0.] = 0.
     X_val[X_val==0.]     = 0.
     X_test[X_test==0.]   = 0.    
     
-    y_train = raw_labels[bal_data_train]
-    y_val   = raw_labels[bal_data_val]
-    y_test  = raw_labels[bal_data_test]
+    y_train = raw_labels[iyears_train]
+    y_val   = raw_labels[iyears_val]
+    y_test  = raw_labels[iyears_test]
 
-    count_arr = np.bincount(raw_labels.astype(int)[bal_data_val])
+    print(iyears_val)
+
+    count_arr = np.bincount(raw_labels.astype(int)[iyears_val])
 
     print("number of 0: " + str(count_arr[0]))
     print("number of 1: " + str(count_arr[1]))
     print("number of 2: " + str(count_arr[2]))
-
+    print(bal_data)
+    # quit()
     print(raw_time['time'])
-    print(bal_data_train)
-    print(bal_data_train.shape)
-    time_train = raw_time['time'][bal_data_train]
-    time_val   = raw_time['time'][bal_data_val]
-    time_test  = raw_time['time'][bal_data_test]
+    print(iyears_train)
+    print(iyears_train.shape)
+    time_train = raw_time['time'][iyears_train]
+    time_val   = raw_time['time'][iyears_val]
+    time_test  = raw_time['time'][iyears_test]
     
     
     print(f"raw_data        = {np.shape(raw_data)}")
@@ -828,9 +760,10 @@ def get_and_process_tropic_data_winter_ERA5(raw_labels, raw_data, raw_time, rng,
         
     # For bigger val
     ##################
-    X_test = X_val
-    y_test = y_val
-    time_test = time_val
+    if(translation):
+        X_test = X_val
+        y_test = y_val
+        time_test = time_val
     ##################
     #dum
     # X_val = X_train

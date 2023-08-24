@@ -114,6 +114,8 @@ def get_exp_directories_schooner(exp_name):
     ranks_dir = '/ourdisk/hpc/ai2es/nicojg/TLLTT/figures/' + exp_name + '/vizualization/rank_figs/'
     if not os.path.exists(ranks_dir):
         os.makedirs(ranks_dir)
+
+        
         
     return model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir
 
@@ -169,5 +171,9 @@ def get_exp_directories_falco(exp_name):
     ranks_dir = '/home/nicojg/TLLTT/figures/' + exp_name + '/vizualization/rank_figs/'
     if not os.path.exists(ranks_dir):
         os.makedirs(ranks_dir)
+
+    era5_dir = '/home/nicojg/TLLTT/figures/' + exp_name + '/vizualization/era5_figs/'
+    if not os.path.exists(era5_dir):
+        os.makedirs(era5_dir)
         
     return model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir

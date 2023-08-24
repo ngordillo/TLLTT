@@ -21,23 +21,33 @@ def find_nearest_index(array, value):
 #load_dir = "~/Documents/Work/2021_Fall_IAI/Data/ERA5_Data/Precip/"
 load_dir = "/barnes-scratch/nicojg/"
 
-filename =    'mjo_4back_200_precip.nc'  #'precip_full_era5_remap.nc'  #'small_2mtemp.nc'  #'2mtemp_full_era5_remap.nc'  #'mjo_4back_200_precip.nc'  #'small_2mtemp.nc' #'mjo_4back_200_precip.nc'  #'4back_era5_daily_precip_remap.nc' #'era_no1959_2mtemp_remap.nc'#'4back_era5_daily_precip_remap.nc' #'era5_daily_2mtemp_remap.nc' #'era5_daily_precip_remap.nc' #'4back_era5_daily_mjo_noleap_precip.nc'#4back_era5_daily_noleap_precip.nc'#era5_daily_2mtemp.nc'#mjo_precip_local.nc'#'mjo_200_precip.nc'#small_2mtemp.nc'#tropic_200_z500.nc'
+filename =    'era_no1959_2mtemp_remap.nc' #'era_no1959_2mtemp_remap.nc' #'4back_era5_daily_precip_remap.nc'  #'large_2mtemp.nc' #'mjo_4back_700_precip.nc' # 'mjo_4back_200_precip.nc'  #'precip_full_era5_remap.nc'  #'small_2mtemp.nc'  #'2mtemp_full_era5_remap.nc'  #'mjo_4back_200_precip.nc'  #'small_2mtemp.nc' #'mjo_4back_200_precip.nc'  #'4back_era5_daily_precip_remap.nc' #'era_no1959_2mtemp_remap.nc'#'4back_era5_daily_precip_remap.nc' #'era5_daily_2mtemp_remap.nc' #'era5_daily_precip_remap.nc' #'4back_era5_daily_mjo_noleap_precip.nc'#4back_era5_daily_noleap_precip.nc'#era5_daily_2mtemp.nc'#mjo_precip_local.nc'#'mjo_200_precip.nc'#small_2mtemp.nc'#tropic_200_z500.nc'
 
-var     = xr.open_dataset(load_dir+filename)['pr']#[:,96:,80:241]#*86400#)[:,96:,80:241] #t2m  #pr #tp
-lats  = xr.open_dataset(load_dir+filename)['lat'].values#[96:]
-lons   = xr.open_dataset(load_dir+filename)['lon'].values#[80:241]
+var     = xr.open_dataset(load_dir+filename)['t2m'][:,96:,80:241]#*86400#)[:,96:,80:241] #t2m  #pr #tp
+lats  = xr.open_dataset(load_dir+filename)['lat'].values[96:]
+lons   = xr.open_dataset(load_dir+filename)['lon'].values[80:241]
 # time = xr.open_dataset(load_dir+filename)['time'].values[0:(365*60)+50+0]#[4:(365*60)+4]#[4:(365*60)+4]#[0:(365*60)+50+0]
 
 print('taking tropical mean...')
+
 print(var)
 
-quit()
+var = var.sel(time=slice('1960-01-01', '2021-12-31'))
 
-# dates = xr.cftime_range(start="1699-12-28", periods=73054, freq="D", calendar="noleap").to_datetimeindex()
+# print(var)
+# quit()
+
+###########################################################################
+# dates = xr.cftime_range(start="1678-12-28", periods=211704, freq="D", calendar="noleap").to_datetimeindex()
+
+# dates = xr.cftime_range(start="1679-01-01", periods=201115, freq="D", calendar="noleap").to_datetimeindex()
+
+# var = var[:len(dates)]
 
 # var['time'] = dates
 
-
+# print(var['time'])
+############################################################################
 
 # print(dates)
 # print("fucked dates")
@@ -62,7 +72,7 @@ for label, var_day in var_stacked.groupby(grouper):
     # print(type(var_day.time.values[0]))
     # print(var_day.time.dt.day)
     # exit()
-    curve = polynomial.polyfit(np.arange(0,var_day.shape[0]),var_day,1)
+    curve = polynomial.polyfit(np.arange(0,var_day.shape[0]),var_day,3)
 
     trend = polynomial.polyval(np.arange(0,var_day.shape[0]),curve,tensor=True)
 
@@ -105,7 +115,9 @@ print(anom_xr_trend)
 
 # print(rolled_trend.time)
 
-anom_xr_trend.to_netcdf('/barnes-scratch/nicojg/anom_precip_full_era5_remap.nc')
+print(anom_xr_trend)
+#anom_xr_trend.to_netcdf('/barnes-scratch/nicojg/anom_mjo_4back_550_precip.nc')
+anom_xr_trend.to_netcdf('/barnes-scratch/nicojg/V2_OLDera_no1959_2mtemp_remap.nc')
 
 # alaska_lat = find_nearest_index(lats, 61.2176)
 # alaska_lon = find_nearest_index(lons, 360-149.8997)

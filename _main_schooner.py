@@ -24,11 +24,16 @@ import tensorflow as tf
 import random
 
 import network
-import experiment_settings 
+import experiment_settings_shuf_bal_seeds 
 import data_functions_schooner
 import push_prototypes
 import plots
 import common_functions
+
+import heapq as hq
+
+from sklearn.metrics import confusion_matrix
+
 
 
 7
@@ -47,10 +52,15 @@ print(f"tensorflow version = {tf.__version__}")
 
 # ## Define experiment settings and directories
 
-EXP_NAME = 'alas_200year_winter_ternary_GCM_100train_yearshuf'#balanced_test'#initial_test'#'mjo'#'quadrants_testcase'
+if len(sys.argv) < 2:
+    EXP_NAME = 'GCM_alas_wint_583yrs_gold_redo'#'smaller_test'#'quadrants_testcase'
+else:
+    num = int(sys.argv[1])
+    EXP_NAME = 'GCM_alas_wint_500yrs_shuf_bal_seed'+str(num) 
+'#balanced_test'#initial_test'#'mjo'#'quadrants_testcase'   
 
-imp.reload(experiment_settings)
-settings = experiment_settings.get_settings(EXP_NAME)
+imp.reload(experiment_settings_shuf_bal_seeds)
+settings = experiment_settings_shuf_bal_seeds.get_settings(EXP_NAME)
 
 imp.reload(common_functions)
 # model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
@@ -74,6 +84,8 @@ NEPOCHS              = settings['nepochs']
 LR_INIT              = settings['lr']
 LR_CALLBACK_EPOCH    = settings['lr_cb_epoch']
 PATIENCE             = 100
+
+EARLY_STOPPING       = settings['es_stop']
 
 
 # ## Initialize
@@ -99,48 +111,47 @@ imp.reload(data_functions_schooner)
 DATA_NAME = settings['data_name']
 DATA_DIR = settings['data_dir']
       
-# elif((EXP_NAME[:12]=='initial_test') or (EXP_NAME[:12]=='smaller_test') or (EXP_NAME[:13]=='balanced_test') or (EXP_NAME[:13]=='threeday_test') or (EXP_NAME[:12]=='zeroday_test') or (EXP_NAME[:16]=='fourteenday_test') or (EXP_NAME[:18]=='fourteenday_precip')
-#      or (EXP_NAME[:19]=='seventeenday_precip') or (EXP_NAME[:16]=='elevenday_precip') or (EXP_NAME[:30]=='fixed_fourteenday_precip') or (EXP_NAME[:30]=='cold_fourteenday_precip') or (EXP_NAME[:30]=='mjo_fourteenday_precip') or (EXP_NAME[:30]=='shuffle_fourteenday_precip')
-#      or (EXP_NAME[:30]=='cali_fourteenday_precip') or (EXP_NAME[:30]=='alas_fourteenday_precip') or (EXP_NAME[:30]=='alas_fourteenday_5proto') or (EXP_NAME[:30]=='alas_fourteenday_back') or (EXP_NAME[:30]=='alas_fourteenday_large') or (EXP_NAME[:30]=='vanc_fourteenday_precip')
-#      or (EXP_NAME[:30]=='alas_fourteenday_precip_pre') or (EXP_NAME[:30]=='alas_14day_precip_schooner') or (EXP_NAME[:30]=='LA_14day_precip_schooner') or (EXP_NAME[:30]=='cres_14day_precip_schooner') or (EXP_NAME[:30]=='vanc_14day_precip_schooner')
-#      or (EXP_NAME[:30]=='alas_14dayback_precip_schooner') or (EXP_NAME[:50]=='alas_14day_precip_large_schooner') or (EXP_NAME[:70]=='alas_14day_precip_5mean_large_schooner') or (EXP_NAME[:70]=='alas_14day_precip_5mean_schooner') 
-#      or (EXP_NAME[:70]=='alas_14day_precip_5back_schooner') or (EXP_NAME[:70]=='alas_14day_precip_6back_schooner')):
+train_yrs = settings['train_yrs']
+val_yrs = settings['val_yrs']
+test_years = settings['test_yrs']
 
-labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter(DATA_DIR)
-X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter(labels,
-                                                                                        data,
-                                                                                        time,
-                                                                                        rng, 
-                                                                                        colored=settings['colored'],
-                                                                                        standardize=settings['standardize'],
-                                                                                        shuffle=settings['shuffle'],
-                                                                                        r_seed = RANDOM_SEED,
-                                                                                    )
-# quit()
-                                                                                
-# labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter_ERA5(DATA_DIR)
-# X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter_ERA5(labels,
-#                                                                                         data,
-#                                                                                         time,
-#                                                                                         rng, 
-#                                                                                         colored=settings['colored'],
-#                                                                                         standardize=settings['standardize'],
-#                                                                                         shuffle=settings['shuffle'],
-#                                                                                         r_seed = RANDOM_SEED,
-#                                                                                     )
+train_yrs_era5 = settings['train_yrs_era5'],
+val_yrs_era5 = settings['val_yrs_era5'],
+test_years_era5 = settings['test_yrs_era5'],
 
-# elif((EXP_NAME[:21]=='fourteenday_both_test') or ((EXP_NAME[:18]=='threeday_both_test'))):
-#     print("bingo")
-#     labels, data, lat, lon, time = data_functions_schooner.load_z500_precip_data(DATA_DIR)
-#     X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data(labels,
-#                                                                                          data,
-#                                                                                          time,
-#                                                                                          rng, 
-#                                                                                          colored=settings['colored'],
-#                                                                                          standardize=settings['standardize'],
-#                                                                                          shuffle=settings['shuffle'],
-#                                                                                         )
-
+if(EXP_NAME[:3]=='ERA'):   
+    labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter_ERA5(DATA_DIR)
+    X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter_ERA5(labels,
+                                                                                            data,
+                                                                                            time,
+                                                                                            rng,
+                                                                                            train_yrs_era5,
+                                                                                            val_yrs_era5,
+                                                                                            test_years_era5,
+                                                                                            colored=settings['colored'],
+                                                                                            standardize=settings['standardize'],
+                                                                                            shuffle=settings['shuffle'],
+                                                                                            bal_data = settings['balance_data'],
+                                                                                            r_seed = RANDOM_SEED,
+                                                                                        )
+elif(EXP_NAME[:3] == 'GCM'):
+    labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter(DATA_DIR)
+    X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter(labels,
+                                                                                            data,
+                                                                                            time,
+                                                                                            rng, 
+                                                                                            train_yrs,
+                                                                                            val_yrs,
+                                                                                            test_years,
+                                                                                            colored=settings['colored'],
+                                                                                            standardize=settings['standardize'],
+                                                                                            shuffle=settings['shuffle'],
+                                                                                            bal_data = settings['balance_data'],
+                                                                                            r_seed = RANDOM_SEED,
+                                                                                )
+else:
+    print("Expermient name is bad")
+    quit()
 
 proto_class_mask = network.createClassIdentity(PROTOTYPES_PER_CLASS)
 
@@ -181,8 +192,11 @@ es_callback = tf.keras.callbacks.EarlyStopping(
 
 callbacks_list = [
 #     lr_callback,
-#     es_callback,
+    es_callback,
 ]            
+
+if(EARLY_STOPPING == False):
+    callbacks_list.remove(es_callback)
 
 # metrics
 metrics_list = [
@@ -221,8 +235,12 @@ if(settings['pretrain'] == True):
 
     if(settings['pretrain_exp'] is None):
         PRETRAINED_MODEL = model_dir + 'pretrained_model_' + EXP_NAME
+
+        if(EXP_NAME[:9] == 'GCM_SGold'):
+            PRETRAINED_MODEL = './saved_models/GCM_alas_wint_583yrs_gold_redo/' + 'pretrained_model_' + 'GCM_alas_wint_583yrs_gold_redo'
     else:
-        PRETRAINED_MODEL = './saved_models/' + settings['pretrain_exp'] 
+        PRETRAINED_MODEL = './saved_models/' + settings['pretrain_exp']
+
 
     print('loading pretrained convolutional layers from ' + PRETRAINED_MODEL)
     pretrained_model = tf.keras.models.load_model(PRETRAINED_MODEL)
@@ -244,8 +262,8 @@ else:
 imp.reload(network)
 imp.reload(plots)
 imp.reload(push_prototypes)
-imp.reload(experiment_settings)
-settings = experiment_settings.get_settings(EXP_NAME)
+imp.reload(experiment_settings_shuf_bal_seeds)
+settings = experiment_settings_shuf_bal_seeds.get_settings(EXP_NAME)
 
 ic(np.shape(X_train))
 ic(np.shape(prototypes_of_correct_class_train))
@@ -374,3 +392,135 @@ for stage in STAGE_LIST:
 
 
 
+def top_confidence_protos(percentage, predictions):
+    #temp_classes = [0,1]
+    temp_classes = [0,1,2]
+
+    total_maxvals = []
+    all_isamples = []
+    for temp_class in temp_classes:
+
+        isamples = np.where((np.argmax(predictions,axis=1)==temp_class))[0]
+        # print(isamples)
+        # print(max_similarity_score[isamples,:].shape)
+        
+        high_scores = predictions[isamples,temp_class]
+        # print(points.shape)
+        
+        # print(points.shape)
+        # print(points)
+        # print(hq.nlargest(10, points))
+        maxvals = high_scores
+        # print(hq.nlargest(10,maxvals))
+
+        total_maxvals.append(maxvals)
+
+        all_isamples.append(isamples)
+
+        # print("BIG TESTTTTTTTTTT:  =" + str(maxvals.shape[0]))
+
+    total_maxvals = np.concatenate((total_maxvals[0], total_maxvals[1], total_maxvals[2]))
+
+    total_maxvals = np.asarray(total_maxvals)
+
+    all_isamples = np.concatenate((all_isamples[0], all_isamples[1], all_isamples[2]))
+
+    all_isamples = np.asarray(all_isamples)
+    
+    topscore = np.asarray(hq.nlargest(int(total_maxvals.shape[0]*percentage), total_maxvals))
+
+    # print(topscore)
+
+    # print(total_maxvals)
+
+    # print(np.where(np.in1d(maxvals,topscore))[0])
+
+    toplocs = np.where(np.in1d(total_maxvals,topscore))[0]
+
+    # print(maxvals[toplocs])
+    # print(np.argsort(maxvals[toplocs]))
+
+    argstest = np.argsort(total_maxvals[toplocs])
+
+    # print(toplocs[argstest][::-1])
+
+    # print(maxvals[toplocs][argstest][::-1])
+
+    # print(isamples[toplocs[argstest][::-1]])
+
+    # print(total_maxvals[toplocs[argstest[-1]]])
+    # quit()
+    bestsamps = all_isamples[toplocs[argstest][::-1]]
+    # print("best samps:"  + str(bestsamps))
+    return bestsamps
+
+def make_confuse_matrix(y_predict, y_test, data_amount, base):
+#Generate the confusion matrix
+
+    y_predict_class = np.argmax(y_predict,axis=1)
+
+    cf_matrix = confusion_matrix(y_test, y_predict_class)
+    cf_matrix_pred = confusion_matrix(y_test, y_predict_class, normalize='pred')
+    cf_matrix_true = confusion_matrix(y_test, y_predict_class, normalize='true')
+    cf_matrix = np.around(cf_matrix,3)
+    cf_matrix_pred = np.around(cf_matrix_pred,3)
+    cf_matrix_true = np.around(cf_matrix_true,3)
+    fig, ax = plt.subplots(figsize=(7.5, 7.5))
+    ax.matshow(cf_matrix, cmap=plt.cm.Blues, alpha=0.3)
+
+    correct_preds = 0
+    for i in range(cf_matrix.shape[0]):
+        for j in range(cf_matrix.shape[1]):
+            ax.text(x=j, y=i,s=cf_matrix[i, j], va='center', ha='center', size='xx-large')
+            ax.text(x=j, y=i+.3,s=(str(np.around(cf_matrix_pred[i, j]*100,4))+'\%'), va='center', ha='center', size='xx-large', color = 'green')
+            ax.text(x=j, y=i-.3,s=(str(np.around(cf_matrix_true[i, j]*100,4))+'\%'), va='center', ha='center', size='xx-large', color = 'red')
+
+            if (i == j):
+                correct_preds += cf_matrix[i, j]
+
+    correct_preds /= np.sum(cf_matrix)
+    
+    # plt.xlabel('Prediction', fontsize=18, color = 'green')
+    # plt.ylabel('Actual', fontsize=18, color = 'red')
+    # plt.title('TLLTT Confusion Matrix (Accuracy - ' + str(np.around(correct_preds*100,2)) + '\%)', fontsize=18)
+    # if (base):
+    #     plt.savefig((vizualization_dir + "confusion_matrices/" + EXP_NAME + 'base_'+ str(data_amount) + 'percent_confmatrix.png'), bbox_inches='tight', dpi=dpiFig)
+    # else:
+    #     plt.savefig((vizualization_dir + "confusion_matrices/" + EXP_NAME + 'TLLTT_'+ str(data_amount) + 'percent_confmatrix.png'), bbox_inches='tight', dpi=dpiFig)
+
+
+
+
+    # plt.show()
+
+    return np.around(correct_preds*100,2)
+
+input_val  = [[X_val,prototypes_of_correct_class_val]]
+
+# print('running model.predict()...')
+y_predict_val = model.predict(input_val, batch_size=BATCH_SIZE_PREDICT, verbose=1)
+# print('model.predict() complete.')
+
+# model.evaluate(input_val,y_predict_val,batch_size=BATCH_SIZE_PREDICT, verbose=1)
+
+accuracies = []
+
+for i in np.arange(10, 101, 5):
+    accuracies.append(make_confuse_matrix(y_predict_val[top_confidence_protos(i/100., y_predict_val)], y_val[top_confidence_protos(i/100., y_predict_val)], i, True))
+
+plt.figure(figsize=(10,6))
+plt.plot(np.arange(10, 101, 5)[::-1], accuracies, label = "TLLTT - val")
+plt.title("Discard plot for Val Only", fontsize=20)
+plt.xlabel("Percentage of confident samples used", fontsize=15)
+plt.xticks(ticks=np.arange(10, 101, 5), labels=np.arange(10, 101, 5)[::-1])
+plt.ylabel("Accuracy", fontsize=15)
+plt.axhspan(0, 33, color='y', alpha=0.5, lw=0)
+
+
+if((np.min(accuracies) >= 31)):
+    print("srtting ylim")
+    plt.ylim(bottom=30)
+else:
+    plt.ylim(bottom=20)
+plt.legend()
+plt.savefig((vizualization_dir + EXP_NAME + 'VALONLY_forecast_of_opportunity.png'), bbox_inches='tight', dpi=dpiFig)
