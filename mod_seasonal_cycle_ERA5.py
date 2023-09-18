@@ -21,18 +21,22 @@ def find_nearest_index(array, value):
 #load_dir = "~/Documents/Work/2021_Fall_IAI/Data/ERA5_Data/Precip/"
 load_dir = "/barnes-scratch/nicojg/"
 
-filename =    'era_no1959_2mtemp_remap.nc' #'era_no1959_2mtemp_remap.nc' #'4back_era5_daily_precip_remap.nc'  #'large_2mtemp.nc' #'mjo_4back_700_precip.nc' # 'mjo_4back_200_precip.nc'  #'precip_full_era5_remap.nc'  #'small_2mtemp.nc'  #'2mtemp_full_era5_remap.nc'  #'mjo_4back_200_precip.nc'  #'small_2mtemp.nc' #'mjo_4back_200_precip.nc'  #'4back_era5_daily_precip_remap.nc' #'era_no1959_2mtemp_remap.nc'#'4back_era5_daily_precip_remap.nc' #'era5_daily_2mtemp_remap.nc' #'era5_daily_precip_remap.nc' #'4back_era5_daily_mjo_noleap_precip.nc'#4back_era5_daily_noleap_precip.nc'#era5_daily_2mtemp.nc'#mjo_precip_local.nc'#'mjo_200_precip.nc'#small_2mtemp.nc'#tropic_200_z500.nc'
+filename =  'mjo_4back_1000_precip.nc' #'2mtemp_1000_years.nc' #'mjo_4back_700_precip.nc'  #'mjo_4back_1000_precip.nc' #'era_no1959_2mtemp_remap.nc' #'4back_era5_daily_precip_remap.nc'  #'large_2mtemp.nc' #'mjo_4back_700_precip.nc' # 'mjo_4back_200_precip.nc'  #'precip_full_era5_remap.nc'  #'small_2mtemp.nc'  #'2mtemp_full_era5_remap.nc'  #'mjo_4back_200_precip.nc'  #'small_2mtemp.nc' #'mjo_4back_200_precip.nc'  #'4back_era5_daily_precip_remap.nc' #'era_no1959_2mtemp_remap.nc'#'4back_era5_daily_precip_remap.nc' #'era5_daily_2mtemp_remap.nc' #'era5_daily_precip_remap.nc' #'4back_era5_daily_mjo_noleap_precip.nc'#4back_era5_daily_noleap_precip.nc'#era5_daily_2mtemp.nc'#mjo_precip_local.nc'#'mjo_200_precip.nc'#small_2mtemp.nc'#tropic_200_z500.nc'
 
-var     = xr.open_dataset(load_dir+filename)['t2m'][:,96:,80:241]#*86400#)[:,96:,80:241] #t2m  #pr #tp
-lats  = xr.open_dataset(load_dir+filename)['lat'].values[96:]
-lons   = xr.open_dataset(load_dir+filename)['lon'].values[80:241]
+var     = xr.open_dataset(load_dir+filename)['pr']*86400#[:,96:,80:241]#*86400#)[:,96:,80:241] #t2m  #pr #tp
+lats  = xr.open_dataset(load_dir+filename)['lat'].values#[96:]
+lons   = xr.open_dataset(load_dir+filename)['lon'].values#[80:241]
 # time = xr.open_dataset(load_dir+filename)['time'].values[0:(365*60)+50+0]#[4:(365*60)+4]#[4:(365*60)+4]#[0:(365*60)+50+0]
 
 print('taking tropical mean...')
 
 print(var)
+# var = var.sel(time=slice('1960-01-01', '2021-12-31'))
 
-var = var.sel(time=slice('1960-01-01', '2021-12-31'))
+# var = var.sel(time=xr.cftime_range(start= '0201-01-01',end = '0751-12-31',freq='D', calendar='noleap'))
+var = var.sel(time=xr.cftime_range(start= '0200-12-28',end = '0751-12-31',freq='D', calendar='noleap'))
+
+
 
 # print(var)
 # quit()
@@ -117,7 +121,8 @@ print(anom_xr_trend)
 
 print(anom_xr_trend)
 #anom_xr_trend.to_netcdf('/barnes-scratch/nicojg/anom_mjo_4back_550_precip.nc')
-anom_xr_trend.to_netcdf('/barnes-scratch/nicojg/V2_OLDera_no1959_2mtemp_remap.nc')
+#anom_xr_trend.to_netcdf('/barnes-scratch/nicojg/anom_2mtemp_550_years.nc')
+rolled_trend.to_netcdf('/barnes-scratch/nicojg/rolled_mjo_4back_550_precip.nc')
 
 # alaska_lat = find_nearest_index(lats, 61.2176)
 # alaska_lon = find_nearest_index(lons, 360-149.8997)

@@ -34,7 +34,7 @@ import random
 from sklearn.metrics import confusion_matrix
 
 import network as network
-import experiment_settings_shuf_bal_seeds
+import experiment_settings_shuf_550bal_seeds
 import data_functions_schooner
 import common_functions
 
@@ -55,16 +55,16 @@ print(f"tensorflow version = {tf.__version__}")
 # ## Define experiment settings and directories
 
 if len(sys.argv) < 2:
-    EXP_NAME = 'GCM_alas_wint_583yrs_gold_redo'#'smaller_test'#'quadrants_testcase'
+    EXP_NAME = 'GCM_alas_wint_550yrs_seed105_21days'#'smaller_test'#'quadrants_testcase'
 else:
     num = int(sys.argv[1])
-    EXP_NAME = 'GCM_alas_wint_500yrs_shuf_bal_seed'+str(num)
+    EXP_NAME = 'GCM_alas_wint_550yrs_shuf_bal_seed'+str(num)
 
 print(EXP_NAME)
 # EXP_NAME = 'GCM_alas_wint_583yrs_gold_redo'#'smaller_test'#'quadrants_testcase'
 
-imp.reload(experiment_settings_shuf_bal_seeds)
-settings = experiment_settings_shuf_bal_seeds.get_settings(EXP_NAME)
+imp.reload(experiment_settings_shuf_550bal_seeds)
+settings = experiment_settings_shuf_550bal_seeds.get_settings(EXP_NAME)
 
 imp.reload(common_functions)
 #model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
@@ -160,7 +160,7 @@ else:
     quit()
 
 # print(y_train)
-print(time_train[:121])
+print(time_train[:120])
 
 # elif((EXP_NAME[:21]=='fourteenday_both_test') or ((EXP_NAME[:18]=='threeday_both_test'))):
 #     print("bingo")
@@ -224,8 +224,8 @@ metrics_list = [
     tf.keras.metrics.SparseCategoricalAccuracy(),
 ]
 
-imp.reload(experiment_settings_shuf_bal_seeds)
-settings = experiment_settings_shuf_bal_seeds.get_settings(EXP_NAME)
+imp.reload(experiment_settings_shuf_550bal_seeds)
+settings = experiment_settings_shuf_550bal_seeds.get_settings(EXP_NAME)
 
 imp.reload(common_functions)
 #model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories_schooner(EXP_NAME)

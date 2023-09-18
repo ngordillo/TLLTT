@@ -290,7 +290,7 @@ def load_tropic_data_winter(load_dir, loc_lon = 0, loc_lat = 0, coast=False):
 
     # make labels
     
-    filename = 'anom_mjo_4back_550_precip.nc'#'mjo_4back_precip_local.nc'
+    filename =  'rolled_mjo_4back_550_precip.nc' #'anom_mjo_4back_1000_precip.nc'#'mjo_4back_precip_local.nc'
     print(load_dir+filename)
     var_raw     = xr.open_dataset(load_dir+filename)['pr']#[:,:,:,np.newaxis]#[:,96:,80:241,np.newaxis]
 
@@ -301,7 +301,9 @@ def load_tropic_data_winter(load_dir, loc_lon = 0, loc_lat = 0, coast=False):
     print(var_raw)
 
     # quit()
-    var_rolled = var_raw.rolling(time = 5).mean().dropna("time", how='all')
+
+    var_rolled = var_raw
+    #var_rolled = var_raw.rolling(time = 5).mean().dropna("time", how='all')
     # print(var_rolled)
     # dates = xr.cftime_range(start="1700", periods=73050, freq="D", calendar="noleap").to_datetimeindex()
     # var_rolled['time'] = dates
@@ -313,9 +315,11 @@ def load_tropic_data_winter(load_dir, loc_lon = 0, loc_lat = 0, coast=False):
     
     # var_rolled_sliced = var_rolled.sel(time=slice("1700-11-01", "1899-02-28"))
 
-    var_rolled_sliced = var_rolled.sel(time=slice("1679-11-01", "2229-02-28"))
+    # var_rolled_sliced = var_rolled.sel(time=slice("1679-11-01", "2229-02-28"))
 
     # var_rolled_sliced = var_rolled.sel(time=slice("1679-11-01", "2257-02-28"))
+
+    var_rolled_sliced = var_rolled.sel(time=xr.cftime_range(start= '0201-11-01',end = '0751-02-28',freq='D', calendar='noleap'))
 
     var = var_rolled_sliced.sel(time=var_rolled_sliced.time.dt.month.isin([1, 2, 11, 12]))
 
@@ -327,7 +331,7 @@ def load_tropic_data_winter(load_dir, loc_lon = 0, loc_lat = 0, coast=False):
         temp_label = np.loadtxt(load_dir+"winter_ternary_loc_"+str(loc_lon)+"_"+str(loc_lat)+".txt")
     else:
         # temp_label = np.loadtxt(load_dir+"local_alaska_points.txt")
-        temp_label = np.loadtxt(load_dir+"GCM_alas_wint_550yrs_ternary_14day.txt")
+        temp_label = np.loadtxt(load_dir+"GCM_new_alas_wint_550yrs_ternary_14day.txt")
 
 
     # print(var)
@@ -410,21 +414,29 @@ def get_and_process_tropic_data_winter(raw_labels, raw_data, raw_time, rng, trai
 
     # year_range = np.arange(1678, 2256, 1)
 
-    year_range = np.arange(1679, 2229, 1)
+    # year_range = np.arange(1679, 2229, 1)
+
+    year_range = np.arange(201, 751, 1)
+
 
     date_range = []
     for year in year_range:
-        date_range.append(pd.date_range(start= f'{year}-03-01',end = f'{year}-06-28',freq='d') + pd.offsets.Hour(00))
+        # date_range.append(pd.date_range(start= f'{year}-03-01',end = f'{year}-06-28',freq='d') + pd.offsets.Hour(00))
+        date_range.append(xr.cftime_range(start= str(year).zfill(4) + '-03-01',end = str(year).zfill(4) + '-06-28',freq='D', calendar='noleap'))
             
     date_range = [item for sublist in date_range for item in sublist]
 
     print(len(date_range))
+
 
     raw_time_for_years = raw_time['time.year']
 
     raw_time_for_years['time'] = date_range
 
     all_years = raw_time_for_years["time.year"].values
+
+
+
     years     = np.unique(all_years)
 
     print(years)

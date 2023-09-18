@@ -24,7 +24,7 @@ import tensorflow as tf
 import random
 
 import network
-import experiment_settings_shuf_bal_seeds 
+import experiment_settings_shuf_550bal_seeds
 import data_functions_schooner
 import push_prototypes
 import plots
@@ -53,14 +53,14 @@ print(f"tensorflow version = {tf.__version__}")
 # ## Define experiment settings and directories
 
 if len(sys.argv) < 2:
-    EXP_NAME = 'GCM_alas_wint_583yrs_gold_redo'#'smaller_test'#'quadrants_testcase'
+    EXP_NAME = 'GCM_alas_wint_550yrs_seed105_21days'#'smaller_test'#'quadrants_testcase'
 else:
     num = int(sys.argv[1])
-    EXP_NAME = 'GCM_alas_wint_500yrs_shuf_bal_seed'+str(num) 
+    EXP_NAME = 'GCM_alas_wint_550yrs_shuf_bal_seed'+str(num) 
 '#balanced_test'#initial_test'#'mjo'#'quadrants_testcase'   
 
-imp.reload(experiment_settings_shuf_bal_seeds)
-settings = experiment_settings_shuf_bal_seeds.get_settings(EXP_NAME)
+imp.reload(experiment_settings_shuf_550bal_seeds)
+settings = experiment_settings_shuf_550bal_seeds.get_settings(EXP_NAME)
 
 imp.reload(common_functions)
 # model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
@@ -262,8 +262,8 @@ else:
 imp.reload(network)
 imp.reload(plots)
 imp.reload(push_prototypes)
-imp.reload(experiment_settings_shuf_bal_seeds)
-settings = experiment_settings_shuf_bal_seeds.get_settings(EXP_NAME)
+imp.reload(experiment_settings_shuf_550bal_seeds)
+settings = experiment_settings_shuf_550bal_seeds.get_settings(EXP_NAME)
 
 ic(np.shape(X_train))
 ic(np.shape(prototypes_of_correct_class_train))

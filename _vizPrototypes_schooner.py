@@ -33,7 +33,7 @@ import random
 from sklearn.metrics import confusion_matrix
 
 import network
-import experiment_settings_multiple_seeds 
+import experiment_settings_shuf_550bal_seeds
 import data_functions_schooner
 import push_prototypes
 import plots
@@ -42,6 +42,11 @@ import common_functions
 import heapq as hq
 
 import warnings
+
+
+import matplotlib.font_manager
+print(matplotlib.font_manager.findSystemFonts(fontpaths=None, fontext='ttf'))
+
 warnings.filterwarnings( "ignore", module = "cartopy\..*" )
 warnings.filterwarnings( "ignore", module = "matplotlib\..*" )
 
@@ -60,12 +65,12 @@ print(f"tensorflow version = {tf.__version__}")
 
 np.set_printoptions(suppress=True)
 
-EXP_NAME = 'GCM_alas_wint_550yrs_seed105'
+EXP_NAME = 'GCM_alas_wint_550yrs_shuf_bal_seed125'
 
 #'smaller_test'#'quadrants_testcase'
 
-imp.reload(experiment_settings_multiple_seeds)
-settings = experiment_settings_multiple_seeds.get_settings(EXP_NAME)
+imp.reload(experiment_settings_shuf_550bal_seeds)
+settings = experiment_settings_shuf_550bal_seeds.get_settings(EXP_NAME)
 
 imp.reload(common_functions)
 
@@ -396,7 +401,10 @@ w = np.round(model.layers[-2].get_weights()[0],3)
 
 ### for white background...
 plt.rc('text',usetex=False)
-# plt.rc('font',**{'family':'sans-serif','sans-serif':['Avant Garde']}) 
+#plt.rc('font',**{'family':'sans-serif','sans-serif':['Avant Garde']}) 
+plt.rc('font',**{'family':'sans-serif','sans-serif':['DejaVu Sans']}) 
+
+# plt.rc('font',**{'family':'sans-serif','sans-serif':['Helvetica']}) 
 plt.rc('savefig',facecolor='white')
 plt.rc('axes',facecolor='white')
 plt.rc('axes',labelcolor='dimgrey')
@@ -461,8 +469,8 @@ def make_confuse_matrix(y_predict, y_test, data_amount, base):
     for i in range(cf_matrix.shape[0]):
         for j in range(cf_matrix.shape[1]):
             ax.text(x=j, y=i,s=cf_matrix[i, j], va='center', ha='center', size='xx-large')
-            ax.text(x=j, y=i+.3,s=(str(np.around(cf_matrix_pred[i, j]*100,4))+'\%'), va='center', ha='center', size='xx-large', color = 'green')
-            ax.text(x=j, y=i-.3,s=(str(np.around(cf_matrix_true[i, j]*100,4))+'\%'), va='center', ha='center', size='xx-large', color = 'red')
+            ax.text(x=j, y=i+.3,s=(str(np.around(cf_matrix_pred[i, j]*100,4))+'%'), va='center', ha='center', size='xx-large', color = 'green')
+            ax.text(x=j, y=i-.3,s=(str(np.around(cf_matrix_true[i, j]*100,4))+'%'), va='center', ha='center', size='xx-large', color = 'red')
 
             if (i == j):
                 correct_preds += cf_matrix[i, j]
@@ -471,7 +479,7 @@ def make_confuse_matrix(y_predict, y_test, data_amount, base):
     
     plt.xlabel('Prediction', fontsize=18, color = 'green')
     plt.ylabel('Actual', fontsize=18, color = 'red')
-    plt.title('TLLTT Confusion Matrix (Accuracy - ' + str(np.around(correct_preds*100,2)) + '\%)', fontsize=18)
+    plt.title('TLLTT Confusion Matrix (Accuracy - ' + str(np.around(correct_preds*100,2)) + '%)', fontsize=18)
     if (base):
         plt.savefig((vizualization_dir + "confusion_matrices/" + EXP_NAME + 'base_'+ str(data_amount) + 'percent_confmatrix.png'), bbox_inches='tight', dpi=dpiFig)
     else:
@@ -1340,11 +1348,11 @@ def examine_proto(good_samp):
 
         class_text = "blah"
         if(y_true[sample] == 0):
-            class_text = "below temp class"
+            class_text = "low class"
         elif(y_true[sample] == 2):
-            class_text = "above temp class"
+            class_text = "average class"
         else:
-            class_text = "average temp class"
+            class_text = "high class"
 
         ax_samp.text(0.01, 1.0, 
             class_text,
@@ -1912,8 +1920,13 @@ def show_all_protos(era5_flag):
         #                     figsize=(12,12),
         #                     subplot_kw={'projection': mapProj}
         #                    )
-                
+        top_samps = top_confidence_protos(1, y_predict)
+        print(len(top_samps))
+        print(y_predict.shape)
+        print(y_true.shape)
+        print(y_predict[top_samps].shape)
         isamples = np.where((np.argmax(y_predict,axis=1)==phase) & (np.argmax(y_predict,axis=1)==y_true))[0]
+        print(isamples.shape)
         # print(isamples)
         # print(max_similarity_score[isamples,:].shape)
         points = max_similarity_score[isamples,:]*w[:,phase]
@@ -2020,7 +2033,7 @@ def show_all_protos(era5_flag):
                         transform = ax.transAxes,
                         )
                     ax.text(1.0, 1.0, 
-                        str(win_frac) + '\% win',
+                        str(win_frac) + '% win',
                         fontfamily='monospace', 
                         fontsize=FS, 
                         va='bottom',
@@ -2028,11 +2041,14 @@ def show_all_protos(era5_flag):
                         transform = ax.transAxes,
                         )            
 
-        if(not era5_flag):
+        if(era5_flag == 0):
             plt.savefig((vizualization_dir + "1_" + "_" + EXP_NAME + '_allPrototypes_phase' + str(phase) + '.png'), bbox_inches='tight', dpi=dpiFig)
             plt.close()
+        elif(era5_flag == 1):
+            plt.savefig((vizualization_dir + 'era5_figs/' + "1_" + "_" + EXP_NAME + '_translated_allPrototypes_phase' + str(phase) + '.png'), bbox_inches='tight', dpi=dpiFig)
+            plt.close()
         else:
-            plt.savefig((vizualization_dir + 'era5_figs/' + "1_" + "_" + EXP_NAME + '_allPrototypes_phase' + str(phase) + '.png'), bbox_inches='tight', dpi=dpiFig)
+            plt.savefig((vizualization_dir + 'era5_figs/' + "1_" + "_" + EXP_NAME + '_BLAHHHHHconvert_allPrototypes_phase' + str(phase) + '.png'), bbox_inches='tight', dpi=dpiFig)
             plt.close()
 
 def subcategorybar(X, vals, width=0.8):
@@ -2190,7 +2206,13 @@ base_accuracies = []
 
 accuracies_val = []
 base_accuracies_val = []
-show_all_protos(era5_plots)
+
+era5_flag_set = 0
+if(settings['plot_ERA5_translated'] == True):
+    era5_flag_set = 1 
+if(settings['plot_ERA5_convert'] == True):
+    era5_flag_set = 2
+show_all_protos(era5_flag_set)
 # for i in np.arange(10, 101, 5):
 #     accuracies.append(make_confuse_matrix(y_predict[top_confidence_protos(i/100.)], y_true[top_confidence_protos(i/100.)], i, False))
 
@@ -2220,10 +2242,12 @@ plt.plot(np.arange(10, 101, 5)[::-1], accuracies, label = "TLLTT")
 plt.plot(np.arange(10, 101, 5)[::-1], base_accuracies, label = "Base CNN")
 plt.plot(np.arange(10, 101, 5)[::-1], accuracies_val, label = "TLLTT - val")
 plt.plot(np.arange(10, 101, 5)[::-1], base_accuracies_val, label = "Base CNN - val")
-plt.title("Model Accuracy by percentage of most confident samples", fontsize=20)
-plt.xlabel("Percentage of confident samples used", fontsize=15)
+# plt.title("Model Accuracy by percentage of most confident samples", fontsize=20)
+plt.title("Discard test", fontsize=20)
+
+plt.xlabel("Percentage samples not discarded", fontsize=15)
 plt.xticks(ticks=np.arange(10, 101, 5), labels=np.arange(10, 101, 5)[::-1])
-plt.ylabel("Accuracy", fontsize=15)
+plt.ylabel("Accuracy (%)", fontsize=15)
 plt.axhspan(0, 33, color='y', alpha=0.5, lw=0)
 
 print(np.min(accuracies) >= 31)
@@ -2241,15 +2265,43 @@ else:
     plt.savefig((vizualization_dir + 'era5_figs/' + EXP_NAME + '_forecast_of_opportunity.png'), bbox_inches='tight', dpi=dpiFig)
 # plt.show()
 
-if(settings['plot_ERA5_translated']):
-    np.savetxt(exp_data_dir + "translated_era5_"+ EXP_NAME + '_TLLTT_accuracy.txt', accuracies, fmt='%d')
-elif(settings['plot_ERA5_convert']):
-    np.savetxt(exp_data_dir + "convert_era5_"+ EXP_NAME + '_TLLTT_accuracy.txt', accuracies, fmt='%d')
-elif(EXP_NAME[:3] == 'GCM'):
-    np.savetxt(exp_data_dir + "normal_"+ EXP_NAME + '_TLLTT_accuracy.txt', accuracies, fmt='%d')
+translated_fn = exp_data_dir + "translated_era5_"+ EXP_NAME + '_TLLTT_accuracy.txt'
+convert_fn = exp_data_dir + "convert_era5_"+ EXP_NAME + '_TLLTT_accuracy.txt'
+normal_fn = exp_data_dir + "normal_"+ EXP_NAME + '_TLLTT_accuracy.txt'
 
+if(settings['plot_ERA5_translated']):
+    np.savetxt(translated_fn, accuracies, fmt='%1.5f')
+elif(settings['plot_ERA5_convert']):
+    np.savetxt(convert_fn, accuracies, fmt='%1.5f')
+elif(EXP_NAME[:3] == 'GCM' or EXP_NAME[:3] == 'ERA'):
+    np.savetxt(normal_fn, accuracies, fmt='%1.5f')
     
-# top_samps = top_confidence_protos(1, y_predict)[:5]
-# for decent_samp in top_samps:
-#     # mjo_correlation(decent_samp)
-#     examine_proto(decent_samp)
+if (os.path.exists(translated_fn) and os.path.exists(convert_fn) and os.path.exists(normal_fn)):
+    
+    translated_accuracies = np.loadtxt(translated_fn)#.astype(float)
+    convert_accuracies = np.loadtxt(convert_fn)#.astype(float)
+    normal_accuracies = np.loadtxt(normal_fn)#.astype(float)
+    
+    plt.figure(figsize=(10,6))
+    plt.plot(np.arange(10, 101, 5)[::-1], normal_accuracies, label = "Regular GCM")
+    plt.plot(np.arange(10, 101, 5)[::-1], translated_accuracies, label = "Translated ERA5")
+    plt.plot(np.arange(10, 101, 5)[::-1], convert_accuracies, label = "Converted ERA5")
+    plt.title("Model Accuracy by percentage of most confident samples", fontsize=20)
+    plt.xlabel("Percentage of confident samples used", fontsize=15)
+    plt.xticks(ticks=np.arange(10, 101, 5), labels=np.arange(10, 101, 5)[::-1])
+    plt.ylabel("Accuracy", fontsize=15)
+    plt.axhspan(0, 33, color='y', alpha=0.5, lw=0)
+    
+    if((np.min(normal_accuracies) >= 31)):
+        print("srtting ylim")
+        plt.ylim(bottom=30)
+    else:
+        plt.ylim(bottom=20)
+    plt.legend()
+
+
+    plt.savefig((vizualization_dir + 'era5_figs/' + EXP_NAME + '_ERA5_additions_forecast_of_opportunity.png'), bbox_inches='tight', dpi=dpiFig)
+top_samps = top_confidence_protos(1, y_predict)[:5]
+for decent_samp in top_samps:
+    # mjo_correlation(decent_samp)
+    examine_proto(decent_samp)
