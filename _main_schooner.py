@@ -24,7 +24,7 @@ import tensorflow as tf
 import random
 
 import network
-import experiment_settings_shuf_550bal_seeds
+# import experiment_settings_coast_550
 import data_functions_schooner
 import push_prototypes
 import plots
@@ -51,16 +51,38 @@ print(f"numpy version = {np.__version__}")
 print(f"tensorflow version = {tf.__version__}")
 
 # ## Define experiment settings and directories
-
+file_lon = 0
+file_lat = 0
 if len(sys.argv) < 2:
-    EXP_NAME = 'GCM_alas_wint_550yrs_seed105_21days'#'smaller_test'#'quadrants_testcase'
-else:
+    EXP_NAME = 'GCM_alas_lr_wint_550yrs_seed128_redo'  #'GCM_alas_lr_wint_550yrs_seed144_nopre_fake128' #'GCM_alas_wint_550yrs_seed105_21days'#'smaller_test'#'quadrants_testcase'
+    file_lon = 89
+    file_lat = 64
+    # import experiment_settings_shuf_550bal_seeds as experiment_settings
+    import experiment_settings_multiple_seeds_lr as experiment_settings
+elif len(sys.argv) == 2:
     num = int(sys.argv[1])
-    EXP_NAME = 'GCM_alas_wint_550yrs_shuf_bal_seed'+str(num) 
-'#balanced_test'#initial_test'#'mjo'#'quadrants_testcase'   
+    EXP_NAME = 'GCM_alas_lr_wint_550yrs_seed'+str(num) #+ '_nopre' #balanced_test'#initial_test'#'mjo'#'quadrants_testcase'
+    import experiment_settings_multiple_seeds_lr as experiment_settings
 
-imp.reload(experiment_settings_shuf_550bal_seeds)
-settings = experiment_settings_shuf_550bal_seeds.get_settings(EXP_NAME)
+    # learning_rate = float(sys.argv[1])
+    # print(learning_rate)
+    # EXP_NAME = 'GCM_alas_lr_wint_550yrs_seed144_nopre_lrtest_epochs' #GCM_alas_lr_wint_550yrs_seed147_nopre_lrtest'
+    # import experiment_settings_multiple_seeds_lr as experiment_settings
+    # import experiment_settings_shuf_550bal_seeds as experiment_settings
+    file_lon = 89
+    file_lat = 64
+
+
+    # num = int(sys.argv[1])
+    # EXP_NAME = 'GCM_alas_wint_550yrs_shuf_bal_seed'+str(num) #balanced_test'#initial_test'#'mjo'#'quadrants_testcase'
+else:
+    file_lon = int(sys.argv[2])
+    file_lat = int(sys.argv[1])
+    EXP_NAME = 'GCM_'+ str(file_lon) + '_' + str(file_lat) +'_wint_550yrs_shuf_bal_seed130'
+    import experiment_settings_coast_550_lr_adjust as experiment_settings
+
+imp.reload(experiment_settings)
+settings = experiment_settings.get_settings(EXP_NAME)
 
 imp.reload(common_functions)
 # model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
@@ -87,6 +109,7 @@ PATIENCE             = 100
 
 EARLY_STOPPING       = settings['es_stop']
 
+# LR_INIT = learning_rate
 
 # ## Initialize
 
@@ -94,12 +117,15 @@ gpus = tf.config.list_physical_devices('GPU')
 
 # the next line will restrict tensorflow to the first GPU 
 # you can select other gpus from the list instead
-tf.config.set_visible_devices(gpus[0], 'GPU')
+tf.config.set_visible_devices(gpus[1], 'GPU')
 
 tf.config.list_logical_devices('GPU')
 tf.keras.backend.clear_session()
 np.random.seed(RANDOM_SEED)
+
 rng = np.random.default_rng(RANDOM_SEED)
+# rng = np.random.default_rng(128)
+
 random.seed(RANDOM_SEED)
 tf.random.set_seed(RANDOM_SEED)
 
@@ -120,7 +146,10 @@ val_yrs_era5 = settings['val_yrs_era5'],
 test_years_era5 = settings['test_yrs_era5'],
 
 if(EXP_NAME[:3]=='ERA'):   
-    labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter_ERA5(DATA_DIR)
+    #labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter_ERA5(DATA_DIR)
+
+    labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter_ERA5(DATA_DIR, file_lon, file_lat, True)
+
     X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter_ERA5(labels,
                                                                                             data,
                                                                                             time,
@@ -135,7 +164,10 @@ if(EXP_NAME[:3]=='ERA'):
                                                                                             r_seed = RANDOM_SEED,
                                                                                         )
 elif(EXP_NAME[:3] == 'GCM'):
-    labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter(DATA_DIR)
+    #labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter(DATA_DIR)
+
+    labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter(DATA_DIR, file_lon, file_lat, True)
+
     X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter(labels,
                                                                                             data,
                                                                                             time,
@@ -148,6 +180,7 @@ elif(EXP_NAME[:3] == 'GCM'):
                                                                                             shuffle=settings['shuffle'],
                                                                                             bal_data = settings['balance_data'],
                                                                                             r_seed = RANDOM_SEED,
+                                                                                            # r_seed = 128,
                                                                                 )
 else:
     print("Expermient name is bad")
@@ -262,8 +295,8 @@ else:
 imp.reload(network)
 imp.reload(plots)
 imp.reload(push_prototypes)
-imp.reload(experiment_settings_shuf_550bal_seeds)
-settings = experiment_settings_shuf_550bal_seeds.get_settings(EXP_NAME)
+imp.reload(experiment_settings)
+settings = experiment_settings.get_settings(EXP_NAME)
 
 ic(np.shape(X_train))
 ic(np.shape(prototypes_of_correct_class_train))
@@ -281,8 +314,9 @@ for stage in STAGE_LIST:
 
     # load previously trained stage, unless it is the 0th stage
     if(stage != 0):
-        tf.keras.backend.clear_session()
+        tf.keras.backend.clear_session() 
         model_filename = model_dir + 'model_' + EXP_NAME + '_stage' + str(stage-1)+ ".h5"
+        # model_filename = model_dir + str(learning_rate) + "_" + 'model_' + EXP_NAME + '_stage' + str(stage-1)+ ".h5"
 #         model = common_functions.load_model(model_filename)
         model.load_weights(model_filename)
         
@@ -371,6 +405,7 @@ for stage in STAGE_LIST:
 
     # save the model at this training stage
     model_filename = model_dir + 'model_' + EXP_NAME + '_stage' + str(stage)
+    # model_filename = model_dir + str(learning_rate) + "_" + 'model_' + EXP_NAME + '_stage' + str(stage)
     common_functions.save_model(model, model_filename) 
     
     #.......................................................
@@ -380,11 +415,14 @@ for stage in STAGE_LIST:
         # plot loss history of the model
         plots.plot_loss_history(history)
         plt.savefig(model_diagnostics_dir + EXP_NAME + '_loss_history_stage' + str(stage) + '.png', dpi=dpiFig)    
+        # plt.savefig(model_diagnostics_dir + str(learning_rate) + "_" + EXP_NAME + '_loss_history_stage' + str(stage) + '.png', dpi=dpiFig)    
+
         plt.close()
 
         # plot the weights
         plots.plot_weights(model, PROTOTYPES_PER_CLASS)    
         plt.savefig(model_diagnostics_dir + EXP_NAME + '_weights_stage' + str(stage) + '.png', dpi=dpiFig)
+        # plt.savefig(model_diagnostics_dir + str(learning_rate) + "_" + EXP_NAME + '_weights_stage' + str(stage) + '.png', dpi=dpiFig)
         plt.close()
     except:
         print('not making plots...')
@@ -501,21 +539,40 @@ input_val  = [[X_val,prototypes_of_correct_class_val]]
 y_predict_val = model.predict(input_val, batch_size=BATCH_SIZE_PREDICT, verbose=1)
 # print('model.predict() complete.')
 
+
+if(settings['pretrain'] == True):
+    base_model_filename = model_dir + 'pretrained_model_' + EXP_NAME
+
+    base_model = common_functions.load_model(base_model_filename)
+
+    base_y_predict_val = base_model.predict(X_val, batch_size=BATCH_SIZE_PREDICT, verbose=1)
+
 # model.evaluate(input_val,y_predict_val,batch_size=BATCH_SIZE_PREDICT, verbose=1)
 
 accuracies = []
+base_accuracies = []
 
 for i in np.arange(10, 101, 5):
     accuracies.append(make_confuse_matrix(y_predict_val[top_confidence_protos(i/100., y_predict_val)], y_val[top_confidence_protos(i/100., y_predict_val)], i, True))
+    if(settings['pretrain'] == True):
+        base_accuracies.append(make_confuse_matrix(base_y_predict_val[top_confidence_protos(i/100., base_y_predict_val)], y_val[top_confidence_protos(i/100., base_y_predict_val)], i, True))
 
 plt.figure(figsize=(10,6))
 plt.plot(np.arange(10, 101, 5)[::-1], accuracies, label = "TLLTT - val")
+
+if(settings['pretrain'] == True):
+    plt.plot(np.arange(10, 101, 5)[::-1], base_accuracies, label = "Base CNN - val")
+
 plt.title("Discard plot for Val Only", fontsize=20)
 plt.xlabel("Percentage of confident samples used", fontsize=15)
 plt.xticks(ticks=np.arange(10, 101, 5), labels=np.arange(10, 101, 5)[::-1])
 plt.ylabel("Accuracy", fontsize=15)
 plt.axhspan(0, 33, color='y', alpha=0.5, lw=0)
 
+np.savetxt(exp_data_dir + EXP_NAME + '_TLLTT_Val_accuracy', accuracies, fmt='%1.5f')
+
+if(settings['pretrain'] == True):
+    np.savetxt(exp_data_dir + EXP_NAME + '_Base_Val_accuracy', base_accuracies, fmt='%1.5f')
 
 if((np.min(accuracies) >= 31)):
     print("srtting ylim")
@@ -524,3 +581,4 @@ else:
     plt.ylim(bottom=20)
 plt.legend()
 plt.savefig((vizualization_dir + EXP_NAME + 'VALONLY_forecast_of_opportunity.png'), bbox_inches='tight', dpi=dpiFig)
+# plt.savefig((vizualization_dir + str(learning_rate) + "_" + EXP_NAME + 'VALONLY_forecast_of_opportunity.png'), bbox_inches='tight', dpi=dpiFig)

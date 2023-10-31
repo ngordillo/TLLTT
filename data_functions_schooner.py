@@ -328,10 +328,12 @@ def load_tropic_data_winter(load_dir, loc_lon = 0, loc_lat = 0, coast=False):
 
     print(var.time)
     if(coast):
-        temp_label = np.loadtxt(load_dir+"winter_ternary_loc_"+str(loc_lon)+"_"+str(loc_lat)+".txt")
+        #temp_label = np.loadtxt(load_dir+"temp_class/winter_ternary_loc_"+str(loc_lon)+"_"+str(loc_lat)+".txt")
+        temp_label = np.loadtxt(load_dir+'temp_class/GCM_' + str(loc_lon) + '_' + str(loc_lat) + '_wint_550yrs_ternary_14day.txt')
     else:
         # temp_label = np.loadtxt(load_dir+"local_alaska_points.txt")
-        temp_label = np.loadtxt(load_dir+"GCM_new_alas_wint_550yrs_ternary_14day.txt")
+        temp_label = np.loadtxt(load_dir+"temp_class/GCM_new_alas_wint_550yrs_ternary_14day.txt")
+        # temp_label = np.loadtxt(load_dir+"temp_class/GCM_89_64_wint_550yrs_ternary_14day.txt")
 
 
     # print(var)
@@ -378,10 +380,10 @@ def load_tropic_data_winter_ERA5(load_dir, loc_lon = 0, loc_lat = 0, coast=False
     # print(var.shape)
 
     if(coast):
-        temp_label = np.loadtxt(load_dir+"loc_"+str(loc_lon)+"_"+str(loc_lat)+"_5mean_14days.txt")
+        temp_label = np.loadtxt(load_dir+"temp_class/ERA5_" + str(loc_lon) + '_' + str(loc_lat) + "_wint_550yrs_ternary_14day.txt")
     else:
         # temp_label = np.loadtxt(load_dir+"local_alaska_points.txt")
-        temp_label = np.loadtxt(load_dir+"ERA5_alas_wint_200yrs_ternary_14days_order3.txt") # ERA5_alas_wint_200yrs_ternary_14days_order3.txt, ERA5_winter_ternary_alaska_points_5days.txt
+        temp_label = np.loadtxt(load_dir+"temp_class/ERA5_alas_wint_200yrs_ternary_14days_order3.txt") # ERA5_alas_wint_200yrs_ternary_14days_order3.txt, ERA5_winter_ternary_alaska_points_5days.txt
 
     # var = var[:,tropics_lats,:]
     # var = var[:,:,tropics_lons]
@@ -477,9 +479,13 @@ def get_and_process_tropic_data_winter(raw_labels, raw_data, raw_time, rng, trai
     
     iyears_train = np.where(years_train==True)[0]
     iyears_val = np.where(years_val==True)[0]
-    ic(iyears_val)
     iyears_test = np.where(years_test==True)[0]   
     
+    print(iyears_train.shape)
+    print(iyears_val.shape)
+    print(iyears_test.shape)
+    
+
     if (bal_data):
         rus = RandomUnderSampler(random_state=r_seed)
         data_amt = iyears_train.reshape(-1,1)
@@ -602,8 +608,10 @@ def get_and_process_tropic_data_winter_ERA5(raw_labels, raw_data, raw_time, rng,
     all_years = raw_time["time.year"].values
     years     = np.unique(all_years)
     
-
+ 
     ##########################
+    shuffle = False
+    ############################################################################################################################################################
     if(shuffle==True):
         rng.shuffle(years)
     ##########################

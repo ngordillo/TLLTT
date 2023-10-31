@@ -34,7 +34,7 @@ import random
 from sklearn.metrics import confusion_matrix
 
 import network as network
-import experiment_settings_shuf_550bal_seeds
+# import experiment_settings_coast_550
 import data_functions_schooner
 import common_functions
 
@@ -53,18 +53,36 @@ print(f"numpy version = {np.__version__}")
 print(f"tensorflow version = {tf.__version__}")
 
 # ## Define experiment settings and directories
-
+file_lon = 0
+file_lat = 0
 if len(sys.argv) < 2:
-    EXP_NAME = 'GCM_alas_wint_550yrs_seed105_21days'#'smaller_test'#'quadrants_testcase'
-else:
+    EXP_NAME = 'GCM_alas_wint_550yrs_shuf_bal_seed125_redux' #'GCM_alas_wint_550yrs_seed105_21days'#'smaller_test'#'quadrants_testcase'
+    file_lon = 89
+    file_lat = 64
+    import experiment_settings_shuf_550bal_seeds as experiment_settings
+elif len(sys.argv) == 2:
     num = int(sys.argv[1])
-    EXP_NAME = 'GCM_alas_wint_550yrs_shuf_bal_seed'+str(num)
+    EXP_NAME = 'GCM_alas_lr_wint_550yrs_seed'+str(num) #balanced_test'#initial_test'#'mjo'#'quadrants_testcase'
+    import experiment_settings_multiple_seeds_lr as experiment_settings
+
+    # lr_list = [.01,]
+    # learning_rate = float(sys.argv[1])
+    # print(learning_rate)
+    # EXP_NAME = 'GCM_alas_wint_550yrs_shuf_bal_seed111_lr'
+    # import experiment_settings_shuf_550bal_seeds as experiment_settings
+    # file_lon = 89
+    # file_lat = 64
+else:
+    file_lon = int(sys.argv[2])
+    file_lat = int(sys.argv[1])
+    EXP_NAME = 'GCM_'+ str(file_lon) + '_' + str(file_lat) +'_wint_550yrs_shuf_bal_seed130'
+    import experiment_settings_coast_550_lr_adjust as experiment_settings
 
 print(EXP_NAME)
 # EXP_NAME = 'GCM_alas_wint_583yrs_gold_redo'#'smaller_test'#'quadrants_testcase'
 
-imp.reload(experiment_settings_shuf_550bal_seeds)
-settings = experiment_settings_shuf_550bal_seeds.get_settings(EXP_NAME)
+imp.reload(experiment_settings)
+settings = experiment_settings.get_settings(EXP_NAME)
 
 imp.reload(common_functions)
 #model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
@@ -96,7 +114,7 @@ gpus = tf.config.list_physical_devices('GPU')
 
 # the next line will restrict tensorflow to the first GPU 
 # you can select other gpus from the list instead
-tf.config.set_visible_devices(gpus[0], 'GPU')
+tf.config.set_visible_devices(gpus[1], 'GPU')
 
 tf.config.list_logical_devices('GPU')
 
@@ -124,7 +142,10 @@ train_yrs_era5 = settings['train_yrs_era5']
 val_yrs_era5 = settings['val_yrs_era5']
 test_years_era5 = settings['test_yrs_era5']
 if(EXP_NAME[:3]=='ERA'):   
-    labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter_ERA5(DATA_DIR)
+    #labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter_ERA5(DATA_DIR)
+
+    labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter_ERA5(DATA_DIR, file_lon, file_lat, True)
+
     X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter_ERA5(labels,
                                                                                             data,
                                                                                             time,
@@ -141,7 +162,10 @@ if(EXP_NAME[:3]=='ERA'):
     print("survived")
     quit()
 elif(EXP_NAME[:3] == 'GCM'):
-    labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter(DATA_DIR)
+    #labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter_ERA5(DATA_DIR)
+
+    labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter(DATA_DIR, file_lon, file_lat, True)
+
     X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter(labels,
                                                                                             data,
                                                                                             time,
@@ -224,8 +248,8 @@ metrics_list = [
     tf.keras.metrics.SparseCategoricalAccuracy(),
 ]
 
-imp.reload(experiment_settings_shuf_550bal_seeds)
-settings = experiment_settings_shuf_550bal_seeds.get_settings(EXP_NAME)
+imp.reload(experiment_settings)
+settings = experiment_settings.get_settings(EXP_NAME)
 
 imp.reload(common_functions)
 #model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
@@ -248,6 +272,10 @@ NEPOCHS              = settings['nepochs_pretrain']
 LR_INIT              = settings['lr_pretrain']
 LR_CALLBACK_EPOCH    = settings['lr_cb_epoch_pretrain']
 PATIENCE             = 100
+
+# LR_INIT = learning_rate
+
+# LR_INIT = .00000001
 
 # ## Instantiate the model
 
@@ -350,7 +378,9 @@ plt.legend(frameon=True, fontsize=FS)
 plt.xlim(-.1, 30+1)
 
 plt.tight_layout()
+# plt.savefig(model_diagnostics_dir + str(learning_rate) + '_' +'loss_history_pretrained_model_' + EXP_NAME + '.png', dpi=dpiFig)
 plt.savefig(model_diagnostics_dir + 'loss_history_pretrained_model_' + EXP_NAME + '.png', dpi=dpiFig)
+
 # plt.show()
 
 # print(data.shape)
@@ -469,5 +499,7 @@ correct_preds /= np.sum(cf_matrix)
 plt.xlabel('Prediction', fontsize=18, color = 'green')
 plt.ylabel('Actual', fontsize=18, color = 'red')
 plt.title('TLLTT Confusion Matrix (Accuracy - ' + str(np.around(correct_preds*100,2)) + '\%)', fontsize=18)
-plt.savefig((vizualization_dir + "10_" + EXP_NAME + 'BaseCNN_confmatrix.png'), bbox_inches='tight', dpi=dpiFig)
+plt.savefig((vizualization_dir + EXP_NAME + 'BaseCNN_confmatrix.png'), bbox_inches='tight', dpi=dpiFig)
+# plt.savefig((vizualization_dir + str(learning_rate) + "_" + EXP_NAME + 'BaseCNN_confmatrix.png'), bbox_inches='tight', dpi=dpiFig)
+
 
