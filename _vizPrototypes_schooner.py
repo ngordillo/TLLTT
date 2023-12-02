@@ -66,27 +66,27 @@ print(f"tensorflow version = {tf.__version__}")
 np.set_printoptions(suppress=True)
 
 if len(sys.argv) < 2:
-    EXP_NAME = 'GCM_alas_lr_wint_550yrs_seed124'  #'GCM_alas_wint_550yrs_shuf_bal_seed125' #'GCM_alas_wint_550yrs_shuf_bal_seed117'#'smaller_test'#'quadrants_testcase'
+    EXP_NAME = 'GCM_alas_lr_wint_550yrs_seed134'  #'GCM_alas_wint_550yrs_shuf_bal_seed125' #'GCM_alas_wint_550yrs_shuf_bal_seed117'#'smaller_test'#'quadrants_testcase'
     file_lon = 89
     file_lat = 64
     # import experiment_settings_shuf_550bal_seeds as experiment_settings
     import experiment_settings_multiple_seeds_lr as experiment_settings
 elif len(sys.argv) == 2:
     num = int(sys.argv[1])
-    EXP_NAME = 'GCM_alas_lr_wint_550yrs_seed'+str(num) #balanced_test'#initial_test'#'mjo'#'quadrants_testcase'
+    EXP_NAME = 'GCM_alas_lr_wint_drop_550yrs_seed'+str(num) #balanced_test'#initial_test'#'mjo'#'quadrants_testcase'
 
     # learning_rate = float(sys.argv[1])
     # print(learning_rate)
     # EXP_NAME = 'GCM_alas_lr_wint_550yrs_seed144_nopre_lrtest_epochs'
-    import experiment_settings_multiple_seeds_lr as experiment_settings
+    import experiment_settings_multiple_seeds_lr_drop as experiment_settings
     # import experiment_settings_shuf_550bal_seeds as experiment_settings
     file_lon = 89
     file_lat = 64
 else:
     file_lon = int(sys.argv[2])
     file_lat = int(sys.argv[1])
-    EXP_NAME = 'GCM_'+ str(file_lon) + '_' + str(file_lat) +'_wint_550yrs_shuf_bal_seed125_lr_v2'
-    import experiment_settings_coast_550_lr_adjust as experiment_settings
+    EXP_NAME = 'GCM_'+ str(file_lon) + '_' + str(file_lat) +'_wint_550yrs_shuf_bal_seed117'
+    import experiment_settings_coast_550_lr_adjust_117 as experiment_settings
 
 # EXP_NAME = 'GCM_alas_wint_550yrs_shuf_bal_seed117'
 
@@ -381,7 +381,7 @@ for c in np.arange(0,NCLASSES):
     j = np.where(y_test[i]==np.argmax(y_predict_test[i],axis=1))[0]
     acc = np.round(len(j)/len(i),3)
 
-    if(acc == 1.0):
+    if(acc >= .995):
         did_not_train = True
         # quit()
     print(np.argmax(y_predict_test[i],axis=1))
@@ -1393,7 +1393,7 @@ def examine_proto(good_samp, era5_flag):
         if(y_true[sample] == 0):
             class_text = "cold class"
         elif(y_true[sample] == 1):
-            class_text = "average class"
+            class_text = "neutral class"
         else:
             class_text = "warm class"
 
@@ -1441,7 +1441,7 @@ def examine_proto(good_samp, era5_flag):
         # if(y_true[sample] == 0):
         #     class_text = "low class"
         # elif(y_true[sample] == 1):
-        #     class_text = "average class"
+        #     class_text = "neutral class"
         # else:
         #     class_text = "high class"
 
@@ -1451,7 +1451,7 @@ def examine_proto(good_samp, era5_flag):
         if(y_train[prototype_sample[prototype_index]] == 0):
             class_text = "cold class"
         elif(y_train[prototype_sample[prototype_index]] == 1):
-            class_text = "average class"
+            class_text = "neutral class"
         else:
             class_text = "warm class"
 
@@ -1521,7 +1521,7 @@ def examine_proto(good_samp, era5_flag):
         plt.xlim(-.5, 2.5)
 
         # plt.xticks(np.arange(0,2),("below","above"))
-        plt.xticks(np.arange(0,3),("cold","average", "warm"))
+        plt.xticks(np.arange(0,3),("cold","neutral", "warm"))
 
         plt.xlabel('Temperature Class')
         plt.ylabel('points')
@@ -1618,6 +1618,9 @@ def examine_proto(good_samp, era5_flag):
     # print(full)
 
 ##################################################################################################################################################################################################################
+# All prototypes for each phase
+def show_all_protos(era5_flag, percentage):
+    print("Hello")
 
 ##################################################################################################################################################################################################################
 
@@ -1681,14 +1684,25 @@ def show_all_protos(era5_flag, percentage):
         k = np.where(proto_class_mask[:,phase]==0)[0]
         points[:,k] = 0.
         
+
+        
         winning_prototype = np.argmax(points,axis=1)
+        
+        print(isamples)
+        print(winning_prototype)
+        
         
         points_avg = np.mean(points,axis=0)
         # proto_vector = np.where(points_avg != 0)[0] 
         proto_vector = np.where(proto_class_mask[:,phase]==1)[0]
         proto_points_vector = points_avg[proto_vector]
         sorted_index = np.argsort(proto_points_vector)
+        
+        print(proto_vector[np.flipud(sorted_index)])
 
+        points_var = np.var(points,axis=0)
+        print(points_var)
+        
         # print(points.shape)
         # print(points_avg.shape)
         # print(max_similarity_score.shape)
@@ -1733,7 +1747,7 @@ def show_all_protos(era5_flag, percentage):
                 if(phase == 0):
                     class_text = "cold class"
                 elif(phase == 1):
-                    class_text = "average class"
+                    class_text = "neutral class"
                 else:
                     class_text = "warm class"
                 ax.set_title(var_name + ' of Prototype ' + str(prototype_index), fontsize=FS*1.25)
@@ -1790,7 +1804,7 @@ def show_all_protos(era5_flag, percentage):
                         transform = ax.transAxes,
                         )
                     ax.text(1.0, 1.0, 
-                        str(win_frac) + '% win',
+                        str(np.round(points_var[prototype_index],3)) + ' σ²',
                         fontfamily='monospace', 
                         fontsize=FS, 
                         va='bottom',
@@ -1807,6 +1821,387 @@ def show_all_protos(era5_flag, percentage):
             plt.close()
         else:
             plt.savefig((vizualization_dir + 'era5_figs/' + str(percentage*100) + "_" + "_" + EXP_NAME + '_convert_allPrototypes_phase' + str(phase) + '.png'), bbox_inches='tight', dpi=dpiFig)
+            plt.close()
+            
+########################################################################################################################
+
+def comps_by_proto(era5_flag):
+    # print("HELOOOOOOOOOOOOOOOOOOOOO????")
+    from scipy import stats
+    imp.reload(plots)
+    mapProj = ccrs.PlateCarree(central_longitude = np.mean(lon))
+    FS = 12
+
+
+    f = DATA_DIR + 'Index_EOFS/MJO_CESM2-piControl_intialTEST.pkl' # use this one for historical and SSP simulations with CESM2-WACCM
+
+
+    #f = '/Users/nicojg/Documents/Work/2021_Fall_IAI/Data/Index_EOFS/MJO_CESM2-piControl_intialTEST.pkl'
+
+    MJO_info = pd.read_pickle(f)
+
+    # the indexing from [:180*2] is so that we only grab the winds and not precip for the correlation
+
+    phases = MJO_info['Phase']
+    rmm1 = MJO_info['RMM1']
+    rmm2 = MJO_info['RMM2']
+
+    mjo_amp = np.sqrt(np.square(rmm1) + np.square(rmm2))
+
+    less_than_one = np.where(mjo_amp < 1)[0]
+
+    # phases[less_than_one] = 0
+
+
+    for phase in np.arange(0,3):
+        fig, axs = plt.subplots(10,
+                            2, 
+                            figsize=(18.3,22),
+                            subplot_kw={'projection': mapProj}
+                        )
+        # fig, axs = plt.subplots(5,
+        #                     2, 
+        #                     figsize=(12,12),
+        #                     subplot_kw={'projection': mapProj}
+        #                    )
+
+        
+        isamples = np.where((np.argmax(y_predict,axis=1)==phase) & (np.argmax(y_predict,axis=1)==y_true))[0]
+
+        points = max_similarity_score[isamples,:]*w[:,phase]
+
+        k = np.where(proto_class_mask[:,phase]==0)[0]
+        points[:,k] = 0.
+        
+
+        
+        winning_prototype = np.argmax(points,axis=1)
+        
+        
+        points_avg = np.mean(points,axis=0)
+        # proto_vector = np.where(points_avg != 0)[0] 
+        proto_vector = np.where(proto_class_mask[:,phase]==1)[0]
+        proto_points_vector = points_avg[proto_vector]
+        sorted_index = np.argsort(proto_points_vector)
+        
+        print(proto_vector[np.flipud(sorted_index)])
+
+        points_var = np.var(points,axis=0)
+        print(points_var)
+        
+        # print(points.shape)
+        # print(points_avg.shape)
+        # print(max_similarity_score.shape)
+        for ivar, var_index in enumerate([0]):
+            if(var_index==0):
+                var_name = 'precip'
+            elif(var_index==1):
+                var_name = 'precip'
+            elif(var_index==2):
+                var_name = 'u850'        
+            
+            # print(axs.shape)ß
+            
+            for iprototype, prototype_index in enumerate(proto_vector[np.flipud(sorted_index)][:3]):
+                # print("proto index")
+                # print(prototype_index)
+
+                #-------------------------------        
+                # PLOT THE PROTOTYPES
+                ax = axs[iprototype,ivar]
+                ax.set_aspect("auto")
+                # print(prototype_index)
+                # print(prototype_indices)
+                # print(prototype_indices[prototype_index,0])
+                # print(prototype_indices[prototype_index,1])
+                rf = receptive_field.computeMask(prototype_indices[prototype_index,0], prototype_indices[prototype_index,1])
+                img = np.squeeze(input_train[0][0][prototype_sample[prototype_index],:,:,var_index])*rf
+                img[img == 0] = np.nan
+                p = plots.plot_sample(ax,
+                                    img,
+                                    globe=True,
+                                    lat=lat,
+                                    lon=lon,
+                                    mapProj=mapProj,
+                                    )
+                # print(lat)
+                # print(lon)
+                # print(img)
+                # p.set_clim(-7,7)
+
+                class_text = "blah"
+                if(phase == 0):
+                    class_text = "cold class"
+                elif(phase == 1):
+                    class_text = "neutral class"
+                else:
+                    class_text = "warm class"
+                ax.set_title(var_name + ' of Prototype ' + str(prototype_index), fontsize=FS*1.25)
+                ax.text(0.01, 1.0, 
+                    str(class_text),
+                    fontfamily='monospace', 
+                    fontsize=FS, 
+                    va='bottom',
+                    ha='left',
+                    transform = ax.transAxes,
+                )
+
+                # ax.text(0.49, 1.0, 
+                #     'Phase: ' + str(phases[prototype_sample[prototype_index]]),
+                #     fontfamily='monospace', 
+                #     fontsize=FS, 
+                #     va='bottom',
+                #     ha='right',
+                #     transform = ax.transAxes,
+                # )   
+
+                ax.text(0.99, 1.0, 
+                    str(prototype_date[prototype_index]),
+                    fontfamily='monospace', 
+                    fontsize=FS, 
+                    va='bottom',
+                    ha='right',
+                    transform = ax.transAxes,
+                )            
+                #-------------------------------        
+                # PLOT THE MASKS
+                if var_index==0:
+                    
+                    samp_proto_index = np.where(winning_prototype == prototype_index)[0]
+                    
+                    samp_proto_locs = isamples[samp_proto_index]
+                    
+                    img = np.zeros(np.squeeze(input_data[0][0][samp_proto_locs[0],:,:,var_index]).shape)
+                    
+                    for samp_proto_loc in samp_proto_locs:
+                        
+                        samp_img = np.squeeze(input_data[0][0][samp_proto_loc,:,:,var_index])
+                        
+                        img = img + samp_img
+                   
+                        
+                    img = img / samp_proto_locs.shape[0]
+                    print(samp_proto_locs.shape[0])
+                    
+                    ax = axs[iprototype,1]
+                    ax.set_aspect("auto")
+                    # img = local_mask[:,:,prototype_index]
+                    # img = np.flipud(img)
+                    p = plots.plot_sample(ax, img * 5, globe=True, lat=lat, lon=lon, mapProj=mapProj)
+
+                    # p.set_clim(1.,np.max(img[:]))
+                    # print(np.max(img[:]))
+                    ax.set_title('Prototype ' + str(prototype_index) + ' Sample Composite', fontsize=FS*1.25)
+                    
+                    ax.text(0.00, 1.0, 
+                        'n = ' + str(samp_proto_locs.shape[0]),
+                        fontfamily='monospace', 
+                        fontsize=FS, 
+                        va='bottom',
+                        ha='left',
+                        transform = ax.transAxes,
+                        )
+
+        if(era5_flag == 0):
+            plt.savefig((vizualization_dir + "_" + EXP_NAME + '_Prototype_comps_phase' + str(phase) + '.png'), bbox_inches='tight', dpi=dpiFig)
+            # plt.savefig((vizualization_dir + str(learning_rate) +  "_" +str(percentage*100) + "_" + "_" + EXP_NAME + '_allPrototypes_phase' + str(phase) + '.png'), bbox_inches='tight', dpi=dpiFig)
+            plt.close()
+        elif(era5_flag == 1):
+            plt.savefig((vizualization_dir + 'era5_figs/'  + "_" + EXP_NAME + '_translated_Prototype_comps_phase' + str(phase) + '.png'), bbox_inches='tight', dpi=dpiFig)
+            plt.close()
+        else:
+            plt.savefig((vizualization_dir + 'era5_figs/' + "_" + EXP_NAME + '_convert_Prototype_comps_phase' + str(phase) + '.png'), bbox_inches='tight', dpi=dpiFig)
+            plt.close()
+
+def useless_func(era5_flag):
+    # print("HELOOOOOOOOOOOOOOOOOOOOO????")
+    from scipy import stats
+    imp.reload(plots)
+    mapProj = ccrs.PlateCarree(central_longitude = np.mean(lon))
+    FS = 12
+
+
+    f = DATA_DIR + 'Index_EOFS/MJO_CESM2-piControl_intialTEST.pkl' # use this one for historical and SSP simulations with CESM2-WACCM
+
+
+    #f = '/Users/nicojg/Documents/Work/2021_Fall_IAI/Data/Index_EOFS/MJO_CESM2-piControl_intialTEST.pkl'
+
+    MJO_info = pd.read_pickle(f)
+
+    # the indexing from [:180*2] is so that we only grab the winds and not precip for the correlation
+
+    phases = MJO_info['Phase']
+    rmm1 = MJO_info['RMM1']
+    rmm2 = MJO_info['RMM2']
+
+    mjo_amp = np.sqrt(np.square(rmm1) + np.square(rmm2))
+
+    less_than_one = np.where(mjo_amp < 1)[0]
+
+    # phases[less_than_one] = 0
+
+
+    for phase in np.arange(0,3):
+        fig, axs = plt.subplots(10,
+                            2, 
+                            figsize=(18.3,22),
+                            subplot_kw={'projection': mapProj}
+                        )
+        # fig, axs = plt.subplots(5,
+        #                     2, 
+        #                     figsize=(12,12),
+        #                     subplot_kw={'projection': mapProj}
+        #                    )
+
+        
+        isamples = np.where((np.argmax(y_predict,axis=1)==phase) & (np.argmax(y_predict,axis=1)==y_true))[0]
+
+        points = max_similarity_score[isamples,:]*w[:,phase]
+
+        k = np.where(proto_class_mask[:,phase]==0)[0]
+        points[:,k] = 0.
+        
+
+        
+        winning_prototype = np.argmax(points,axis=1)
+        
+        
+        points_avg = np.mean(points,axis=0)
+        # proto_vector = np.where(points_avg != 0)[0] 
+        proto_vector = np.where(proto_class_mask[:,phase]==1)[0]
+        proto_points_vector = points_avg[proto_vector]
+        sorted_index = np.argsort(proto_points_vector)
+        
+        print(proto_vector[np.flipud(sorted_index)])
+
+        points_var = np.var(points,axis=0)
+        print(points_var)
+        
+        # print(points.shape)
+        # print(points_avg.shape)
+        # print(max_similarity_score.shape)
+        for ivar, var_index in enumerate([0]):
+            if(var_index==0):
+                var_name = 'precip'
+            elif(var_index==1):
+                var_name = 'precip'
+            elif(var_index==2):
+                var_name = 'u850'        
+            
+            # print(axs.shape)ß
+            
+            for iprototype, prototype_index in enumerate(proto_vector[np.flipud(sorted_index)][:3]):
+                # print("proto index")
+                # print(prototype_index)
+
+                #-------------------------------        
+                # PLOT THE PROTOTYPES
+                ax = axs[iprototype,ivar]
+                ax.set_aspect("auto")
+                # print(prototype_index)
+                # print(prototype_indices)
+                # print(prototype_indices[prototype_index,0])
+                # print(prototype_indices[prototype_index,1])
+                rf = receptive_field.computeMask(prototype_indices[prototype_index,0], prototype_indices[prototype_index,1])
+                img = np.squeeze(input_train[0][0][prototype_sample[prototype_index],:,:,var_index])*rf
+                img[img == 0] = np.nan
+                p = plots.plot_sample(ax,
+                                    img,
+                                    globe=True,
+                                    lat=lat,
+                                    lon=lon,
+                                    mapProj=mapProj,
+                                    )
+                # print(lat)
+                # print(lon)
+                # print(img)
+                # p.set_clim(-7,7)
+
+                class_text = "blah"
+                if(phase == 0):
+                    class_text = "cold class"
+                elif(phase == 1):
+                    class_text = "neutral class"
+                else:
+                    class_text = "warm class"
+                ax.set_title(var_name + ' of Prototype ' + str(prototype_index), fontsize=FS*1.25)
+                ax.text(0.01, 1.0, 
+                    str(class_text),
+                    fontfamily='monospace', 
+                    fontsize=FS, 
+                    va='bottom',
+                    ha='left',
+                    transform = ax.transAxes,
+                )
+
+                # ax.text(0.49, 1.0, 
+                #     'Phase: ' + str(phases[prototype_sample[prototype_index]]),
+                #     fontfamily='monospace', 
+                #     fontsize=FS, 
+                #     va='bottom',
+                #     ha='right',
+                #     transform = ax.transAxes,
+                # )   
+
+                ax.text(0.99, 1.0, 
+                    str(prototype_date[prototype_index]),
+                    fontfamily='monospace', 
+                    fontsize=FS, 
+                    va='bottom',
+                    ha='right',
+                    transform = ax.transAxes,
+                )            
+                #-------------------------------        
+                # PLOT THE MASKS
+                if var_index==0:
+                    
+                    samp_proto_index = np.where(winning_prototype == prototype_index)[0]
+                    
+                    samp_proto_locs = isamples[samp_proto_index]
+                    
+                    img = np.zeros(np.squeeze(input_data[0][0][samp_proto_locs[0],:,:,var_index]).shape)
+                    
+                    for samp_proto_loc in samp_proto_locs:
+                        
+                        samp_img = np.squeeze(input_data[0][0][samp_proto_loc,:,:,var_index])
+                        
+                        img = img + samp_img
+                   
+                        
+                    img = img / samp_proto_locs.shape[0]
+                    print(samp_proto_locs.shape[0])
+                    
+                    print(samp_proto_locs[iprototype])
+                    img = np.squeeze(input_data[0][0][samp_proto_locs[iprototype],:,:,var_index])
+
+                    ax = axs[iprototype,1]
+                    ax.set_aspect("auto")
+                    # img = local_mask[:,:,prototype_index]
+                    # img = np.flipud(img)
+                    p = plots.plot_sample(ax, img , globe=True, lat=lat, lon=lon, mapProj=mapProj)
+
+                    # p.set_clim(1.,np.max(img[:]))
+                    # print(np.max(img[:]))
+                    ax.set_title('Prototype ' + str(prototype_index) + ' Sample Composite', fontsize=FS*1.25)
+                    
+                    ax.text(0.00, 1.0, 
+                        'n = ' + str(samp_proto_locs.shape[0]),
+                        fontfamily='monospace', 
+                        fontsize=FS, 
+                        va='bottom',
+                        ha='left',
+                        transform = ax.transAxes,
+                        )
+
+        if(era5_flag == 0):
+            plt.savefig((vizualization_dir + "_" + EXP_NAME + '_useless' + str(phase) + '.png'), bbox_inches='tight', dpi=dpiFig)
+            # plt.savefig((vizualization_dir + str(learning_rate) +  "_" +str(percentage*100) + "_" + "_" + EXP_NAME + '_allPrototypes_phase' + str(phase) + '.png'), bbox_inches='tight', dpi=dpiFig)
+            plt.close()
+        elif(era5_flag == 1):
+            plt.savefig((vizualization_dir + 'era5_figs/'  + "_" + EXP_NAME + '_translated_Prototype_comps_phase' + str(phase) + '.png'), bbox_inches='tight', dpi=dpiFig)
+            plt.close()
+        else:
+            plt.savefig((vizualization_dir + 'era5_figs/' + "_" + EXP_NAME + 'useless_ERA5' + str(phase) + '.png'), bbox_inches='tight', dpi=dpiFig)
             plt.close()
 
 def subcategorybar(X, vals, width=0.8):
@@ -1964,18 +2359,18 @@ def compare_accuracies():
     normal_accuracies = np.loadtxt("/barnes-scratch/nicojg/data/" + run_name + "125/" + normal_fn)#.astype(float)
 
     plt.figure(figsize=(10,6))
-    plt.plot(np.arange(10, 101, 5)[::-1], normal_accuracies, label = "TLLTT")
+    plt.plot(np.arange(10, 101, 5)[::-1], normal_accuracies, label = "ProtoLNet", color = '#f42c94')
 
     for run_seed in run_seeds:
         normal_fn = "normal_" + run_name + str(run_seed) + "_TLLTT_accuracy.txt"
         normal_accuracies = np.loadtxt("/barnes-scratch/nicojg/data/" + run_name + str(run_seed) + "/" + normal_fn)#.astype(float)
-        plt.plot(np.arange(10, 101, 5)[::-1], normal_accuracies, label = "Base CNN")
+        plt.plot(np.arange(10, 101, 5)[::-1], normal_accuracies, label = "Base CNN", color = '#f89c04')
     # plt.title("Model Accuracy by percentage of most confident samples", fontsize=20)
     plt.title("Discard test", fontsize=20)
     plt.xlabel("Percentage samples not discarded", fontsize=15)
     plt.xticks(ticks=np.arange(10, 101, 5), labels=np.arange(10, 101, 5)[::-1])
     plt.ylabel("Accuracy (%)", fontsize=15)
-    plt.axhspan(0, 33, color='y', alpha=0.5, lw=0)
+    plt.axhspan(0, 33, color='0.75', alpha=0.5, lw=0)
 
     plt.ylim(bottom=30)
 
@@ -1996,7 +2391,10 @@ if(settings['plot_ERA5_translated'] == True):
 if(settings['plot_ERA5_convert'] == True):
     era5_flag_set = 2
 
+# comps_by_proto(era5_flag_set)
+useless_func(era5_flag_set)
 
+quit()
 
 # for i in np.arange(10, 101, 5):
 #     accuracies.append(make_confuse_matrix(y_predict[top_confidence_protos(i/100.)], y_true[top_confidence_protos(i/100.)], i, False))
@@ -2025,18 +2423,18 @@ for i in np.arange(10, 101, 5):
 
 
 plt.figure(figsize=(10,6))
-plt.plot(np.arange(10, 101, 5)[::-1], accuracies, label = "TLLTT")
-plt.plot(np.arange(10, 101, 5)[::-1], accuracies_val, label = "TLLTT - val")
+plt.plot(np.arange(10, 101, 5)[::-1], accuracies, label = "ProtoLNet", color = '#f42c94')
+# plt.plot(np.arange(10, 101, 5)[::-1], accuracies_val, label = "TLLTT - val")
 if(settings['pretrain'] == True):
-    plt.plot(np.arange(10, 101, 5)[::-1], base_accuracies, label = "Base CNN")
-    plt.plot(np.arange(10, 101, 5)[::-1], base_accuracies_val, label = "Base CNN - val")
+    plt.plot(np.arange(10, 101, 5)[::-1], base_accuracies, label = "Base CNN", color = '#f89c04')
+    # plt.plot(np.arange(10, 101, 5)[::-1], base_accuracies_val, label = "Base CNN - val")
 # plt.title("Model Accuracy by percentage of most confident samples", fontsize=20)
 plt.title("Discard test", fontsize=20)
 
 plt.xlabel("Percentage samples not discarded", fontsize=15)
 plt.xticks(ticks=np.arange(10, 101, 5), labels=np.arange(10, 101, 5)[::-1])
 plt.ylabel("Accuracy (%)", fontsize=15)
-plt.axhspan(0, 33, color='y', alpha=0.5, lw=0)
+plt.axhspan(0, 33, color='0.75', alpha=0.5, lw=0)
 
 print(np.min(accuracies) >= 31)
 
@@ -2085,15 +2483,17 @@ if (os.path.exists(translated_fn) and os.path.exists(convert_fn) and os.path.exi
     normal_accuracies = np.loadtxt(normal_fn)#.astype(float)
     
     plt.figure(figsize=(10,6))
-    plt.plot(np.arange(10, 101, 5)[::-1], normal_accuracies, label = "GCM")
-    plt.plot(np.arange(10, 101, 5)[::-1], translated_accuracies, label = "Projected ERA5")
-    plt.plot(np.arange(10, 101, 5)[::-1], convert_accuracies, label = "Transferred ERA5")
-    plt.title("Model Accuracy by percentage of most confident samples", fontsize=20)
-    plt.xlabel("Percentage of confident samples used", fontsize=15)
+    plt.xlim(10,100)
+    plt.plot(np.arange(10, 101, 5)[::-1], normal_accuracies, label = "GCM ProtoLNet", color = '#f42c94')
+    plt.plot(np.arange(10, 101, 5)[::-1], translated_accuracies, label = "ERA5 Projected", color = '#4db6ac') 
+    plt.plot(np.arange(10, 101, 5)[::-1], convert_accuracies, label = "ERA5 Transformed", color = '#3c8cdc')
+    # plt.title("Model Accuracy by percentage of most confident samples", fontsize=20)
+    plt.xlabel("Percent Most Confident (%)", fontsize=15)
     plt.xticks(ticks=np.arange(10, 101, 5), labels=np.arange(10, 101, 5)[::-1])
-    plt.ylabel("Accuracy", fontsize=15)
-    plt.axhspan(0, 33, color='y', alpha=0.5, lw=0)
+    plt.ylabel("Accuracy (%)", fontsize=15)
+    plt.axhspan(0, 33, color='.25', alpha=0.5, lw=0)
     
+    print(convert_accuracies)
     if((np.min(normal_accuracies) >= 31)):
         print("srtting ylim")
         plt.ylim(bottom=30)
@@ -2108,6 +2508,7 @@ if (os.path.exists(translated_fn) and os.path.exists(convert_fn) and os.path.exi
 if(not did_not_train):
     show_all_protos(era5_flag_set, 1)
     show_all_protos(era5_flag_set, .2)
+    
 
 top_samps = top_confidence_protos(1, y_predict)[:5]
 for decent_samp in top_samps:
