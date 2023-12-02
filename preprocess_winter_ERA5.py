@@ -15,12 +15,7 @@ def find_nearest_index(array, value):
     idx = (np.abs(array - value)).argmin()
     return idx
 
-if len(sys.argv) < 2:
-    spec_lat = 61.2176
-    spec_lon = 149.8997
-else:
-    num = int(sys.argv[1])
-    EXP_NAME = 'GCM_alas_wint_550yrs_shuf_bal_seed'+str(num) 
+
     
 # load_dir = "/ourdisk/hpc/ai2es/nicojg/TLLTT/data/"
 load_dir = "/barnes-scratch/nicojg/"
@@ -28,8 +23,8 @@ load_dir = "/barnes-scratch/nicojg/"
 # filename = '500_2mtemp.nc'
 # temp_500     = xr.open_dataset(load_dir+filename)['tas'].values[:,96:,80:241]
 #filename = 'NA_2mtemp.nc'
-filename =    'anom_2mtemp_550_years.nc' # 'anom_large_550_2mtemp.nc' #'rolled_small_2mtemp.nc'  #'era_2mtemp_mjo_notrend_anoms.nc'  #'NEWera5_post1980_2mtemp_anoms.nc'  #'anom_2mtemp_full_era5_remap_order3.nc' #'anom_2mtemp_full_era5_remap_order1.nc' #'anom_2mtemp_full_era5_remap.nc' #'rolled_small_2mtemp.nc' #'MAIN_era5_2mtemp_mjo_notrend_anoms.nc'#era5_daily_2mtemp.nc'
-temp     = xr.open_dataset(load_dir+filename)['tas']#[:,96:,80:241] #era2mtempanom
+filename =    'anom_2mtemp_full_era5_remap_order3.nc' #'anom_2mtemp_550_years.nc' # 'anom_large_550_2mtemp.nc' #'rolled_small_2mtemp.nc'  #'era_2mtemp_mjo_notrend_anoms.nc'  #'NEWera5_post1980_2mtemp_anoms.nc'  #'anom_2mtemp_full_era5_remap_order3.nc' #'anom_2mtemp_full_era5_remap_order1.nc' #'anom_2mtemp_full_era5_remap.nc' #'rolled_small_2mtemp.nc' #'MAIN_era5_2mtemp_mjo_notrend_anoms.nc'#era5_daily_2mtemp.nc'
+temp     = xr.open_dataset(load_dir+filename)['t2m']#[:,96:,80:241] #era2mtempanom
 # time     = xr.open_dataset(load_dir+filename)['time'][0:(60*365)+14]
 lat  = xr.open_dataset(load_dir+filename)['lat'].values
 lon   = xr.open_dataset(load_dir+filename)['lon'].values
@@ -59,16 +54,20 @@ print(temp)
 
 #Find Alaska point
 
-alaska_lat = find_nearest_index(lat, 61.2176)
-alaska_lon = find_nearest_index(lon, 360-149.8997)
+if len(sys.argv) < 3:
+    alaska_lat = find_nearest_index(lat, 61.2176)
+    alaska_lon = find_nearest_index(lon, 360-149.8997)
+else:
+    alaska_lat = int(sys.argv[1])
+    alaska_lon = int(sys.argv[2])
+
+# alaska_lat = find_nearest_index(lat, 61.2176)
+# alaska_lon = find_nearest_index(lon, 360-149.8997)
 
 print(alaska_lat)
 print(alaska_lon)
 
-print(lat[alaska_lat])
-print(360-lon[89])
-print(360-lon[88])
-quit()
+
 
 print(temp[:,alaska_lat, alaska_lon].values)
 
@@ -80,7 +79,7 @@ rolled_temp = rolled_temp.shift(time=-4).dropna("time", how='all')
 
 print(rolled_temp)
 # print(rolled_temp.time)
-# shift_rolled_temp = rolled_temp.sel(time=slice("1951-11-22", "2021-03-21"))
+shift_rolled_temp = rolled_temp.sel(time=slice("1951-11-15", "2021-03-14"))
 
 # shift_rolled_temp = rolled_temp.sel(time=slice("1981-01-15", "2021-03-14"))
 
@@ -97,9 +96,9 @@ print(rolled_temp)
 
 # shift_rolled_temp = rolled_temp.sel(time=slice("1679-11-22", "2229-03-21"))
 
-GCM_date = xr.cftime_range(start= '0201-11-15',end = '0751-03-14',freq='D', calendar='noleap')
+# GCM_date = xr.cftime_range(start= '0201-11-15',end = '0751-03-14',freq='D', calendar='noleap')
 
-shift_rolled_temp = rolled_temp.sel(time=GCM_date)
+# shift_rolled_temp = rolled_temp.sel(time=GCM_date)
 
 # print(shift_rolled_temp)
 
@@ -141,7 +140,7 @@ print(loc_shift_rolled_temp['time'].values)
 # exit()
 
 #########################################################################################
-# year_range = np.arange(1951, 2021, 1)
+year_range = np.arange(1951, 2021, 1)
 
 # date_range = []
 # for year in year_range:
@@ -166,14 +165,15 @@ print(loc_shift_rolled_temp['time'].values)
 #         date_range.append(pd.date_range(start= f'{year}-11-15',end = f'{year+1}-03-14',freq='d') + pd.offsets.Hour(00))
 
 
-year_range = np.arange(201, 751, 1)
+# year_range = np.arange(201, 751, 1)
 date_range = []
 for year in year_range:
-    # date_range.append(pd.date_range(start= f'{year}-11-15',end = f'{year+1}-03-14',freq='d') + pd.offsets.Hour(00))
-    # date_range.append(pd.date_range(start= f'{year}-11-15',end = f'{year+1}-03-14',freq='d') + pd.offsets.Hour(11))
+    date_range.append(pd.date_range(start= f'{year}-11-15',end = f'{year+1}-03-14',freq='d') + pd.offsets.Hour(00))
+    #date_range.append(pd.date_range(start= f'{year}-11-15',end = f'{year+1}-03-14',freq='d') + pd.offsets.Hour(11))
 
     # date_range.append(pd.date_range(start= f'{year}-11-22',end = f'{year+1}-03-21',freq='d') + pd.offsets.Hour(00))
-    date_range.append(xr.cftime_range(start= str(year).zfill(4) + '-11-15',end = str(year+1).zfill(4) + '-03-14',freq='D', calendar='noleap'))
+
+    # date_range.append(xr.cftime_range(start= str(year).zfill(4) + '-11-15',end = str(year+1).zfill(4) + '-03-14',freq='D', calendar='noleap'))
     
 
 date_range = [item for sublist in date_range for item in sublist]
@@ -252,7 +252,7 @@ print("number of 1: " + str(count_arr[1]))
 print("number of 2: " + str(count_arr[2]))
 
 for i in np.arange(train_dates, loc_shift_rolled_temp.shape[0], 1):
-    print(i)
+    # print(i)
     #CHANGE
 
     # correct_day = (i+lead)%365
@@ -279,8 +279,11 @@ print("number of 1: " + str(count_arr[1]))
 print("number of 2: " + str(count_arr[2]))
 print(len(train_class))
 
-np.savetxt('/barnes-scratch/nicojg/GCM_new_alas_wint_550yrs_ternary_14day.txt', train_class, fmt='%d')
-np.savetxt('data/GCM_new_alas_wint_550yrs_ternary_14days.txt', train_class, fmt='%d')
+# np.savetxt('/barnes-scratch/nicojg/GCM_new_alas_wint_550yrs_ternary_14day.txt', train_class, fmt='%d')
+# np.savetxt('data/GCM_new_alas_wint_550yrs_ternary_14days.txt', train_class, fmt='%d')
+
+np.savetxt('/barnes-scratch/nicojg/temp_class/ERA5_' + str(alaska_lon) + '_' + str(alaska_lat) + '_wint_550yrs_ternary_14day.txt', train_class, fmt='%d')
+np.savetxt('data/temp_class/ERA5_' + str(alaska_lon) + '_' + str(alaska_lat) + '_wint_550yrs_ternary_14days.txt', train_class, fmt='%d')
 
 # np.savetxt('/barnes-scratch/nicojg/_testing_olddata.txt', train_class, fmt='%d')
 # np.savetxt('data/_testing_olddata.txt', train_class, fmt='%d')

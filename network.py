@@ -2,9 +2,24 @@ import sys
 import numpy as np
 import tensorflow as tf
 
+import timeit
+import traceback
+import contextlib
+
 __author__ = "Randal J Barnes and Elizabeth A. Barnes"
 __version__ = "02 Decmeber 2021"
 
+
+##############################################################################################
+@contextlib.contextmanager
+def options(options):
+  old_opts = tf.config.optimizer.get_experimental_options()
+  tf.config.optimizer.set_experimental_options(options)
+  try:
+    yield
+  finally:
+    tf.config.optimizer.set_experimental_options(old_opts)
+##############################################################################################
 
 def get_model_prototype_layer(model):
     return tf.keras.models.Model(model.input,model.layers[-3].output)
@@ -295,7 +310,8 @@ def build_model(nlayers,
             bias_initializer=tf.keras.initializers.HeNormal(seed=network_seed),
             kernel_regularizer =tf.keras.regularizers.l1_l2(kernel_l1_coeff, kernel_l2_coeff),
             name='conv_' + str(layer),         
-        )(x)      
+        )(x)
+        # with options({"layout_optimizer": False}):      
         x = tf.keras.layers.Dropout(rate=drop_rate,seed=network_seed)(x)                 
         
         if(double_conv==True):
@@ -311,6 +327,7 @@ def build_model(nlayers,
                 kernel_regularizer =tf.keras.regularizers.l1_l2(kernel_l1_coeff, kernel_l2_coeff),
                 name='conv_' + str(layer) + 'x2',         
             )(x)
+            # with options({"layout_optimizer": False}):
             x = tf.keras.layers.Dropout(rate=drop_rate,seed=network_seed)(x)         
             
         # layer's max pooling

@@ -43,7 +43,7 @@ def plot_sample(ax,image,globe=False, lat=None, lon=None, mapProj=None):
                                 vmin=-5,
                                 vmax=5,
                                )
-        p.set_clim(-5,5)
+        # p.set_clim(-5,5)
         
         ax.set_extent([np.min(lon), 
                        np.max(lon), 

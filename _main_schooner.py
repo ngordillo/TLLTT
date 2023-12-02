@@ -61,8 +61,8 @@ if len(sys.argv) < 2:
     import experiment_settings_multiple_seeds_lr as experiment_settings
 elif len(sys.argv) == 2:
     num = int(sys.argv[1])
-    EXP_NAME = 'GCM_alas_lr_wint_550yrs_seed'+str(num) #+ '_nopre' #balanced_test'#initial_test'#'mjo'#'quadrants_testcase'
-    import experiment_settings_multiple_seeds_lr as experiment_settings
+    EXP_NAME = 'GCM_alas_lr_wint_drop_550yrs_seed'+str(num) #+ '_nopre' #balanced_test'#initial_test'#'mjo'#'quadrants_testcase'
+    import experiment_settings_multiple_seeds_lr_drop as experiment_settings
 
     # learning_rate = float(sys.argv[1])
     # print(learning_rate)
@@ -78,8 +78,8 @@ elif len(sys.argv) == 2:
 else:
     file_lon = int(sys.argv[2])
     file_lat = int(sys.argv[1])
-    EXP_NAME = 'GCM_'+ str(file_lon) + '_' + str(file_lat) +'_wint_550yrs_shuf_bal_seed130'
-    import experiment_settings_coast_550_lr_adjust as experiment_settings
+    EXP_NAME = 'GCM_'+ str(file_lon) + '_' + str(file_lat) +'_wint_550yrs_shuf_bal_seed117'
+    import experiment_settings_coast_550_lr_adjust_117 as experiment_settings
 
 imp.reload(experiment_settings)
 settings = experiment_settings.get_settings(EXP_NAME)
