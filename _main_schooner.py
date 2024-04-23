@@ -61,8 +61,8 @@ if len(sys.argv) < 2:
     import experiment_settings_multiple_seeds_lr as experiment_settings
 elif len(sys.argv) == 2:
     num = int(sys.argv[1])
-    EXP_NAME = 'GCM_alas_lr_wint_drop_550yrs_seed'+str(num) #+ '_nopre' #balanced_test'#initial_test'#'mjo'#'quadrants_testcase'
-    import experiment_settings_multiple_seeds_lr_drop as experiment_settings
+    EXP_NAME = 'GCM_alas_lr_wint_550redo_seed'+str(num) #+ '_nopre' #balanced_test'#initial_test'#'mjo'#'quadrants_testcase'
+    import experiment_settings_multiple_seeds_lr_redo as experiment_settings
 
     # learning_rate = float(sys.argv[1])
     # print(learning_rate)
@@ -78,8 +78,8 @@ elif len(sys.argv) == 2:
 else:
     file_lon = int(sys.argv[2])
     file_lat = int(sys.argv[1])
-    EXP_NAME = 'GCM_'+ str(file_lon) + '_' + str(file_lat) +'_wint_550yrs_shuf_bal_seed117'
-    import experiment_settings_coast_550_lr_adjust_117 as experiment_settings
+    EXP_NAME = 'GCM_'+ str(file_lon) + '_' + str(file_lat) +'_wint_550yrs_shuf_bal_seed131'
+    import experiment_settings_coast_550_lr_adjust_131 as experiment_settings
 
 imp.reload(experiment_settings)
 settings = experiment_settings.get_settings(EXP_NAME)
@@ -148,7 +148,7 @@ test_years_era5 = settings['test_yrs_era5'],
 if(EXP_NAME[:3]=='ERA'):   
     #labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter_ERA5(DATA_DIR)
 
-    labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter_ERA5(DATA_DIR, file_lon, file_lat, True)
+    labels, data, lat, lon, time, temp_anoms, t_lat, t_lon = data_functions_schooner.load_tropic_data_winter_ERA5(DATA_DIR, file_lon, file_lat, False)
 
     X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter_ERA5(labels,
                                                                                             data,
@@ -166,15 +166,16 @@ if(EXP_NAME[:3]=='ERA'):
 elif(EXP_NAME[:3] == 'GCM'):
     #labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter(DATA_DIR)
 
-    labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter(DATA_DIR, file_lon, file_lat, True)
+    labels, data, lat, lon, time, temp_anoms, t_lat, t_lon = data_functions_schooner.load_tropic_data_winter(DATA_DIR, file_lon, file_lat, False)
 
-    X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter(labels,
+    X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test, temp_train, temp_val, temp_test = data_functions_schooner.get_and_process_tropic_data_winter(labels,
                                                                                             data,
                                                                                             time,
                                                                                             rng, 
                                                                                             train_yrs,
                                                                                             val_yrs,
                                                                                             test_years,
+                                                                                            temp_anoms,
                                                                                             colored=settings['colored'],
                                                                                             standardize=settings['standardize'],
                                                                                             shuffle=settings['shuffle'],
@@ -581,4 +582,5 @@ else:
     plt.ylim(bottom=20)
 plt.legend()
 plt.savefig((vizualization_dir + EXP_NAME + 'VALONLY_forecast_of_opportunity.png'), bbox_inches='tight', dpi=dpiFig)
+plt.close()
 # plt.savefig((vizualization_dir + str(learning_rate) + "_" + EXP_NAME + 'VALONLY_forecast_of_opportunity.png'), bbox_inches='tight', dpi=dpiFig)
