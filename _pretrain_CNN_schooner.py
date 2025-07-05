@@ -7,18 +7,16 @@
 
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
 
-
 import os
 os.environ["XLA_FLAGS"]="--xla_gpu_cuda_data_dir=/usr/lib/cuda"
 
 import sys
 import time
-import imp #imp.reload(module)
+import imp 
 import numpy, warnings
 numpy.warnings = warnings
 
 import numpy as np
-# from tqdm import trange
 from icecream import ic
 import scipy.io as sio
 
@@ -34,13 +32,12 @@ import random
 from sklearn.metrics import confusion_matrix
 
 import network as network
-# import experiment_settings_coast_550
 import data_functions_schooner
 import common_functions
 
 
-__author__ = "Nicolas Gordillo and Elizabeth A. Barnes and Randal J Barnes"
-__version__ = "October 2022"
+__author__ = "Nicolas Gordillo"
+__version__ = "April 2024"
 
 mpl.rcParams['figure.facecolor'] = 'white'
 mpl.rcParams['figure.dpi']= 150
@@ -57,23 +54,16 @@ file_lon = 0
 file_lat = 0
 
 if len(sys.argv) < 2:
-    EXP_NAME = 'GCM_alas_wint_550yrs_shuf_bal_seed125_redux' #'GCM_alas_wint_550yrs_seed105_21days'#'smaller_test'#'quadrants_testcase'
+    EXP_NAME = 'GCM_alas_wint_550yrs_shuf_bal_seed125_redux'
     file_lon = 89
     file_lat = 64
     import experiment_settings_shuf_550bal_seeds as experiment_settings
-    
+
 elif len(sys.argv) == 2:
     num = int(sys.argv[1])
     EXP_NAME = 'GCM_alas_lr_wint_550redo_seed'+str(num) #balanced_test'#initial_test'#'mjo'#'quadrants_testcase'
     import experiment_settings_multiple_seeds_lr_redo as experiment_settings
 
-    # lr_list = [.01,]
-    # learning_rate = float(sys.argv[1])
-    # print(learning_rate)
-    # EXP_NAME = 'GCM_alas_wint_550yrs_shuf_bal_seed111_lr'
-    # import experiment_settings_shuf_550bal_seeds as experiment_settings
-    # file_lon = 89
-    # file_lat = 64
 else:
     file_lon = int(sys.argv[2])
     file_lat = int(sys.argv[1])
@@ -81,7 +71,6 @@ else:
     import experiment_settings_coast_550_lr_adjust_131 as experiment_settings
 
 print(EXP_NAME)
-# EXP_NAME = 'GCM_alas_wint_583yrs_gold_redo'#'smaller_test'#'quadrants_testcase'
 
 imp.reload(experiment_settings)
 settings = experiment_settings.get_settings(EXP_NAME)
@@ -144,7 +133,6 @@ train_yrs_era5 = settings['train_yrs_era5']
 val_yrs_era5 = settings['val_yrs_era5']
 test_years_era5 = settings['test_yrs_era5']
 if(EXP_NAME[:3]=='ERA'):   
-    #labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter_ERA5(DATA_DIR)
 
     labels, data, lat, lon, time, temp_anoms, t_lat, t_lon = data_functions_schooner.load_tropic_data_winter_ERA5(DATA_DIR, file_lon, file_lat, False)
 
@@ -161,10 +149,8 @@ if(EXP_NAME[:3]=='ERA'):
                                                                                             bal_data = settings['balance_data'],
                                                                                             r_seed = RANDOM_SEED,
                                                                                         )
-    print("survived")
-    quit()
+
 elif(EXP_NAME[:3] == 'GCM'):
-    #labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter_ERA5(DATA_DIR)
 
     labels, data, lat, lon, time, temp_anoms, t_lat, t_lon = data_functions_schooner.load_tropic_data_winter(DATA_DIR, file_lon, file_lat, False)
 
@@ -181,32 +167,16 @@ elif(EXP_NAME[:3] == 'GCM'):
                                                                                             shuffle=settings['shuffle'],
                                                                                             bal_data = settings['balance_data'],
                                                                                             r_seed = RANDOM_SEED,
-                                                                                )
+                                                                                        )
+# Check if the experiment name is recognized
 else:
-    print("Expermient name is bad")
+    print("Expermient name is not recognized.")
     quit()
 
-# print(y_train)
-print(time_train[:120])
-
-# elif((EXP_NAME[:21]=='fourteenday_both_test') or ((EXP_NAME[:18]=='threeday_both_test'))):
-#     print("bingo")
-#     labels, data, lat, lon, time = data_functions_schooner.load_z500_precip_data(DATA_DIR)
-#     X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_pres_data(labels,
-#                                                                                          data,
-#                                                                                          time,
-#                                                                                          rng, 
-#                                                                                          colored=settings['colored'],
-#                                                                                          standardize=settings['standardize'],
-#                                                                                          shuffle=settings['shuffle'],
-#                                                                                         )
-print("#####################################################################################################################################################################################")
-# print(X_train)
-# print(X_train.shape)
-print("#####################################################################################################################################################################################")
-
+# Create a class identity mask for prototypes
 proto_class_mask = network.createClassIdentity(PROTOTYPES_PER_CLASS)
 
+# Initialize arrays for prototypes of the correct class for training, validation, and testing
 prototypes_of_correct_class_train = np.zeros((len(y_train),NPROTOTYPES))
 for i in range(0,prototypes_of_correct_class_train.shape[0]):
     prototypes_of_correct_class_train[i,:] = proto_class_mask[:,int(y_train[i])]
@@ -221,7 +191,7 @@ for i in range(0,prototypes_of_correct_class_test.shape[0]):
 
 # ## Define the training callbacks and metrics
 
-# callbacks
+# Learning rate scheduler function
 def scheduler(epoch, lr):
     if epoch < LR_CALLBACK_EPOCH:
         return np.round(lr,8)
@@ -231,8 +201,10 @@ def scheduler(epoch, lr):
         else:
             return lr
 
+# Define learning rate callback
 lr_callback = tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=1)    
     
+# Early stopping callback to prevent overfitting
 es_callback = tf.keras.callbacks.EarlyStopping(
     monitor='val_sparse_categorical_accuracy', 
     mode='max',
@@ -241,24 +213,26 @@ es_callback = tf.keras.callbacks.EarlyStopping(
     verbose=1
 )
 
+# List of callbacks to be used during training
 callbacks_list = [
 #     lr_callback,
     es_callback,
 ]            
 
-# metrics
+# List of metrics to evaluate the model
 metrics_list = [
     tf.keras.metrics.SparseCategoricalAccuracy(),
 ]
 
+# Reload experiment settings
 imp.reload(experiment_settings)
 settings = experiment_settings.get_settings(EXP_NAME)
 
+# Reload common functions and get directories for saving models and diagnostics
 imp.reload(common_functions)
-#model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories_schooner(EXP_NAME)
-# model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories(EXP_NAME)
 model_dir, model_diagnostics_dir, vizualization_dir, exp_data_dir = common_functions.get_exp_directories_falco(EXP_NAME)
 
+# Set random seed and batch sizes from settings
 RANDOM_SEED          = settings['random_seed']
 BATCH_SIZE_PREDICT   = settings['batch_size_predict']
 BATCH_SIZE           = settings['batch_size']
@@ -267,32 +241,32 @@ NFILTERS             = settings['nfilters']
 DOUBLE_CONV          = settings['double_conv']   
 assert(len(NFILTERS)==NLAYERS)
 
+# Set number of classes and prototypes
 NCLASSES             = settings['nclasses']
 PROTOTYPES_PER_CLASS = settings['prototypes_per_class']
 NPROTOTYPES          = np.sum(PROTOTYPES_PER_CLASS)
 
+# Set training parameters
 NEPOCHS              = settings['nepochs_pretrain']
 LR_INIT              = settings['lr_pretrain']
 LR_CALLBACK_EPOCH    = settings['lr_cb_epoch_pretrain']
 PATIENCE             = 100
 
-# LR_INIT = learning_rate
-
-# LR_INIT = .00000001
-
 # ## Instantiate the model
 
+# Reload the network module and clear the Keras session
 __ = imp.reload(network)
 tf.keras.backend.clear_session()
 
+# Print debug information
 print("BLAHHHHHHHHHHHHHHHHHHHHHHHHHHHHHH")
 print(X_train.shape)
 
+# Build the model with specified parameters
 model = network.build_model(
     cnn_only=True,    
     nlayers=NLAYERS,
     nfilters=NFILTERS,
-    # input_shape= X_train.shape[1:],
     input_shape= X_train.shape[1:],
     output_shape=NCLASSES,
     prototypes_per_class=PROTOTYPES_PER_CLASS,
@@ -308,12 +282,13 @@ model = network.build_model(
     coeff_separation=0.0,#settings['coeff_separation'],
     coeff_l1=0.0,#settings['coeff_l1'],    
 )
+# Display the model summary
 model.summary()
 
-
+# Print the proportion of class 0 in the training set
 __ = ic(len(np.where(y_train==0)[0])/len(y_train))
 
-# compile the model
+# Compile the model with optimizer, loss function, and metrics
 print('learning rate = ' + str(LR_INIT))
 
 model.compile(
@@ -325,7 +300,7 @@ model.compile(
     metrics = metrics_list,
 )
 
-# train the model
+# Train the model with the training data
 tf.random.set_seed(RANDOM_SEED)
 random.seed(RANDOM_SEED)
 np.random.seed(RANDOM_SEED)
@@ -341,8 +316,7 @@ history = model.fit(
     callbacks=callbacks_list
 )
 
-
-# save the model
+# Save the trained model to the specified filename
 model_filename = model_dir + 'pretrained_model_' + EXP_NAME
 common_functions.save_model(model, model_filename)
 
@@ -356,8 +330,10 @@ valColor = (231/255., 41/255., 138/255., 1.)
 FS = 7
 MS = 4
 
+# Create subplots for loss and accuracy
 plt.subplots(1,2,figsize=(10, 3))
 
+# Plot training and validation loss
 plt.subplot(1,2,1)
 plt.plot(history.history['loss'], 'o-', color=trainColor, label='training loss', markersize=MS)
 plt.plot(history.history['val_loss'], 'o-', color=valColor, label='validation loss', markersize=MS)
@@ -369,6 +345,7 @@ plt.grid(False)
 plt.legend(frameon=True, fontsize=FS)
 plt.xlim(-.1, 30+1)
 
+# Plot training and validation accuracy
 plt.subplot(1,2,2)
 plt.plot(history.history['sparse_categorical_accuracy'], 'o-', color=trainColor, label='training loss', markersize=MS)
 plt.plot(history.history['val_sparse_categorical_accuracy'], 'o-', color=valColor, label='validation loss', markersize=MS)
@@ -380,30 +357,12 @@ plt.grid(False)
 plt.legend(frameon=True, fontsize=FS)
 plt.xlim(-.1, 30+1)
 
+# Adjust layout and save the figure
 plt.tight_layout()
-# plt.savefig(model_diagnostics_dir + str(learning_rate) + '_' +'loss_history_pretrained_model_' + EXP_NAME + '.png', dpi=dpiFig)
 plt.savefig(model_diagnostics_dir + 'loss_history_pretrained_model_' + EXP_NAME + '.png', dpi=dpiFig)
 
-# plt.show()
-
-# print(data.shape)
-
-# test_temp = data[:,46,136,0]
-
-# print(test_temp.shape)
-
-# plt.figure(figsize=(20,20))
-# print(test_temp)
-# plt.plot(np.arange(0, len(test_temp),1), test_temp)
-# plt.show()
-
-# model_filename = model_dir + 'pretrained_model_' + EXP_NAME
-# model = common_functions.load_model(model_filename)
-
-
-
+# Set up for plotting with a white background
 ########################################################################################################################
-### for white background...
 plt.rc('text',usetex=False)
 # plt.rc('font',**{'family':'sans-serif','sans-serif':['Avant Garde']}) 
 plt.rc('savefig',facecolor='white')
@@ -414,6 +373,7 @@ plt.rc('xtick',color='dimgrey')
 plt.rc('ytick',color='dimgrey')
 ################################  
 ################################  
+# Function to adjust the spines of the plot
 def adjust_spines(ax, spines):
     for loc, spine in ax.spines.items():
         if loc in spines:
@@ -429,22 +389,25 @@ def adjust_spines(ax, spines):
     else:
             ax.xaxis.set_ticks([]) 
 
+# Load pretrained weights for convolutional layers
 for layer in range(1,len(model.layers)):
     if(model.layers[layer].name[:4]=='conv'):
         print('   loading pretrained weights for --> ' + model.layers[layer].name)
-        # print(model.layers[layer].get_weights())
 
+# Make predictions on the test dataset
 print('running model.predict()...')
 y_predict_test = model.predict(X_test, batch_size=BATCH_SIZE_PREDICT, verbose=1)
 print('model.predict() complete.')
 
-
+# Make predictions on the training dataset
 print('running model.predict()...')
 y_predict_train = model.predict(X_train, batch_size=BATCH_SIZE_PREDICT, verbose=1)
 print('model.predict() complete.')
 
+# Evaluate the model on the test dataset
 model.evaluate(X_test,y_test,batch_size=BATCH_SIZE_PREDICT, verbose=1)
 
+# Print accuracies by class for the test dataset
 print('Accuracies by class: ')
 
 for c in np.arange(0,NCLASSES):
@@ -455,7 +418,7 @@ for c in np.arange(0,NCLASSES):
     
     print('   phase ' + str(c) + ' = ' + str(acc))
 
-
+# Print accuracies by class for the training dataset
 for c in np.arange(0,NCLASSES):
     i = np.where(y_train==c)[0]
     j = np.where(y_train[i]==np.argmax(y_predict_train[i],axis=1))[0]
@@ -466,6 +429,7 @@ for c in np.arange(0,NCLASSES):
     
 
 #-------------
+# Set predictions and true labels for confusion matrix
 y_predict  = y_predict_test
 y_true     = y_test
 
@@ -476,17 +440,22 @@ y_true_train    = y_train
 # input_data = input_val
 #-------------
 
+# Get predicted classes from the predictions
 y_predict_class = np.argmax(y_predict,axis=1)
 
+# Compute confusion matrices
 cf_matrix = confusion_matrix(y_test, y_predict_class)
 cf_matrix_pred = confusion_matrix(y_test, y_predict_class, normalize='pred')
 cf_matrix_true = confusion_matrix(y_test, y_predict_class, normalize='true')
 cf_matrix = np.around(cf_matrix,3)
 cf_matrix_pred = np.around(cf_matrix_pred,3)
 cf_matrix_true = np.around(cf_matrix_true,3)
+
+# Create a plot for the confusion matrix
 fig, ax = plt.subplots(figsize=(7.5, 7.5))
 ax.matshow(cf_matrix, cmap=plt.cm.Blues, alpha=0.3)
 
+# Annotate the confusion matrix with values
 correct_preds = 0
 for i in range(cf_matrix.shape[0]):
     for j in range(cf_matrix.shape[1]):
@@ -497,12 +466,12 @@ for i in range(cf_matrix.shape[0]):
         if (i == j):
             correct_preds += cf_matrix[i, j]
 
+# Calculate overall accuracy from the confusion matrix
 correct_preds /= np.sum(cf_matrix)
 
+# Set labels and title for the confusion matrix plot
 plt.xlabel('Prediction', fontsize=18, color = 'green')
 plt.ylabel('Actual', fontsize=18, color = 'red')
 plt.title('TLLTT Confusion Matrix (Accuracy - ' + str(np.around(correct_preds*100,2)) + '\%)', fontsize=18)
 plt.savefig((vizualization_dir + EXP_NAME + 'BaseCNN_confmatrix.png'), bbox_inches='tight', dpi=dpiFig)
 # plt.savefig((vizualization_dir + str(learning_rate) + "_" + EXP_NAME + 'BaseCNN_confmatrix.png'), bbox_inches='tight', dpi=dpiFig)
-
-
