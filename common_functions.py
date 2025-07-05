@@ -134,7 +134,7 @@ def get_exp_directories_falco(exp_name):
     if not os.path.exists(model_dir):
         os.makedirs(model_dir)    
 
-    exp_data_dir = '/barnes-scratch/nicojg/data/' + exp_name + '/' 
+    exp_data_dir = '/barnes-engr-scratch1/nicojg/data/' + exp_name + '/' 
     if not os.path.exists(exp_data_dir):
         os.makedirs(exp_data_dir)
 

@@ -60,12 +60,12 @@ if len(sys.argv) < 3:
 else:
     alaska_lat = int(sys.argv[1])
     alaska_lon = int(sys.argv[2])
-
 # alaska_lat = find_nearest_index(lat, 61.2176)
 # alaska_lon = find_nearest_index(lon, 360-149.8997)
 
 print(alaska_lat)
 print(alaska_lon)
+quit()
 
 
 

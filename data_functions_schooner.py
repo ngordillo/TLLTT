@@ -101,7 +101,7 @@ def load_tropic_data(load_dir, loc_lon = 0, loc_lat = 0, coast=False):
     # sub1.set_ylim(-30,30)
     # sub1.set_xlabel("Longitude (degrees)",fontsize=25)
     # sub1.set_ylabel("Latitude (degrees)",fontsize=25)
-    # cbar = plt.colorbar(img,shrink=.5, aspect=20*0.8)
+    # cx = plt.colorbar(img,shrink=.5, aspect=20*0.8)
     # cbar.set_label("mm/day", fontsize=25)
 
     # sub1.coastlines()
@@ -332,15 +332,22 @@ def load_tropic_data_winter(load_dir, loc_lon = 0, loc_lat = 0, coast=False):
         temp_label = np.loadtxt(load_dir+'temp_class/GCM_' + str(loc_lon) + '_' + str(loc_lat) + '_wint_550yrs_ternary_14day.txt')
     else:
         # temp_label = np.loadtxt(load_dir+"local_alaska_points.txt")
-        temp_label = np.loadtxt(load_dir+"temp_class/GCM_new_alas_wint_550yrs_ternary_14day.txt")
-        # temp_label = np.loadtxt(load_dir+"temp_class/GCM_89_64_wint_550yrs_ternary_14day.txt")
+        #temp_label = np.loadtxt(load_dir+"temp_class/GCM_new_alas_wint_550yrs_ternary_14day.txt")
+        temp_label = np.loadtxt(load_dir+"temp_class/GCM_89_64_wint_550yrs_ternary_14day.txt")
 
 
     # print(var)
     # print(var.time)
     # print(len(temp_label))
+    
+    filename =    'anom_2mtemp_550_years.nc' #'anom_2mtemp_550_years.nc' # 'anom_large_550_2mtemp.nc' #'rolled_small_2mtemp.nc'  #'era_2mtemp_mjo_notrend_anoms.nc'  #'NEWera5_post1980_2mtemp_anoms.nc'  #'anom_2mtemp_full_era5_remap_order3.nc' #'anom_2mtemp_full_era5_remap_order1.nc' #'anom_2mtemp_full_era5_remap.nc' #'rolled_small_2mtemp.nc' #'MAIN_era5_2mtemp_mjo_notrend_anoms.nc'#era5_daily_2mtemp.nc'
+    
+    raw_temps     = xr.open_dataset(load_dir+filename)['tas']#[:,96:,80:241] #era2mtempanom
+    # time     = xr.open_dataset(load_dir+filename)['time'][0:(60*365)+14]
+    t_lat  = xr.open_dataset(load_dir+filename)['lat'].values
+    t_lon   = xr.open_dataset(load_dir+filename)['lon'].values
    
-    return np.asarray(temp_label), var.values[:,:,:,np.newaxis], lats, lons, var.time
+    return np.asarray(temp_label), var.values[:,:,:,np.newaxis], lats, lons, var.time, raw_temps, t_lat, t_lon
 
 def load_tropic_data_winter_ERA5(load_dir, loc_lon = 0, loc_lat = 0, coast=False):
 
@@ -383,7 +390,8 @@ def load_tropic_data_winter_ERA5(load_dir, loc_lon = 0, loc_lat = 0, coast=False
         temp_label = np.loadtxt(load_dir+"temp_class/ERA5_" + str(loc_lon) + '_' + str(loc_lat) + "_wint_550yrs_ternary_14day.txt")
     else:
         # temp_label = np.loadtxt(load_dir+"local_alaska_points.txt")
-        temp_label = np.loadtxt(load_dir+"temp_class/ERA5_alas_wint_200yrs_ternary_14days_order3.txt") # ERA5_alas_wint_200yrs_ternary_14days_order3.txt, ERA5_winter_ternary_alaska_points_5days.txt
+        #temp_label = np.loadtxt(load_dir+"temp_class/ERA5_alas_wint_200yrs_ternary_14days_order3.txt") # ERA5_alas_wint_200yrs_ternary_14days_order3.txt, ERA5_winter_ternary_alaska_points_5days.txt
+        temp_label = np.loadtxt(load_dir+"temp_class/ERA5_89_64_wint_550yrs_ternary_14day.txt")
 
     # var = var[:,tropics_lats,:]
     # var = var[:,:,tropics_lons]
@@ -394,11 +402,20 @@ def load_tropic_data_winter_ERA5(load_dir, loc_lon = 0, loc_lat = 0, coast=False
     all_months = time["time.month"].values#[:60*365]
 
     print(var)
-    
-    return np.asarray(temp_label), var.values[:,:,:,np.newaxis], lats, lons, var.time
 
-def get_and_process_tropic_data_winter(raw_labels, raw_data, raw_time, rng, train_yrs, val_yrs, test_yrs, colored=False, standardize=False, shuffle=False, bal_data=False, r_seed = 0):
+    filename =    'anom_2mtemp_full_era5_remap_order3.nc' #'anom_2mtemp_550_years.nc' # 'anom_large_550_2mtemp.nc' #'rolled_small_2mtemp.nc'  #'era_2mtemp_mjo_notrend_anoms.nc'  #'NEWera5_post1980_2mtemp_anoms.nc'  #'anom_2mtemp_full_era5_remap_order3.nc' #'anom_2mtemp_full_era5_remap_order1.nc' #'anom_2mtemp_full_era5_remap.nc' #'rolled_small_2mtemp.nc' #'MAIN_era5_2mtemp_mjo_notrend_anoms.nc'#era5_daily_2mtemp.nc'
+    
+    raw_temps     = xr.open_dataset(load_dir+filename)['t2m']#[:,96:,80:241] #era2mtempanom
+    # time     = xr.open_dataset(load_dir+filename)['time'][0:(60*365)+14]
+    t_lat  = xr.open_dataset(load_dir+filename)['lat'].values
+    t_lon   = xr.open_dataset(load_dir+filename)['lon'].values
+
+    
+    return np.asarray(temp_label), var.values[:,:,:,np.newaxis], lats, lons, var.time, raw_temps, t_lat, t_lon
+
+def get_and_process_tropic_data_winter(raw_labels, raw_data, raw_time, rng, train_yrs, val_yrs, test_yrs, temp_anoms, colored=False, standardize=False, shuffle=False, bal_data=False, r_seed = 0):
     print(raw_data.shape)
+    
     
 
     # if(shuffle==True):
@@ -541,6 +558,10 @@ def get_and_process_tropic_data_winter(raw_labels, raw_data, raw_time, rng, trai
     y_val   = raw_labels[iyears_val]
     y_test  = raw_labels[iyears_test]
 
+    temp_train = temp_anoms[iyears_train,:,:]
+    temp_val   = temp_anoms[iyears_val,:,:]
+    temp_test  = temp_anoms[iyears_test,:,:]
+
     time_train = raw_time['time'][iyears_train]
     time_val   = raw_time['time'][iyears_val]
     time_test  = raw_time['time'][iyears_test]
@@ -558,9 +579,9 @@ def get_and_process_tropic_data_winter(raw_labels, raw_data, raw_time, rng, trai
         print(f"X_mean.shape    = {X_mean.shape}")
         print(f"X_std.shape     = {X_std.shape}")    
     
-    return (X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test)
+    return (X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test, temp_train, temp_val, temp_test)
 
-def get_and_process_tropic_data_winter_ERA5(raw_labels, raw_data, raw_time, rng, train_yrs, val_yrs, test_yrs, translation = False, colored=False, standardize=False, shuffle=False, bal_data=False, r_seed = 0):
+def get_and_process_tropic_data_winter_ERA5(raw_labels, raw_data, raw_time, rng, train_yrs, val_yrs, test_yrs, temp_anoms, translation = False, colored=False, standardize=False, shuffle=False, bal_data=False, r_seed = 0):
     print(raw_data.shape)
     ####USER
 
@@ -750,6 +771,10 @@ def get_and_process_tropic_data_winter_ERA5(raw_labels, raw_data, raw_time, rng,
     y_val   = raw_labels[iyears_val]
     y_test  = raw_labels[iyears_test]
 
+    temp_train = temp_anoms[iyears_train,:,:]
+    temp_val   = temp_anoms[iyears_val,:,:]
+    temp_test  = temp_anoms[iyears_test,:,:]
+
     print(iyears_val)
 
     count_arr = np.bincount(raw_labels.astype(int)[iyears_val])
@@ -791,28 +816,28 @@ def get_and_process_tropic_data_winter_ERA5(raw_labels, raw_data, raw_time, rng,
     # X_test = X_train
     # y_test = y_train
 
-    return (X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test)
+    # print((X_train==X_test).all())
+    
+    return (X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test, temp_train, temp_val, temp_test)
 
 
-def get_raw_temp_data(load_dir):
-    #number of days
+def get_temp_anoms(load_dir):
 
-    train_years = 200
+    # filename = '500_2mtemp.nc'
+    # temp_500     = xr.open_dataset(load_dir+filename)['tas'].values[:,96:,80:241]
+    #filename = 'NA_2mtemp.nc'
+    filename =    'anom_2mtemp_full_era5_remap_order3.nc' #'anom_2mtemp_550_years.nc' # 'anom_large_550_2mtemp.nc' #'rolled_small_2mtemp.nc'  #'era_2mtemp_mjo_notrend_anoms.nc'  #'NEWera5_post1980_2mtemp_anoms.nc'  #'anom_2mtemp_full_era5_remap_order3.nc' #'anom_2mtemp_full_era5_remap_order1.nc' #'anom_2mtemp_full_era5_remap.nc' #'rolled_small_2mtemp.nc' #'MAIN_era5_2mtemp_mjo_notrend_anoms.nc'#era5_daily_2mtemp.nc'
+    
+    temp     = xr.open_dataset(load_dir+filename)['t2m']#[:,96:,80:241] #era2mtempanom
+    # time     = xr.open_dataset(load_dir+filename)['time'][0:(60*365)+14]
+    t_lat  = xr.open_dataset(load_dir+filename)['lat'].values
+    t_lon   = xr.open_dataset(load_dir+filename)['lon'].values
+    return (temp, t_lon, t_lat)
 
-    # make labels
-    filename = 'small_2mtemp.nc'
-    temp     = xr.open_dataset(load_dir+filename)['tas'].values#[:,96:,80:241,np.newaxis]
-
-    #number of days
-    days = 365
-
-    avgtemp_day = xr.open_dataset("/Users/nicojg/Documents/Work/2021_Fall_IAI/Code/TLLTT/data/tropic_200year_temp_cycle.nc")['200tempcycle'].values
-
-    full_loc_temp = []
-
-    for i in np.arange(0,train_years*days,1):
-
-        full_loc_temp.append(temp[i, 52,110] - avgtemp_day[i%days, 52,110])
-
-    return (full_loc_temp, avgtemp_day, temp)
-
+def process_nino_data(load_dir):
+    filename = 'nino34.long.anom.data.txt'
+    with open(load_dir+filename) as f:
+        nino_table = [[float(x) for x in line.split()] for line in f]
+    # print(nino_table)
+    #nino_table.index = nino_table.index.values
+    return nino_table

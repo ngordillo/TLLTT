@@ -25,6 +25,7 @@ import cmasher as cmr            # pip install cmasher
 
 import cartopy as ct
 import cartopy.crs as ccrs
+import cartopy.feature as cfeature
 
 import tensorflow as tf
 
@@ -32,6 +33,7 @@ import random
 
 from sklearn.metrics import confusion_matrix
 
+# import network_temp_withfix as network
 import network
 # import experiment_settings_coast_550
 import data_functions_schooner
@@ -66,27 +68,28 @@ print(f"tensorflow version = {tf.__version__}")
 np.set_printoptions(suppress=True)
 
 if len(sys.argv) < 2:
-    EXP_NAME = 'GCM_alas_lr_wint_550yrs_seed134'  #'GCM_alas_wint_550yrs_shuf_bal_seed125' #'GCM_alas_wint_550yrs_shuf_bal_seed117'#'smaller_test'#'quadrants_testcase'
+    EXP_NAME = 'GCM_alas_lr_wint_550yrs_seed132'  #'GCM_alas_wint_550yrs_shuf_bal_seed125' #'GCM_alas_wint_550yrs_shuf_bal_seed117'#'smaller_test'#'quadrants_testcase'
     file_lon = 89
     file_lat = 64
     # import experiment_settings_shuf_550bal_seeds as experiment_settings
     import experiment_settings_multiple_seeds_lr as experiment_settings
 elif len(sys.argv) == 2:
     num = int(sys.argv[1])
-    EXP_NAME = 'GCM_alas_lr_wint_drop_550yrs_seed'+str(num) #balanced_test'#initial_test'#'mjo'#'quadrants_testcase'
+    #EXP_NAME = 'GCM_alas_lr_wint_drop_550yrs_seed'+str(num) #balanced_test'#initial_test'#'mjo'#'quadrants_testcase'
 
     # learning_rate = float(sys.argv[1])
     # print(learning_rate)
     # EXP_NAME = 'GCM_alas_lr_wint_550yrs_seed144_nopre_lrtest_epochs'
-    import experiment_settings_multiple_seeds_lr_drop as experiment_settings
+    EXP_NAME = 'GCM_alas_lr_wint_550redo_seed'+str(num) #+ '_nopre' #balanced_test'#initial_test'#'mjo'#'quadrants_testcase'
+    import experiment_settings_multiple_seeds_lr_redo as experiment_settings
     # import experiment_settings_shuf_550bal_seeds as experiment_settings
     file_lon = 89
     file_lat = 64
 else:
     file_lon = int(sys.argv[2])
     file_lat = int(sys.argv[1])
-    EXP_NAME = 'GCM_'+ str(file_lon) + '_' + str(file_lat) +'_wint_550yrs_shuf_bal_seed117'
-    import experiment_settings_coast_550_lr_adjust_117 as experiment_settings
+    EXP_NAME = 'GCM_'+ str(file_lon) + '_' + str(file_lat) +'_wint_550yrs_shuf_bal_seed134_redo'
+    import experiment_settings_coast_550_lr_adjust_134_redo as experiment_settings
 
 # EXP_NAME = 'GCM_alas_wint_550yrs_shuf_bal_seed117'
 
@@ -153,14 +156,15 @@ val_yrs_era5 = settings['val_yrs_era5']
 test_years_era5 = settings['test_yrs_era5']
 
 if(EXP_NAME[:3]=='ERA' or settings['plot_ERA5_convert']):   
-    labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter_ERA5(DATA_DIR, file_lon, file_lat, False)
-    X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter_ERA5(labels,
+    labels, data, lat, lon, time, temp_anoms, t_lat, t_lon = data_functions_schooner.load_tropic_data_winter_ERA5(DATA_DIR, file_lon, file_lat, False)
+    X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test, temp_train, temp_val, temp_test = data_functions_schooner.get_and_process_tropic_data_winter_ERA5(labels,
                                                                                             data,
                                                                                             time,
                                                                                             rng,
                                                                                             train_yrs_era5,
                                                                                             val_yrs_era5,
                                                                                             test_years_era5,
+                                                                                            temp_anoms,
                                                                                             translation = settings['plot_ERA5_convert'],
                                                                                             colored=settings['colored'],
                                                                                             standardize=settings['standardize'],
@@ -169,14 +173,15 @@ if(EXP_NAME[:3]=='ERA' or settings['plot_ERA5_convert']):
                                                                                             r_seed = RANDOM_SEED,
                                                                                         )
 elif(EXP_NAME[:3] == 'GCM'):
-    labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter(DATA_DIR, file_lon, file_lat, False)
-    X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter(labels,
+    labels, data, lat, lon, time, temp_anoms, t_lat, t_lon  = data_functions_schooner.load_tropic_data_winter(DATA_DIR, file_lon, file_lat, False)
+    X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test, temp_train, temp_val, temp_test = data_functions_schooner.get_and_process_tropic_data_winter(labels,
                                                                                             data,
                                                                                             time,
                                                                                             rng, 
                                                                                             train_yrs,
                                                                                             val_yrs,
                                                                                             test_years,
+                                                                                            temp_anoms,
                                                                                             colored=settings['colored'],
                                                                                             standardize=settings['standardize'],
                                                                                             shuffle=settings['shuffle'],
@@ -191,6 +196,8 @@ else:
 # print(y_val.shape)
 # print(y_test.shape)
 # quit()
+    
+
 proto_class_mask = network.createClassIdentity(PROTOTYPES_PER_CLASS)
 
 prototypes_of_correct_class_train = np.zeros((len(y_train),NPROTOTYPES))
@@ -268,6 +275,7 @@ similarity_scores = push_info[-2]
 
 print("Push Info:")
 
+
 # print(prototype_sample.shape)
 # print(type(prototype_sample))
 # print(similarity_scores.shape)
@@ -279,14 +287,15 @@ np.savetxt(exp_data_dir + "_1_"+ EXP_NAME + 'viz_push_protos.txt', prototype_sam
 era5_plots = (settings['plot_ERA5_translated'])
 
 if(era5_plots):
-    labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter_ERA5(DATA_DIR, file_lon, file_lat, False)
-    X_train, y_train, time_train_era5, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter_ERA5(labels,
+    labels, data, lat, lon, time, temp_anoms, t_lat, t_lon = data_functions_schooner.load_tropic_data_winter_ERA5(DATA_DIR, file_lon, file_lat, False)
+    X_train, y_train, time_train_era5, X_val, y_val, time_val, X_test, y_test, time_test, temp_train, temp_val, temp_test = data_functions_schooner.get_and_process_tropic_data_winter_ERA5(labels,
                                                                                             data,
                                                                                             time,
                                                                                             rng,
                                                                                             train_yrs_era5,
                                                                                             val_yrs_era5,
                                                                                             test_years_era5,
+                                                                                            temp_anoms,
                                                                                             translation = era5_plots,
                                                                                             colored=settings['colored'],
                                                                                             standardize=settings['standardize'],
@@ -361,6 +370,25 @@ model.evaluate(input_val,y_val,batch_size=BATCH_SIZE_PREDICT, verbose=1)
 
 ## Testing samples
 
+if(settings['plot_ERA5_convert'] == True):
+    
+# print(np.unique(prototype_sample))
+# print(prototype_sample)
+# print(X_train[np.unique(prototype_sample)].shape)
+# print(X_train.shape)
+    X_test=np.delete(X_test,np.unique(prototype_sample), axis = 0)
+    
+    y_test = np.delete(y_test,np.unique(prototype_sample), axis = 0)
+
+    nino_time_test = np.delete(time_test,np.unique(prototype_sample), axis = 0)
+    
+    prototypes_of_correct_class_test   = np.zeros((len(y_test),NPROTOTYPES))    
+    for i in range(0,prototypes_of_correct_class_test.shape[0]):
+        prototypes_of_correct_class_test[i,:] = proto_class_mask[:,int(y_test[i])]
+    
+# print(X_train.shape)
+# print(prototype_indices)
+
 input_test  = [[X_test,prototypes_of_correct_class_test]]
 
 print('running model.predict()...')
@@ -372,6 +400,37 @@ model.evaluate(input_test,y_test,batch_size=BATCH_SIZE_PREDICT, verbose=1)
 
 print('Accuracies by class: ')
 
+if(settings['plot_ERA5_convert'] == True):
+    nino_y_test = []
+    # print(time_test[0].values)
+    # print(time_test[0].astype('datetime64[Y]').astype(int) + 1970)
+
+    # print(time_test.values.tolist())
+    era_years = [x.year for x in nino_time_test.values.astype("datetime64[D]").tolist()]
+    era_months = [x.month for x in nino_time_test.values.astype("datetime64[D]").tolist()]
+    # print(era_months)
+    nino_table = data_functions_schooner.process_nino_data(DATA_DIR)
+
+
+    for i in np.arange(0, len(era_years), 1):
+        nino_index = nino_table[era_years[i]-1870][era_months[i]]
+        if(nino_index < -.4):
+            nino_y_test.append(0)
+        elif(nino_index > .4):
+            nino_y_test.append(2)
+        else:
+            nino_y_test.append(1)
+    print(len(nino_y_test))
+    print(len(y_test))
+
+    nino_test_accur = []
+    for i in np.arange(0,len(y_test), 1):
+        if(nino_y_test[i] == y_test[i]):
+            nino_test_accur.append(1)
+        else:
+            nino_test_accur.append(0)
+
+    nino_final_accur = np.sum(nino_test_accur)/len(nino_test_accur)
 
 did_not_train = False
 
@@ -485,6 +544,8 @@ def adjust_spines(ax, spines):
 ##################################################################################################################################################################################################################
 
 prototype_date = time_train.dt.strftime("%b %d %Y").values[prototype_sample]
+if(settings['plot_ERA5_convert'] == True):
+    prototype_date = time_val.dt.strftime("%b %d %Y").values[prototype_sample]
 sample_date = time_test.dt.strftime("%b %d %Y").values
 
 
@@ -1334,7 +1395,7 @@ def examine_proto(good_samp, era5_flag):
         var_index = 0
         if(var_index==0):
             # var_name = 'olr'
-            var_name = 'precip'
+            var_name = 'Precipitation'
             letters = ('(a)','(b)','(c)','(d)')
         elif(var_index==1):
             var_name = 'u200'
@@ -1370,6 +1431,10 @@ def examine_proto(good_samp, era5_flag):
         rf              = receptive_field.computeMask(j,k)   
         rf              = np.abs(rf-1.)
         rf[rf==0] = np.nan
+
+        # print(input_data[0][0].shape)
+        # print(input_train[0][0].shape)
+        # quit()
 
         rf_save = rf            
         img = np.squeeze(input_data[0][0][sample,:,:,var_index])
@@ -1419,8 +1484,11 @@ def examine_proto(good_samp, era5_flag):
         # PLOT THE PROTOTYPES
         ax = fig.add_subplot(spec[1,base_col:base_col+grid_per_col], projection=mapProj)
         rf = receptive_field.computeMask(prototype_indices[prototype_index,0], prototype_indices[prototype_index,1])
-        img = np.squeeze(input_train[0][0][prototype_sample[prototype_index],:,:,var_index])*rf 
-        #img = np.squeeze(input_train[0][0][prototype_sample[prototype_index],:,:,var_index])
+
+        if(settings['plot_ERA5_convert'] == True):
+            img = np.squeeze(input_val[0][0][prototype_sample[prototype_index],:,:,var_index])*rf 
+        else:
+            img = np.squeeze(input_train[0][0][prototype_sample[prototype_index],:,:,var_index])*rf
         #img[img == 0] = np.nan
         p = plots.plot_sample(ax, img, globe=True, lat=lat, lon=lon, mapProj=mapProj)
         
@@ -1446,7 +1514,7 @@ def examine_proto(good_samp, era5_flag):
         #     class_text = "high class"
 
         class_text = "blah"
-        print(prototype_index)
+        print(sample)
         print(prototype_sample[prototype_index])
         if(y_train[prototype_sample[prototype_index]] == 0):
             class_text = "cold class"
@@ -1485,8 +1553,9 @@ def examine_proto(good_samp, era5_flag):
 
         #-------------------------------        
         # PLOT THE POINTS
-        ax = fig.add_subplot(spec[3,base_col+1:base_col+grid_per_col-1])
+        ax = fig.add_subplot(spec[3,base_col+1:base_col+grid_per_col])
         plt.axhline(y=0,color='.75',linewidth=.5)    
+        plot_colors = []
         for phase in np.arange(0,3):
 
             i = np.where(proto_class_mask[:,phase]==0)[0]
@@ -1502,13 +1571,14 @@ def examine_proto(good_samp, era5_flag):
             p = plt.plot(np.ones(len(i))*phase,all_points[i,phase],'.')
 
             clr = p[0].get_color()
+            plot_colors.append(clr)
             
             plt.text(phase,np.ceil(np.max(total_points))+.1,#6.1, 
                     str(np.round(total_points[phase],1)),
                     verticalalignment='bottom',
                     horizontalalignment='center',
                     color=clr,
-                    fontsize=8,
+                    fontsize=12,
         #              weight='bold',
         #              transform=ax.transAxes, 
                     )
@@ -1523,20 +1593,50 @@ def examine_proto(good_samp, era5_flag):
         # plt.xticks(np.arange(0,2),("below","above"))
         plt.xticks(np.arange(0,3),("cold","neutral", "warm"))
 
-        plt.xlabel('Temperature Class')
-        plt.ylabel('points')
+
+        plt.xlabel('Temperature Class', fontsize=14)
+        plt.ylabel('Points', fontsize=14)
         adjust_spines(ax, ['left', 'bottom'])
         ax.spines['top'].set_color('none')
         ax.spines['right'].set_color('none')
-        ax.spines['left'].set_color('dimgrey')
-        ax.spines['bottom'].set_color('dimgrey')
+        ax.spines['left'].set_color('black')
+        ax.spines['bottom'].set_color('black')
         ax.spines['left'].set_linewidth(1.5)
         ax.spines['bottom'].set_linewidth(1.5)  
         colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
         [t.set_color(i) for (i,t) in
-        zip(colors,ax.xaxis.get_ticklabels())]    
+        zip(np.asarray(plot_colors),ax.xaxis.get_ticklabels())]    
+        
+        for t in plt.xticks()[1]:
+            t.set_fontsize(12)
+            
+        for t in plt.yticks()[1]:
+            t.set_fontsize(12)
         
         #-------------------------------        
+        # sub3 = fig.add_subplot(spec[4,base_col+1:base_col+grid_per_col-1], projection=mapProj)
+        # plt.set_cmap('cmr.fusion_r')
+        # img = sub3.contourf(np.asarray(t_lon), np.asarray(t_lat), np.asarray(temp_test[sample,:,:]), np.linspace(-20, 20, 41), transform=ccrs.PlateCarree())
+        # coast = cfeature.GSHHSFeature(scale='intermediate')
+        # state = cfeature.NaturalEarthFeature(category = 'cultural', name = 'admin_1_states_provinces_lines', scale='10m', facecolor="none")
+        # countries = cfeature.NaturalEarthFeature(category = 'cultural', name = 'admin_0_boundary_lines_land', scale='10m', facecolor="none")
+        # sub3.add_feature(coast, edgecolor='0')
+        # sub3.add_feature(state, edgecolor='0')
+        # sub3.add_feature(countries, edgecolor='0')
+        # # sub1.coastlines()
+
+        # sub3.tick_params(axis='both', labelsize=12)
+        # sub3.set_xticks(np.arange(-180,181,30))
+        # sub3.set_xticklabels(np.concatenate((np.arange(0,181,30),np.arange(-160,1,30))))
+        # sub3.set_yticks(np.arange(-90,91,15))
+        # sub3.set_xlim(10,75)
+        # sub3.set_ylim(30,75)
+        # sub3.set_xlabel("Longitude (degrees)",fontsize=14)
+        # sub3.set_ylabel("Latitude (degrees)",fontsize=14)
+        # # print(temp_anoms[8,64,88].values)
+        # cbar = plt.colorbar(img,shrink=.75, aspect=20*0.8)
+        # cbar.set_label("Temperature Anomaly (K)", fontsize=14)
+        # cbar.ax.tick_params(labelsize=12) 
         # PLOT THE HISTO
         # bounds = 8
         # train_years = 70
@@ -1609,7 +1709,7 @@ def examine_proto(good_samp, era5_flag):
         plt.savefig((vizualization_dir + "individual_protos/" + EXP_NAME + '_' + str(SAMPLES[0]) + '_' + 'class' + str(y_predict_class) +'_3samples_prototypes_ERA5projected.png'), bbox_inches='tight', dpi=dpiFig)
         plt.close()
     else:
-        plt.savefig((vizualization_dir + "individual_protos/" + EXP_NAME + '_' + str(SAMPLES[0]) + '_' + 'class' + str(y_predict_class) +'_3samples_prototypes_ERA5transfered.png'), bbox_inches='tight', dpi=dpiFig)
+        plt.savefig((vizualization_dir + "individual_protos/" + EXP_NAME + '_' + str(SAMPLES[0]) + '_' + 'class' + str(y_predict_class) +'_3samples_prototypes_ERA5transfered_fixed.png'), bbox_inches='tight', dpi=dpiFig)
         plt.close()
     # plt.savefig((vizualization_dir + "individual_protos/" + EXP_NAME + '_' + str(SAMPLES[0]) + '_' + 'class' + str(y_predict_class) +'_3samples_prototypes_new.png'), bbox_inches='tight', dpi=dpiFig)
     #plt.show()
@@ -1619,8 +1719,8 @@ def examine_proto(good_samp, era5_flag):
 
 ##################################################################################################################################################################################################################
 # All prototypes for each phase
-def show_all_protos(era5_flag, percentage):
-    print("Hello")
+# def show_all_protos(era5_flag, percentage):
+#     print("Hello")
 
 ##################################################################################################################################################################################################################
 
@@ -1688,8 +1788,8 @@ def show_all_protos(era5_flag, percentage):
         
         winning_prototype = np.argmax(points,axis=1)
         
-        print(isamples)
-        print(winning_prototype)
+        # print(isamples)
+        # print(winning_prototype)
         
         
         points_avg = np.mean(points,axis=0)
@@ -1698,23 +1798,25 @@ def show_all_protos(era5_flag, percentage):
         proto_points_vector = points_avg[proto_vector]
         sorted_index = np.argsort(proto_points_vector)
         
-        print(proto_vector[np.flipud(sorted_index)])
+        # print(proto_vector[np.flipud(sorted_index)])
 
         points_var = np.var(points,axis=0)
-        print(points_var)
+        # print(points_var)
         
         # print(points.shape)
         # print(points_avg.shape)
         # print(max_similarity_score.shape)
         for ivar, var_index in enumerate([0]):
             if(var_index==0):
-                var_name = 'precip'
+                var_name = 'Precipitation'
             elif(var_index==1):
-                var_name = 'precip'
+                var_name = 'Precipitation'
             elif(var_index==2):
                 var_name = 'u850'        
             
             # print(axs.shape)ß
+
+            phase0_protos = []
             
             for iprototype, prototype_index in enumerate(proto_vector[np.flipud(sorted_index)]):
                 # print("proto index")
@@ -1730,6 +1832,10 @@ def show_all_protos(era5_flag, percentage):
                 # print(prototype_indices[prototype_index,1])
                 rf = receptive_field.computeMask(prototype_indices[prototype_index,0], prototype_indices[prototype_index,1])
                 img = np.squeeze(input_train[0][0][prototype_sample[prototype_index],:,:,var_index])*rf
+
+                ######## TEST
+                if phase == 0:
+                    phase0_protos.append(img)
                 img[img == 0] = np.nan
                 p = plots.plot_sample(ax,
                                     img,
@@ -1804,7 +1910,7 @@ def show_all_protos(era5_flag, percentage):
                         transform = ax.transAxes,
                         )
                     ax.text(1.0, 1.0, 
-                        str(np.round(points_var[prototype_index],3)) + ' σ²',
+                        'σ² = ' + str(np.round(points_var[prototype_index],3)),
                         fontfamily='monospace', 
                         fontsize=FS, 
                         va='bottom',
@@ -1812,6 +1918,10 @@ def show_all_protos(era5_flag, percentage):
                         transform = ax.transAxes,
                         )            
 
+        if phase == 0:
+            phase0_protos = np.asarray(phase0_protos)
+            np.save(exp_data_dir + "_"+ EXP_NAME + 'ERA5_phase0_protos.npy', phase0_protos)
+            print("test")
         if(era5_flag == 0):
             plt.savefig((vizualization_dir + str(percentage*100) + "_" + "_" + EXP_NAME + '_allPrototypes_phase' + str(phase) + '.png'), bbox_inches='tight', dpi=dpiFig)
             # plt.savefig((vizualization_dir + str(learning_rate) +  "_" +str(percentage*100) + "_" + "_" + EXP_NAME + '_allPrototypes_phase' + str(phase) + '.png'), bbox_inches='tight', dpi=dpiFig)
@@ -1820,7 +1930,7 @@ def show_all_protos(era5_flag, percentage):
             plt.savefig((vizualization_dir + 'era5_figs/' + str(percentage*100) + "_" + "_" + EXP_NAME + '_translated_allPrototypes_phase' + str(phase) + '.png'), bbox_inches='tight', dpi=dpiFig)
             plt.close()
         else:
-            plt.savefig((vizualization_dir + 'era5_figs/' + str(percentage*100) + "_" + "_" + EXP_NAME + '_convert_allPrototypes_phase' + str(phase) + '.png'), bbox_inches='tight', dpi=dpiFig)
+            plt.savefig((vizualization_dir + 'era5_figs/' + str(percentage*100) + "_" + "_" + EXP_NAME + '_convert_allPrototypes_phase' + str(phase) + '_fixed.png'), bbox_inches='tight', dpi=dpiFig)
             plt.close()
             
 ########################################################################################################################
@@ -1894,18 +2004,19 @@ def comps_by_proto(era5_flag):
         # print(max_similarity_score.shape)
         for ivar, var_index in enumerate([0]):
             if(var_index==0):
-                var_name = 'precip'
+                var_name = 'Precipitation'
             elif(var_index==1):
-                var_name = 'precip'
+                var_name = 'Precipitation'
             elif(var_index==2):
                 var_name = 'u850'        
             
             # print(axs.shape)ß
             
-            for iprototype, prototype_index in enumerate(proto_vector[np.flipud(sorted_index)][:3]):
+            for iprototype, prototype_index in enumerate(proto_vector[np.flipud(sorted_index)][:4]):
                 # print("proto index")
                 # print(prototype_index)
 
+                
                 #-------------------------------        
                 # PLOT THE PROTOTYPES
                 ax = axs[iprototype,ivar]
@@ -2010,7 +2121,7 @@ def comps_by_proto(era5_flag):
             plt.savefig((vizualization_dir + 'era5_figs/'  + "_" + EXP_NAME + '_translated_Prototype_comps_phase' + str(phase) + '.png'), bbox_inches='tight', dpi=dpiFig)
             plt.close()
         else:
-            plt.savefig((vizualization_dir + 'era5_figs/' + "_" + EXP_NAME + '_convert_Prototype_comps_phase' + str(phase) + '.png'), bbox_inches='tight', dpi=dpiFig)
+            plt.savefig((vizualization_dir + 'era5_figs/' + "_" + EXP_NAME + '_convert_Prototype_comps_phase' + str(phase) + '_fixed.png'), bbox_inches='tight', dpi=dpiFig)
             plt.close()
 
 def useless_func(era5_flag):
@@ -2201,7 +2312,7 @@ def useless_func(era5_flag):
             plt.savefig((vizualization_dir + 'era5_figs/'  + "_" + EXP_NAME + '_translated_Prototype_comps_phase' + str(phase) + '.png'), bbox_inches='tight', dpi=dpiFig)
             plt.close()
         else:
-            plt.savefig((vizualization_dir + 'era5_figs/' + "_" + EXP_NAME + 'useless_ERA5' + str(phase) + '.png'), bbox_inches='tight', dpi=dpiFig)
+            plt.savefig((vizualization_dir + 'era5_figs/' + "_" + EXP_NAME + 'useless_ERA5' + str(phase) + '_fixed.png'), bbox_inches='tight', dpi=dpiFig)
             plt.close()
 
 def subcategorybar(X, vals, width=0.8):
@@ -2356,14 +2467,14 @@ def compare_accuracies():
     run_seeds = [112,117]
     run_name = "GCM_alas_wint_550yrs_shuf_bal_seed"
     normal_fn = "normal_" + run_name + "125_TLLTT_accuracy.txt"
-    normal_accuracies = np.loadtxt("/barnes-scratch/nicojg/data/" + run_name + "125/" + normal_fn)#.astype(float)
+    normal_accuracies = np.loadtxt("/barnes-engr-scratch1/nicojg/data/" + run_name + "125/" + normal_fn)#.astype(float)
 
     plt.figure(figsize=(10,6))
     plt.plot(np.arange(10, 101, 5)[::-1], normal_accuracies, label = "ProtoLNet", color = '#f42c94')
 
     for run_seed in run_seeds:
         normal_fn = "normal_" + run_name + str(run_seed) + "_TLLTT_accuracy.txt"
-        normal_accuracies = np.loadtxt("/barnes-scratch/nicojg/data/" + run_name + str(run_seed) + "/" + normal_fn)#.astype(float)
+        normal_accuracies = np.loadtxt("/barnes-engr-scratch1/nicojg/data/" + run_name + str(run_seed) + "/" + normal_fn)#.astype(float)
         plt.plot(np.arange(10, 101, 5)[::-1], normal_accuracies, label = "Base CNN", color = '#f89c04')
     # plt.title("Model Accuracy by percentage of most confident samples", fontsize=20)
     plt.title("Discard test", fontsize=20)
@@ -2376,7 +2487,62 @@ def compare_accuracies():
 
     plt.savefig(("figures/misc/failure_plot.png"), bbox_inches='tight', dpi=400)
 
-compare_accuracies()
+def plot_alaksa_temp(samp, era5_flag):
+    # mapProj = ccrs.PlateCarree(central_longitude = np.mean(lon))
+
+    temp_anoms, t_lon, t_lat = data_functions_schooner.get_temp_anoms(DATA_DIR)
+    # fig, ax = plt.subplots(1,
+    #                         1, 
+    #                         figsize=(10,9.5),
+    #                         subplot_kw={'projection': mapProj}
+    #                     )
+    
+    # p = plots.plot_sample(ax, temp_anoms[8,:,:] , globe=True, lat=t_lat, lon=t_lon, mapProj=mapProj)
+
+    fig = plt.figure(figsize=(10, 9.5))
+    fig.tight_layout()
+
+    spec = fig.add_gridspec(4, 5)
+
+    plt.subplots_adjust(wspace= 0.35, hspace= 0.25)
+
+    sub1 = fig.add_subplot(111, projection = ccrs.PlateCarree(central_longitude=180))
+
+    plt.set_cmap('cmr.fusion_r')
+    img = sub1.contourf(np.asarray(t_lon), np.asarray(t_lat), np.asarray(temp_test[samp,:,:]), np.linspace(-20, 20, 41), transform=ccrs.PlateCarree(), extend='both')
+    coast = cfeature.GSHHSFeature(scale='intermediate')
+    state = cfeature.NaturalEarthFeature(category = 'cultural', name = 'admin_1_states_provinces_lines', scale='10m', facecolor="none")
+    countries = cfeature.NaturalEarthFeature(category = 'cultural', name = 'admin_0_boundary_lines_land', scale='10m', facecolor="none")
+    sub1.add_feature(coast, edgecolor='0')
+    sub1.add_feature(state, edgecolor='0')
+    sub1.add_feature(countries, edgecolor='0')
+    # sub1.coastlines()
+
+    sub1.tick_params(axis='both', labelsize=12)
+    sub1.set_xticks(np.arange(-180,181,30))
+    sub1.set_xticklabels(np.concatenate((np.arange(0,181,30),np.arange(-160,1,30))))
+    sub1.set_yticks(np.arange(-90,91,15))
+    sub1.set_xlim(10,75)
+    sub1.set_ylim(30,75)
+    sub1.set_xlabel("Longitude (degrees)",fontsize=14)
+    sub1.set_ylabel("Latitude (degrees)",fontsize=14)
+    sub1.set_title("(e) 14-day lead time temperature anomalies", fontsize=14)
+    # print(temp_anoms[8,64,88].values)
+    cbar = plt.colorbar(img,shrink=.75, aspect=20*0.8)
+    cbar.set_label("Temperature (K)", fontsize=14)
+    cbar.ax.tick_params(labelsize=12) 
+    if(era5_flag == 0):
+        plt.savefig((vizualization_dir + "individual_protos/" + EXP_NAME + '_real_temp_' + str(samp) + '_' + 'coast_plot.png'), bbox_inches='tight', dpi=dpiFig)
+        # plt.savefig((vizualization_dir + str(learning_rate) +  "_" +str(percentage*100) + "_" + "_" + EXP_NAME + '_allPrototypes_phase' + str(phase) + '.png'), bbox_inches='tight', dpi=dpiFig)
+        plt.close()
+    elif(era5_flag == 1):
+        plt.savefig((vizualization_dir + 'era5_figs/'  + "_" + EXP_NAME + '_translated_real_temp' + str(samp) + '_' + 'coast_plot.png'), bbox_inches='tight', dpi=dpiFig)
+    else:
+        plt.savefig((vizualization_dir + 'era5_figs/'  + "_" + EXP_NAME + '_convert_real_temp' + str(samp) + '_' + 'coast_plot_fixed.png'), bbox_inches='tight', dpi=dpiFig)
+
+# plot_alaksa_temp()
+# quit()
+# compare_accuracies()
 
 
 accuracies = []
@@ -2392,9 +2558,14 @@ if(settings['plot_ERA5_convert'] == True):
     era5_flag_set = 2
 
 # comps_by_proto(era5_flag_set)
-useless_func(era5_flag_set)
+# useless_func(era5_flag_set)
 
-quit()
+top_samps = top_confidence_protos(1, y_predict)[:5]
+# for decent_samp in top_samps:
+#     plot_alaksa_temp(decent_samp, era5_flag_set)
+#     examine_proto(decent_samp, era5_flag_set)
+
+# quit()    
 
 # for i in np.arange(10, 101, 5):
 #     accuracies.append(make_confuse_matrix(y_predict[top_confidence_protos(i/100.)], y_true[top_confidence_protos(i/100.)], i, False))
@@ -2429,10 +2600,11 @@ if(settings['pretrain'] == True):
     plt.plot(np.arange(10, 101, 5)[::-1], base_accuracies, label = "Base CNN", color = '#f89c04')
     # plt.plot(np.arange(10, 101, 5)[::-1], base_accuracies_val, label = "Base CNN - val")
 # plt.title("Model Accuracy by percentage of most confident samples", fontsize=20)
-plt.title("Discard test", fontsize=20)
+# plt.title("Discard test", fontsize=20)
 
 plt.xlabel("Percentage samples not discarded", fontsize=15)
-plt.xticks(ticks=np.arange(10, 101, 5), labels=np.arange(10, 101, 5)[::-1])
+plt.xticks(ticks=np.arange(10, 101, 5), labels=np.arange(10, 101, 5)[::-1], fontsize=12)
+plt.yticks(fontsize=12)
 plt.ylabel("Accuracy (%)", fontsize=15)
 plt.axhspan(0, 33, color='0.75', alpha=0.5, lw=0)
 
@@ -2484,14 +2656,19 @@ if (os.path.exists(translated_fn) and os.path.exists(convert_fn) and os.path.exi
     
     plt.figure(figsize=(10,6))
     plt.xlim(10,100)
-    plt.plot(np.arange(10, 101, 5)[::-1], normal_accuracies, label = "GCM ProtoLNet", color = '#f42c94')
-    plt.plot(np.arange(10, 101, 5)[::-1], translated_accuracies, label = "ERA5 Projected", color = '#4db6ac') 
-    plt.plot(np.arange(10, 101, 5)[::-1], convert_accuracies, label = "ERA5 Transformed", color = '#3c8cdc')
+    plt.plot(np.arange(10, 101, 5)[::-1], normal_accuracies, label = "CESM2-ProtoLNet", color = '#f42c94', linewidth=2)
+    plt.plot(np.arange(10, 101, 5)[::-1], translated_accuracies, label = "CESM2 onto ERA5", color = '#f89c04', linewidth=2) 
+    plt.plot(np.arange(10, 101, 5)[::-1], convert_accuracies, label = "Transferred-ProtoLNet", color = '#3c8cdc', linewidth=2)
     # plt.title("Model Accuracy by percentage of most confident samples", fontsize=20)
     plt.xlabel("Percent Most Confident (%)", fontsize=15)
-    plt.xticks(ticks=np.arange(10, 101, 5), labels=np.arange(10, 101, 5)[::-1])
+    plt.xticks(ticks=np.arange(10, 101, 5), labels=np.arange(10, 101, 5)[::-1], fontsize =12)
+    plt.yticks(fontsize=12)
     plt.ylabel("Accuracy (%)", fontsize=15)
-    plt.axhspan(0, 33, color='.25', alpha=0.5, lw=0)
+    plt.axhspan(0, 33, color='.75', alpha=0.5, lw=0)
+    
+    if(settings['plot_ERA5_convert'] == True):
+        print(nino_final_accur)
+        plt.axhline(nino_final_accur*100, color='black', label="Niño3.4 Baseline", linewidth=2)
     
     print(convert_accuracies)
     if((np.min(normal_accuracies) >= 31)):
@@ -2499,18 +2676,94 @@ if (os.path.exists(translated_fn) and os.path.exists(convert_fn) and os.path.exi
         plt.ylim(bottom=30)
     else:
         plt.ylim(bottom=20)
-    plt.legend()
+    plt.legend(fontsize = 12)
 
 
-    plt.savefig((vizualization_dir + 'era5_figs/' + EXP_NAME + '_ERA5_additions_forecast_of_opportunity.png'), bbox_inches='tight', dpi=dpiFig)
+    plt.savefig((vizualization_dir + 'era5_figs/' + EXP_NAME + '_ERA5_additions_forecast_of_opportunity_fixed.png'), bbox_inches='tight', dpi=dpiFig)
 
-
-if(not did_not_train):
-    show_all_protos(era5_flag_set, 1)
-    show_all_protos(era5_flag_set, .2)
+# if(not did_not_train):
+#     show_all_protos(era5_flag_set, 1)
+#     show_all_protos(era5_flag_set, .2)
     
+print((np.argmax(y_predict,axis=1) == y_true).astype(int))
+print(np.max(y_predict,axis=1))
 
+# brier_score = 0
+# o_t = (np.argmax(y_predict,axis=1) == y_true).astype(int)
+# f_t = np.max(y_predict,axis=1)
+# for i in np.arange(0, len(y_predict), 1):
+#     print(o_t.shape)
+#     o_ti = o_t[i]
+#     f_ti = f_t[i]
+#     brier_score += np.square(f_ti - o_ti)
+# brier_score = brier_score/len(y_predict)
+
+# # Step 1: One-hot encode y_true
+# num_classes = y_predict.shape[1]
+# y_true_one_hot = np.eye(num_classes)[y_true]  # shape: (num_samples, num_classes)
+
+# Step 2: Compute the Brier score for all classes
+
+# print(y_true.shape)
+# print(y_true)
+print("break")
+print(y_predict)
+y_true_one_hot = np.eye(NCLASSES)[y_true.astype(int)]
+print(y_true_one_hot)
+brier_score = np.mean(np.sum((y_true_one_hot - y_predict) ** 2, axis=1)/3)
+
+print(brier_score)
+np.savetxt(exp_data_dir + "_"+ EXP_NAME + 'brier_score.txt', [brier_score], fmt='%f')
+
+# Compute cumulative distributions
+y_true_cum = np.cumsum(y_true_one_hot, axis=1)
+y_pred_cum = np.cumsum(y_predict, axis=1)
+
+# Compute squared differences and average RPS
+rps_score = np.mean(np.sum((y_true_cum - y_pred_cum) ** 2, axis=1))/2
+
+# Print and save
+print(rps_score)
+print("above rps")
+np.savetxt(exp_data_dir + "_" + EXP_NAME + 'rps_score.txt', [rps_score], fmt='%f')
+
+
+top20_pred = y_predict[top_confidence_protos(.2, y_predict)]
+top20_true = y_true[top_confidence_protos(.2, y_predict)]
+
+# brier_score = 0
+# o_t = (np.argmax(top20_pred,axis=1) == top20_true).astype(int)
+# f_t = np.max(top20_pred,axis=1)
+# for i in np.arange(0, len(top20_pred), 1):
+#     o_ti = o_t[i]
+#     f_ti = f_t[i]
+#     brier_score += np.square(f_ti - o_ti)
+# brier_score = brier_score/len(top20_pred)
+# print(brier_score)
+
+top20_y_true_one_hot = np.eye(NCLASSES)[top20_true.astype(int)]
+brier_score = np.mean(np.sum((top20_y_true_one_hot - top20_pred ) ** 2, axis=1)/3)
+print(brier_score)
+
+np.savetxt(exp_data_dir + "_"+ EXP_NAME + 'brier_score_top20.txt', [brier_score], fmt='%f')
+
+# Compute cumulative distributions
+top20_y_true_cum = np.cumsum(top20_y_true_one_hot, axis=1)
+top_20y_pred_cum = np.cumsum(top20_pred, axis=1)
+
+# Compute squared differences and average RPS
+top20_rps_score = np.mean(np.sum((top20_y_true_cum - top_20y_pred_cum) ** 2, axis=1))/2
+
+print(top20_rps_score)
+print("above")
+
+np.savetxt(exp_data_dir + "_" + EXP_NAME + 'rps_score_top20.txt', [top20_rps_score], fmt='%f')
+
+
+print("end")
+quit()
 top_samps = top_confidence_protos(1, y_predict)[:5]
 for decent_samp in top_samps:
     # mjo_correlation(decent_samp)
     examine_proto(decent_samp, era5_flag_set)
+    plot_alaksa_temp(decent_samp, era5_flag_set)

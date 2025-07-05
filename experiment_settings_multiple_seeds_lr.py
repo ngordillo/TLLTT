@@ -14,7 +14,7 @@ def get_settings(exp_name):
                 'GCM_alas_lr_wint_550yrs_seed100': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -71,7 +71,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed101': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -128,7 +128,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed102': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -185,7 +185,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed103': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -242,7 +242,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed104': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -299,7 +299,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed105': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -351,13 +351,12 @@ def get_settings(exp_name):
                
                         'analyze_stage'       : 9,
                         'plot_ERA5_translated': False,
-                        'plot_ERA5_convert': False,
-                        'plot_ERA5_convert'   : True,                      
+                        'plot_ERA5_convert': False,                   
                        },
 'GCM_alas_lr_wint_550yrs_seed106': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -414,7 +413,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed107': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -471,7 +470,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed108': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -528,7 +527,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed109': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -585,7 +584,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed110': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -642,7 +641,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed111': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -699,7 +698,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed112': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -756,7 +755,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed113': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -813,7 +812,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed114': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -870,7 +869,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed115': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -927,7 +926,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed116': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -984,7 +983,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed117': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -1041,7 +1040,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed118': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -1098,7 +1097,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed119': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -1155,7 +1154,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed120': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -1212,7 +1211,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed121': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -1269,7 +1268,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed122': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -1326,7 +1325,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed123': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -1383,7 +1382,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed124': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -1440,7 +1439,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed125': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -1497,7 +1496,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed126': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -1554,7 +1553,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed127': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -1611,7 +1610,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed128': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -1663,12 +1662,12 @@ def get_settings(exp_name):
                
                         'analyze_stage'       : 9,
                         'plot_ERA5_translated': False,
-                        'plot_ERA5_convert': True,                      
+                        'plot_ERA5_convert': False,                      
                        },
 'GCM_alas_lr_wint_550yrs_seed129': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -1725,7 +1724,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed130': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -1777,12 +1776,12 @@ def get_settings(exp_name):
                
                         'analyze_stage'       : 9,
                         'plot_ERA5_translated': False,
-                        'plot_ERA5_convert': True,                      
+                        'plot_ERA5_convert': False,                      
                        },
 'GCM_alas_lr_wint_550yrs_seed131': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -1839,7 +1838,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed132': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -1896,7 +1895,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed133': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -1953,7 +1952,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed134': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -2010,7 +2009,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed135': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -2067,7 +2066,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed136': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -2124,7 +2123,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed137': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -2181,7 +2180,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed138': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -2232,13 +2231,13 @@ def get_settings(exp_name):
                         'es_stop'             : True,
                
                         'analyze_stage'       : 9,
-                        'plot_ERA5_translated': True,
+                        'plot_ERA5_translated': False,
                         'plot_ERA5_convert': False,                      
                        },
 'GCM_alas_lr_wint_550yrs_seed139': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -2295,7 +2294,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed140': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -2352,7 +2351,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed141': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -2409,7 +2408,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed142': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -2466,7 +2465,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed143': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -2523,7 +2522,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed144': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -2580,7 +2579,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed145': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -2637,7 +2636,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed146': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -2694,7 +2693,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed147': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -2751,7 +2750,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed148': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -2808,7 +2807,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed149': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -2865,7 +2864,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed150': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -2922,7 +2921,7 @@ def get_settings(exp_name):
                 'GCM_alas_lr_wint_550yrs_seed137_nopre': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -2979,7 +2978,7 @@ def get_settings(exp_name):
                 'GCM_alas_lr_wint_550yrs_seed138_nopre': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -3036,7 +3035,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed142_nopre': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -3093,7 +3092,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed144_nopre': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -3150,7 +3149,7 @@ def get_settings(exp_name):
 'GCM_alas_lr_wint_550yrs_seed147_nopre': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -3207,7 +3206,7 @@ def get_settings(exp_name):
             'GCM_alas_lr_wint_550yrs_seed147_nopre_lrtest': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -3264,7 +3263,7 @@ def get_settings(exp_name):
                 'GCM_alas_lr_wint_550yrs_seed147_nopre_lrtest_epochs': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -3321,7 +3320,7 @@ def get_settings(exp_name):
                 'GCM_alas_lr_wint_550yrs_seed144_nopre_lrtest_epochs': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -3378,7 +3377,7 @@ def get_settings(exp_name):
                 'GCM_alas_lr_wint_550yrs_seed128_nopre_fake144': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -3435,7 +3434,7 @@ def get_settings(exp_name):
             'GCM_alas_lr_wint_550yrs_seed144_nopre_fake128': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
@@ -3492,7 +3491,7 @@ def get_settings(exp_name):
                 'GCM_alas_lr_wint_550yrs_seed128_redo': { 
                         'data_name'           : 'mjo',
                     #    'data_dir'            : '/ourdisk/hpc/ai2es/nicojg/TLLTT/data/',         
-                        'data_dir'            : '/barnes-scratch/nicojg/',
+                        'data_dir'            : '/barnes-engr-scratch1/nicojg/',
                         'colored'             : False, 
                         'standardize'         : 'all',
                         'shuffle'             : True,
