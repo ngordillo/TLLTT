@@ -1,5 +1,3 @@
-
-
 # # This Looks Like That There
 # 
 # Main training notebook.
@@ -37,8 +35,8 @@ from sklearn.metrics import confusion_matrix
 
 
 7
-__author__ = "Elizabeth A. Barnes and Randal J Barnes"
-__version__ = "1 December 2021"
+__author__ = "Nicolas Gordillo"
+__version__ = "April 2024"
 
 mpl.rcParams['figure.facecolor'] = 'white'
 mpl.rcParams['figure.dpi']= 150
@@ -149,25 +147,25 @@ if(EXP_NAME[:3]=='ERA'):
     #labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter_ERA5(DATA_DIR)
 
     labels, data, lat, lon, time, temp_anoms, t_lat, t_lon = data_functions_schooner.load_tropic_data_winter_ERA5(DATA_DIR, file_lon, file_lat, False)
-
+    # Load training, validation, and test data based on the experiment name
     X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test = data_functions_schooner.get_and_process_tropic_data_winter_ERA5(labels,
-                                                                                            data,
-                                                                                            time,
-                                                                                            rng,
-                                                                                            train_yrs_era5,
-                                                                                            val_yrs_era5,
-                                                                                            test_years_era5,
-                                                                                            colored=settings['colored'],
-                                                                                            standardize=settings['standardize'],
-                                                                                            shuffle=settings['shuffle'],
-                                                                                            bal_data = settings['balance_data'],
-                                                                                            r_seed = RANDOM_SEED,
-                                                                                        )
+                                                                                                data,
+                                                                                                time,
+                                                                                                rng,
+                                                                                                train_yrs_era5,
+                                                                                                val_yrs_era5,
+                                                                                                test_years_era5,
+                                                                                                colored=settings['colored'],
+                                                                                                standardize=settings['standardize'],
+                                                                                                shuffle=settings['shuffle'],
+                                                                                                bal_data = settings['balance_data'],
+                                                                                                r_seed = RANDOM_SEED,
+                                                                                            )
 elif(EXP_NAME[:3] == 'GCM'):
-    #labels, data, lat, lon, time = data_functions_schooner.load_tropic_data_winter(DATA_DIR)
-
+    # Load tropical data for GCM experiments
     labels, data, lat, lon, time, temp_anoms, t_lat, t_lon = data_functions_schooner.load_tropic_data_winter(DATA_DIR, file_lon, file_lat, False)
 
+    # Process the loaded data for training, validation, and testing
     X_train, y_train, time_train, X_val, y_val, time_val, X_test, y_test, time_test, temp_train, temp_val, temp_test = data_functions_schooner.get_and_process_tropic_data_winter(labels,
                                                                                             data,
                                                                                             time,
@@ -184,11 +182,13 @@ elif(EXP_NAME[:3] == 'GCM'):
                                                                                             # r_seed = 128,
                                                                                 )
 else:
-    print("Expermient name is bad")
+    print("Expermient name is bad")  # Handle invalid experiment name
     quit()
 
+# Create a mask for class identities based on prototypes
 proto_class_mask = network.createClassIdentity(PROTOTYPES_PER_CLASS)
 
+# Initialize arrays for prototypes of the correct class for training, validation, and testing
 prototypes_of_correct_class_train = np.zeros((len(y_train),NPROTOTYPES))
 for i in range(0,prototypes_of_correct_class_train.shape[0]):
     prototypes_of_correct_class_train[i,:] = proto_class_mask[:,int(y_train[i])]
@@ -204,16 +204,17 @@ for i in range(0,prototypes_of_correct_class_test.shape[0]):
 
 # ## Define the training callbacks and metrics
 
-# callbacks
+# Learning rate scheduler function
 def scheduler(epoch, lr):
     if epoch < LR_CALLBACK_EPOCH:
-        return np.round(lr,8)
+        return np.round(lr,8)  # Return the learning rate as is for initial epochs
     else:
         if(epoch % 2 == 0):
-            return lr/2.
+            return lr/2.  # Reduce learning rate every two epochs
         else:
             return lr
 
+# Define callbacks for learning rate scheduling and early stopping
 lr_callback = tf.keras.callbacks.LearningRateScheduler(scheduler, verbose=1)    
     
 es_callback = tf.keras.callbacks.EarlyStopping(
@@ -225,23 +226,24 @@ es_callback = tf.keras.callbacks.EarlyStopping(
 )
 
 callbacks_list = [
-#     lr_callback,
+#     lr_callback,  
     es_callback,
 ]            
 
 if(EARLY_STOPPING == False):
-    callbacks_list.remove(es_callback)
+    callbacks_list.remove(es_callback)  # Remove early stopping if not needed
 
-# metrics
+# Define metrics for model evaluation
 metrics_list = [
     tf.keras.metrics.SparseCategoricalAccuracy(),
 ]
 
 # ## Instantiate the model
 
-__ = imp.reload(network)
-tf.keras.backend.clear_session()
+__ = imp.reload(network)  # Reload the network module
+tf.keras.backend.clear_session()  # Clear any previous session
 
+# Build the model with specified parameters
 model = network.build_model(
     nlayers              = NLAYERS,
     nfilters             = NFILTERS,
@@ -261,12 +263,13 @@ model = network.build_model(
     drop_rate_final      = 0.0,        
     
 )
-model.summary()
+model.summary()  # Display model summary
 
 # ## Load pre-trained weights into convolutional layers
 
 if(settings['pretrain'] == True):
 
+    # Determine the path for the pretrained model
     if(settings['pretrain_exp'] is None):
         PRETRAINED_MODEL = model_dir + 'pretrained_model_' + EXP_NAME
 
@@ -276,54 +279,55 @@ if(settings['pretrain'] == True):
         PRETRAINED_MODEL = './saved_models/' + settings['pretrain_exp']
 
 
-    print('loading pretrained convolutional layers from ' + PRETRAINED_MODEL)
-    pretrained_model = tf.keras.models.load_model(PRETRAINED_MODEL)
+    print('loading pretrained convolutional layers from ' + PRETRAINED_MODEL)  # Log loading of pretrained model
+    pretrained_model = tf.keras.models.load_model(PRETRAINED_MODEL)  # Load the pretrained model
 
+    # Set weights for convolutional layers from the pretrained model
     for layer in range(1,len(model.layers)):
         if(model.layers[layer].name[:4]=='conv'):
             print('   loading pretrained weights for --> ' + model.layers[layer].name)
             model.layers[layer].set_weights(pretrained_model.layers[layer].get_weights())
 else:
-    print('no pretrained model specified. keeping random initialized weights.')
+    print('no pretrained model specified. keeping random initialized weights.')  # Log if no pretrained model is specified
     
 
-# raise ValueError('here')
 
 # ***
 
 # # Run Training Stages
 
-imp.reload(network)
-imp.reload(plots)
-imp.reload(push_prototypes)
-imp.reload(experiment_settings)
-settings = experiment_settings.get_settings(EXP_NAME)
+imp.reload(network)  # Reload the network module
+imp.reload(plots)  # Reload the plots module
+imp.reload(push_prototypes)  # Reload the push_prototypes module
+imp.reload(experiment_settings)  # Reload the experiment_settings module
+settings = experiment_settings.get_settings(EXP_NAME)  # Get experiment settings
 
+# Log the shapes of training data and prototypes
 ic(np.shape(X_train))
 ic(np.shape(prototypes_of_correct_class_train))
 ic(np.shape(prototypes_of_correct_class_train))
 
-imp.reload(push_prototypes)
-NEPOCHS    = settings['nepochs']
-STAGE_LIST = (0,1,2,3,4,5,6,7,8,9) #(0,1,2,3,4,5,6,7,8,9)#(0,1,2,3,4,5,6,7,8,9)#range(len(NEPOCHS))#(1,2,3,4,5)#range(len(NEPOCHS))
+imp.reload(push_prototypes)  # Reload the push_prototypes module
+NEPOCHS    = settings['nepochs']  # Get number of epochs from settings
+STAGE_LIST = (0,1,2,3,4,5,6,7,8,9)  # Define the list of training stages
 
 for stage in STAGE_LIST:
     
     print('--------------------')
-    print('TRAINING STAGE = ' + str(stage))
+    print('TRAINING STAGE = ' + str(stage))  # Log the current training stage
     print('--------------------')
 
-    # load previously trained stage, unless it is the 0th stage
+    # Load previously trained stage, unless it is the 0th stage
     if(stage != 0):
-        tf.keras.backend.clear_session() 
+        tf.keras.backend.clear_session()  # Clear session for new training stage
         model_filename = model_dir + 'model_' + EXP_NAME + '_stage' + str(stage-1)+ ".h5"
         # model_filename = model_dir + str(learning_rate) + "_" + 'model_' + EXP_NAME + '_stage' + str(stage-1)+ ".h5"
-#         model = common_functions.load_model(model_filename)
-        model.load_weights(model_filename)
+#         model = common_functions.load_model(model_filename)  # Load model if needed
+        model.load_weights(model_filename)  # Load weights for the current stage
         
-    # learn layers (during even numbered stages)
+    # Learn layers (during even numbered stages)
     if(stage % 2 == 0):
-        # train prototypes layers (and possibly CNN layers)
+        # Train prototypes layers (and possibly CNN layers)
         if(settings['pretrain']==False and settings['train_cnn_in_stage'] == True):
             model = network.set_trainable_layers(model, [True,True,True,False])            
         elif(settings['train_cnn_in_stage'] == False or stage==0):
@@ -344,26 +348,22 @@ for stage in STAGE_LIST:
                                                 perform_push=True,
                                                 batch_size=BATCH_SIZE_PREDICT,
                                                 verbose=False,
-                                               )        
+                                                )
         print('Push complete.\n')            
 
-        # train weights layer only
+        # Set the model to train only the last layer
         model = network.set_trainable_layers(model, [False,False,False,True])
-        # print("Huge Print------------------------------------------------------------------------------------------")
-        print(push_info[0])
-        print(push_info[0].shape)
+
         if(stage == 9):
             print("Writing Final Protos")
-            print(push_info[-2])
-            print(push_info[-2].shape)
+            # Save final prototypes and similarity scores
             np.savetxt(exp_data_dir + EXP_NAME + 'final_push_protos.txt', push_info[0], fmt='%d')
             np.savetxt(exp_data_dir + EXP_NAME + 'final_protos_loc.txt', push_info[-1], fmt='%d')
             np.save(exp_data_dir + EXP_NAME + 'similarity_scores.npy', push_info[-2])
             
-        # print("Huge Print------------------------------------------------------------------------------------------")
 
     #.......................................................
-    # compile the model
+    # Compile the model
     #.......................................................
     if(stage>=settings['cut_lr_stage']):
         lr_factor = 10.**(np.floor((stage-settings['cut_lr_stage']+2)/2))
@@ -373,7 +373,7 @@ for stage in STAGE_LIST:
         lr_factor = LR_INIT/settings['min_lr']
     print('learning rate = ' + str(np.asarray(LR_INIT/lr_factor,dtype='float32')))
 
-    # compile the model
+    # Compile the model with Adam optimizer and loss function
     model.compile(
         optimizer=tf.keras.optimizers.Adam(
             learning_rate=np.asarray(LR_INIT/lr_factor,dtype='float32'), 
@@ -381,16 +381,17 @@ for stage in STAGE_LIST:
         loss = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False),
         metrics = metrics_list,
     )
-#     model.summary()
+    # Display minimum and maximum weights of the layer
     ic(np.min(model.layers[-3].get_weights()[1]),np.max(model.layers[-3].get_weights()[1]))
 
     #.......................................................
-    # train the model
+    # Train the model
     #.......................................................
     print('Training the model...')    
     
     tf.random.set_seed(RANDOM_SEED)   
     np.random.seed(RANDOM_SEED)    
+    # Fit the model on training data
     history = model.fit(
         [X_train,prototypes_of_correct_class_train],
         y_train,
@@ -403,99 +404,57 @@ for stage in STAGE_LIST:
     )
     print('Training complete.\n')            
         
-
-    # save the model at this training stage
+    # Save the model at this training stage
     model_filename = model_dir + 'model_' + EXP_NAME + '_stage' + str(stage)
-    # model_filename = model_dir + str(learning_rate) + "_" + 'model_' + EXP_NAME + '_stage' + str(stage)
     common_functions.save_model(model, model_filename) 
     
     #.......................................................
-    # plot results
+    # Plot results
     #.......................................................  
     try:
-        # plot loss history of the model
+        # Plot loss history of the model
         plots.plot_loss_history(history)
         plt.savefig(model_diagnostics_dir + EXP_NAME + '_loss_history_stage' + str(stage) + '.png', dpi=dpiFig)    
-        # plt.savefig(model_diagnostics_dir + str(learning_rate) + "_" + EXP_NAME + '_loss_history_stage' + str(stage) + '.png', dpi=dpiFig)    
-
         plt.close()
 
-        # plot the weights
+        # Plot the weights of the model
         plots.plot_weights(model, PROTOTYPES_PER_CLASS)    
         plt.savefig(model_diagnostics_dir + EXP_NAME + '_weights_stage' + str(stage) + '.png', dpi=dpiFig)
-        # plt.savefig(model_diagnostics_dir + str(learning_rate) + "_" + EXP_NAME + '_weights_stage' + str(stage) + '.png', dpi=dpiFig)
         plt.close()
     except:
         print('not making plots...')
         plt.close()
 
-
-
+# Function to get top confidence prototypes
 def top_confidence_protos(percentage, predictions):
-    #temp_classes = [0,1]
     temp_classes = [0,1,2]
 
     total_maxvals = []
     all_isamples = []
     for temp_class in temp_classes:
-
         isamples = np.where((np.argmax(predictions,axis=1)==temp_class))[0]
-        # print(isamples)
-        # print(max_similarity_score[isamples,:].shape)
         
         high_scores = predictions[isamples,temp_class]
-        # print(points.shape)
-        
-        # print(points.shape)
-        # print(points)
-        # print(hq.nlargest(10, points))
         maxvals = high_scores
-        # print(hq.nlargest(10,maxvals))
 
         total_maxvals.append(maxvals)
-
         all_isamples.append(isamples)
 
-        # print("BIG TESTTTTTTTTTT:  =" + str(maxvals.shape[0]))
-
     total_maxvals = np.concatenate((total_maxvals[0], total_maxvals[1], total_maxvals[2]))
-
     total_maxvals = np.asarray(total_maxvals)
-
     all_isamples = np.concatenate((all_isamples[0], all_isamples[1], all_isamples[2]))
-
     all_isamples = np.asarray(all_isamples)
     
+    # Get top scores based on percentage
     topscore = np.asarray(hq.nlargest(int(total_maxvals.shape[0]*percentage), total_maxvals))
-
-    # print(topscore)
-
-    # print(total_maxvals)
-
-    # print(np.where(np.in1d(maxvals,topscore))[0])
-
     toplocs = np.where(np.in1d(total_maxvals,topscore))[0]
 
-    # print(maxvals[toplocs])
-    # print(np.argsort(maxvals[toplocs]))
-
     argstest = np.argsort(total_maxvals[toplocs])
-
-    # print(toplocs[argstest][::-1])
-
-    # print(maxvals[toplocs][argstest][::-1])
-
-    # print(isamples[toplocs[argstest][::-1]])
-
-    # print(total_maxvals[toplocs[argstest[-1]]])
-    # quit()
     bestsamps = all_isamples[toplocs[argstest][::-1]]
-    # print("best samps:"  + str(bestsamps))
     return bestsamps
 
+# Function to generate confusion matrix
 def make_confuse_matrix(y_predict, y_test, data_amount, base):
-#Generate the confusion matrix
-
     y_predict_class = np.argmax(y_predict,axis=1)
 
     cf_matrix = confusion_matrix(y_test, y_predict_class)
@@ -519,45 +478,28 @@ def make_confuse_matrix(y_predict, y_test, data_amount, base):
 
     correct_preds /= np.sum(cf_matrix)
     
-    # plt.xlabel('Prediction', fontsize=18, color = 'green')
-    # plt.ylabel('Actual', fontsize=18, color = 'red')
-    # plt.title('TLLTT Confusion Matrix (Accuracy - ' + str(np.around(correct_preds*100,2)) + '\%)', fontsize=18)
-    # if (base):
-    #     plt.savefig((vizualization_dir + "confusion_matrices/" + EXP_NAME + 'base_'+ str(data_amount) + 'percent_confmatrix.png'), bbox_inches='tight', dpi=dpiFig)
-    # else:
-    #     plt.savefig((vizualization_dir + "confusion_matrices/" + EXP_NAME + 'TLLTT_'+ str(data_amount) + 'percent_confmatrix.png'), bbox_inches='tight', dpi=dpiFig)
-
-
-
-
-    # plt.show()
-
     return np.around(correct_preds*100,2)
 
 input_val  = [[X_val,prototypes_of_correct_class_val]]
 
-# print('running model.predict()...')
+# Predict on validation data
 y_predict_val = model.predict(input_val, batch_size=BATCH_SIZE_PREDICT, verbose=1)
-# print('model.predict() complete.')
-
 
 if(settings['pretrain'] == True):
     base_model_filename = model_dir + 'pretrained_model_' + EXP_NAME
-
     base_model = common_functions.load_model(base_model_filename)
-
     base_y_predict_val = base_model.predict(X_val, batch_size=BATCH_SIZE_PREDICT, verbose=1)
-
-# model.evaluate(input_val,y_predict_val,batch_size=BATCH_SIZE_PREDICT, verbose=1)
 
 accuracies = []
 base_accuracies = []
 
+# Calculate accuracies for different percentages of confident samples
 for i in np.arange(10, 101, 5):
     accuracies.append(make_confuse_matrix(y_predict_val[top_confidence_protos(i/100., y_predict_val)], y_val[top_confidence_protos(i/100., y_predict_val)], i, True))
     if(settings['pretrain'] == True):
         base_accuracies.append(make_confuse_matrix(base_y_predict_val[top_confidence_protos(i/100., base_y_predict_val)], y_val[top_confidence_protos(i/100., base_y_predict_val)], i, True))
 
+# Plot accuracy results
 plt.figure(figsize=(10,6))
 plt.plot(np.arange(10, 101, 5)[::-1], accuracies, label = "TLLTT - val")
 
@@ -570,17 +512,17 @@ plt.xticks(ticks=np.arange(10, 101, 5), labels=np.arange(10, 101, 5)[::-1])
 plt.ylabel("Accuracy", fontsize=15)
 plt.axhspan(0, 33, color='y', alpha=0.5, lw=0)
 
+# Save accuracy results to file
 np.savetxt(exp_data_dir + EXP_NAME + '_TLLTT_Val_accuracy', accuracies, fmt='%1.5f')
 
 if(settings['pretrain'] == True):
     np.savetxt(exp_data_dir + EXP_NAME + '_Base_Val_accuracy', base_accuracies, fmt='%1.5f')
 
+# Adjust y-axis limits based on accuracy
 if((np.min(accuracies) >= 31)):
-    print("srtting ylim")
     plt.ylim(bottom=30)
 else:
     plt.ylim(bottom=20)
 plt.legend()
 plt.savefig((vizualization_dir + EXP_NAME + 'VALONLY_forecast_of_opportunity.png'), bbox_inches='tight', dpi=dpiFig)
 plt.close()
-# plt.savefig((vizualization_dir + str(learning_rate) + "_" + EXP_NAME + 'VALONLY_forecast_of_opportunity.png'), bbox_inches='tight', dpi=dpiFig)
