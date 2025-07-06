@@ -1,4 +1,4 @@
-"""This Looks Like That There experimental settings"""
+"""This Looks Like That There - S2S Release Version experimental settings"""
 
 
 import numpy as np

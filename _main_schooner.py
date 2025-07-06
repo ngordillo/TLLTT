@@ -1,4 +1,4 @@
-# # This Looks Like That There
+# This Looks Like That There - S2S Release Version
 # 
 # Main training notebook.
 

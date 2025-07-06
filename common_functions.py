@@ -1,11 +1,11 @@
-"""This Looks Like That experimental settings"""
+# This Looks Like That There - S2S Release Version
 
 import os
 import numpy as np
 import tensorflow as tf
 
-__author__ = "Elizabeth A. Barnes and Randal J. Barnes"
-__date__ = "June 20, 2021"
+__author__ = "Nicolas Gordillo"
+__date__ = "April 2024"
 
 np.warnings.filterwarnings('ignore', category=np.VisibleDeprecationWarning)
 
