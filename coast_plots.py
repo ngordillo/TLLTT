@@ -1,9 +1,9 @@
-import py3nvml
-py3nvml.grab_gpus(num_gpus=1, gpu_select=[2])
+# import py3nvml
+# py3nvml.grab_gpus(num_gpus=1, gpu_select=[2])
 
 # # This Looks Like That There
 # 
-# Visualize the prototypes
+# Plot coast
 
 
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
